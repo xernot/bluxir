@@ -79,7 +79,7 @@ class BlusoundCLI:
         height, width = stdscr.getmaxyx()
         # Top line with credit
         stdscr.hline(0, 0, curses.ACS_HLINE, width)
-        credit = "written by xir"
+        credit = "bluxir v1.02"
         if width > len(credit) + 2:
             stdscr.addstr(0, width - len(credit) - 2, credit)
         # Header

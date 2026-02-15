@@ -37,7 +37,7 @@ A basic CLI interface to control Blusound streamers.
 1. Clone this repository:
    ```
    git clone https://github.com/xernot/bluxir.git
-   cd blucli
+   cd bluxir
    ```
 
 2. Set up a virtual environment:

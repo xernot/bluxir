@@ -10,7 +10,10 @@ to switch to a mobile phone while working just because you want to hear differen
 sounds. how ever.  its all free. use it how ever you want. no licence at all.
 
 credits again to @irrelative. i just forked it and added the features i need.
-this readme is mainly written by irrelative
+this readme is mainly written by irrelative.
+
+meanwhile its a different project and has less similarity with the original blucli.
+
 
 
 # Blusound CLI

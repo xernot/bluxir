@@ -69,6 +69,7 @@ class BlusoundCLI:
         self.search_selected_index: int = 0
         self.active_search_key: Optional[str] = None
         self.search_source_name: str = ""
+        self.playlist: list = []
 
     def set_message(self, message: str):
         if message:
@@ -77,13 +78,13 @@ class BlusoundCLI:
 
     def draw_header(self, stdscr: curses.window, view: str):
         height, width = stdscr.getmaxyx()
-        # Top line with credit
+        # Top line
         stdscr.hline(0, 0, curses.ACS_HLINE, width)
-        credit = "bluxir v1.02"
-        if width > len(credit) + 2:
-            stdscr.addstr(0, width - len(credit) - 2, credit)
+        brand = "BLUXIR - CLI"
+        if width > len(brand) + 2:
+            stdscr.addstr(0, width - len(brand) - 2, brand)
         # Header
-        header = f"Blusound CLI - {view}"
+        header = view
         if self.active_player:
             header += f" - {self.active_player.name}"
         stdscr.addstr(1, 2, header[:width - 4], curses.A_BOLD)
@@ -101,6 +102,7 @@ class BlusoundCLI:
                 success, status = self.active_player.get_status()
                 if success:
                     self.player_status = status
+                    self.playlist = self.active_player.get_playlist()
                 else:
                     logger.error(f"Error updating player status: {status}")
             except requests.RequestException as e:
@@ -177,54 +179,137 @@ class BlusoundCLI:
             self.display_shortcuts(stdscr)
         elif self.active_player and isinstance(self.player_status, PlayerStatus):
             self.display_summary_view(stdscr)
-            stdscr.addstr(stdscr.getmaxyx()[0] - 2, 2, "Press '?' for shortcuts")
-            stdscr.addstr(stdscr.getmaxyx()[0] - 1, 2, "Press 's' to search, 'i' to select input")
 
     def display_summary_view(self, stdscr: curses.window):
         player_status = self.player_status
         height, width = stdscr.getmaxyx()
+
+        # Split layout: left 60%, right 40% for playlist
+        divider_x = width * 60 // 100
+        bottom_line = height - 2
+
+        # Draw vertical divider
+        for row in range(3, bottom_line):
+            try:
+                stdscr.addch(row, divider_x, curses.ACS_VLINE)
+            except curses.error:
+                pass
+        # Connect to header separator
+        try:
+            stdscr.addch(2, divider_x, curses.ACS_TTEE)
+        except curses.error:
+            pass
+
+        # Bottom horizontal line
+        stdscr.hline(bottom_line, 0, curses.ACS_HLINE, width)
+        try:
+            stdscr.addch(bottom_line, divider_x, curses.ACS_BTEE)
+        except curses.error:
+            pass
+
+        # Help text
+        stdscr.addstr(height - 1, 2, "(s) search  (i) select source  (?) help")
+        version = "Version v1.2"
+        if width > len(version) + 2:
+            stdscr.addstr(height - 1, width - len(version) - 2, version)
+
+        # === Left side: Player info ===
+        left_max = divider_x - 1
         labels = ["Status", "Volume", "Now Playing", "Album", "Service", "Progress"]
         max_label_width = max(len(label) for label in labels)
 
-        stdscr.addstr(3, 2, f"{'Status:':<{max_label_width + 1}} {player_status.state}")
+        def left_text(row, col, text, *args):
+            stdscr.addstr(row, col, text[:left_max - col], *args)
+
+        left_text(3, 2, f"{'Status:':<{max_label_width + 1}} {player_status.state}")
         volume_bar = create_volume_bar(player_status.volume)
-        stdscr.addstr(4, 2, f"{'Volume:':<{max_label_width + 1}} {volume_bar} {player_status.volume}%")
-        stdscr.addstr(5, 2, f"{'Now Playing:':<{max_label_width + 1}} {player_status.name} - {player_status.artist}")
-        stdscr.addstr(6, 2, f"{'Album:':<{max_label_width + 1}} {player_status.album}")
-        stdscr.addstr(7, 2, f"{'Service:':<{max_label_width + 1}} {player_status.service}")
+        left_text(4, 2, f"{'Volume:':<{max_label_width + 1}} {volume_bar} {player_status.volume}%")
+        left_text(5, 2, f"{'Now Playing:':<{max_label_width + 1}} {player_status.name} - {player_status.artist}")
+        left_text(6, 2, f"{'Album:':<{max_label_width + 1}} {player_status.album}")
+        left_text(7, 2, f"{'Service:':<{max_label_width + 1}} {player_status.service}")
 
         if player_status.totlen > 0:
             progress = f"{format_time(player_status.secs)} / {format_time(player_status.totlen)}"
         else:
             progress = format_time(player_status.secs)
-        stdscr.addstr(8, 2, f"{'Progress:':<{max_label_width + 1}} {progress}")
+        left_text(8, 2, f"{'Progress:':<{max_label_width + 1}} {progress}")
 
-        stdscr.hline(9, 0, curses.ACS_HLINE, width)
+        # Horizontal separator (left side only)
+        stdscr.hline(9, 0, curses.ACS_HLINE, divider_x)
+        try:
+            stdscr.addch(9, divider_x, curses.ACS_RTEE)
+        except curses.error:
+            pass
 
-        # Detail section below separator
-        col2_x = width // 2
+        # Detail section (two sub-columns within left half)
+        sub_col2_x = 2 + (left_max // 2)
         detail_left = [
             ("Format", player_status.stream_format or "-"),
+            ("Quality", "HR" if player_status.quality == 0 else str(player_status.quality)),
             ("dB Level", f"{player_status.db:.1f}" if player_status.db else "-"),
             ("Service", player_status.service_name or player_status.service or "-"),
         ]
         repeat_map = {0: "Off", 1: "All", 2: "One"}
         detail_right = [
+            ("Track-Nr", str(player_status.song + 1)),
             ("Shuffle", "On" if player_status.shuffle else "Off"),
             ("Repeat", repeat_map.get(player_status.repeat, "Off")),
             ("Mute", "On" if player_status.mute else "Off"),
-            ("Song", str(player_status.song) if player_status.song else "-"),
         ]
         dl = max(len(k) for k, _ in detail_left)
         dr = max(len(k) for k, _ in detail_right)
         for i, ((lk, lv), (rk, rv)) in enumerate(zip(detail_left, detail_right)):
             row = 10 + i
-            if row >= height - 3:
+            if row >= bottom_line:
                 break
             stdscr.addstr(row, 2, f"{lk + ':':<{dl + 2}}", curses.A_DIM)
-            stdscr.addstr(row, 2 + dl + 2, lv[:col2_x - dl - 6])
-            stdscr.addstr(row, col2_x, f"{rk + ':':<{dr + 2}}", curses.A_DIM)
-            stdscr.addstr(row, col2_x + dr + 2, rv[:width - col2_x - dr - 4])
+            stdscr.addstr(row, 2 + dl + 2, lv[:sub_col2_x - dl - 4])
+            stdscr.addstr(row, sub_col2_x, f"{rk + ':':<{dr + 2}}", curses.A_DIM)
+            stdscr.addstr(row, sub_col2_x + dr + 2, rv[:left_max - sub_col2_x - dr])
+
+        # Horizontal line under detail section (left side only)
+        detail_bottom = 10 + len(detail_left)
+        if detail_bottom < bottom_line:
+            stdscr.hline(detail_bottom, 0, curses.ACS_HLINE, divider_x)
+            try:
+                stdscr.addch(detail_bottom, divider_x, curses.ACS_RTEE)
+            except curses.error:
+                pass
+
+        # === Right side: Playlist ===
+        right_start = divider_x + 2
+        right_w = width - right_start - 1
+
+        stdscr.addstr(3, right_start, "Playlist:"[:right_w], curses.A_BOLD)
+
+        if self.playlist:
+            current_song = player_status.song
+            max_rows = bottom_line - 4
+
+            # Scroll to keep current song visible
+            start_idx = 0
+            if current_song > max_rows // 2:
+                start_idx = current_song - max_rows // 2
+            if start_idx + max_rows > len(self.playlist):
+                start_idx = max(0, len(self.playlist) - max_rows)
+
+            for i in range(start_idx, min(start_idx + max_rows, len(self.playlist))):
+                row = 4 + (i - start_idx)
+                if row >= bottom_line:
+                    break
+                entry = self.playlist[i]
+                nr = f"{i + 1:>3}"
+                text = f"{nr}. {entry['title']} - {entry['artist']}"
+                text = text[:right_w]
+
+                if i == current_song:
+                    stdscr.attron(curses.color_pair(2))
+                    stdscr.addstr(row, right_start, text)
+                    stdscr.attroff(curses.color_pair(2))
+                else:
+                    stdscr.addstr(row, right_start, text)
+        else:
+            stdscr.addstr(4, right_start, "No playlist loaded."[:right_w])
 
     def display_shortcuts(self, stdscr: curses.window):
         height, width = stdscr.getmaxyx()
@@ -299,7 +384,9 @@ class BlusoundCLI:
                 success, status = self.active_player.get_status()
                 if success:
                     self.player_status = status
-                    set_preference('last_player', self.active_player.name)
+                    self.playlist = self.active_player.get_playlist()
+                    set_preference('player_host', self.active_player.host_name)
+                    set_preference('player_name', self.active_player.name)
                     return True, self.active_player, False
                 else:
                     logger.error(f"Error getting player status: {status}")
@@ -576,19 +663,30 @@ class BlusoundCLI:
         curses.curs_set(0)
         curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
 
-        self.players = threaded_discover()
-        stdscr.addstr(3, 2, "Discovering Blusound players...")
-        stdscr.refresh()
-
         player_mode: bool = False
+        discovery_started: bool = False
 
-        last_player_name = get_preference('last_player')
-        if last_player_name:
-            for i, player in enumerate(self.players):
-                if player.name == last_player_name:
-                    self.selected_index = i
-                    player_mode, self.active_player, _ = self.handle_player_selection(KEY_ENTER)
-                    break
+        player_host = get_preference('player_host')
+        player_name = get_preference('player_name')
+
+        if player_host:
+            try:
+                player = BlusoundPlayer(host_name=player_host, name=player_name or player_host)
+                success, status = player.get_status()
+                if success:
+                    self.active_player = player
+                    self.player_status = status
+                    self.playlist = player.get_playlist()
+                    self.players = [player]
+                    player_mode = True
+            except Exception as e:
+                logger.error(f"Failed to connect to stored player: {e}")
+
+        if not player_mode:
+            self.players = threaded_discover()
+            discovery_started = True
+            stdscr.addstr(3, 2, "Discovering Blusound players...")
+            stdscr.refresh()
 
         while True:
             stdscr.erase()
@@ -605,6 +703,9 @@ class BlusoundCLI:
             self.draw_header(stdscr, view)
 
             if not player_mode:
+                if not discovery_started:
+                    self.players = threaded_discover()
+                    discovery_started = True
                 self.display_player_selection(stdscr)
             else:
                 if self.search_mode:

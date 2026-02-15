@@ -80,7 +80,19 @@ class BlusoundPlayer:
         self.base_url = f"http://{self.host_name}:11000"
         self.sources: List[PlayerSource] = []
         logger.info(f"Initialized BlusoundPlayer: {self.name} at {self.host_name}")
+        self.fetch_player_name()
         self.initialize_sources()
+
+    def fetch_player_name(self):
+        try:
+            response = self.request("/SyncStatus")
+            root = ET.fromstring(response.text)
+            name = root.get('name', '')
+            if name:
+                self.name = name
+                logger.info(f"Player name: {self.name}")
+        except requests.RequestException as e:
+            logger.error(f"Error fetching player name: {e}")
 
     def request(self, url: str, params: Optional[Dict] = None) -> requests.Response:
         full_url = f"{self.base_url}{url}"
@@ -266,6 +278,26 @@ class BlusoundPlayer:
         except requests.RequestException as e:
             logger.error(f"Error selecting source for {self.name}: {str(e)}")
             return False, str(e)
+
+    def get_playlist(self) -> list:
+        url = "/Playlist"
+        try:
+            response = self.request(url)
+            root = ET.fromstring(response.text)
+            entries = []
+            for song in root.findall('song'):
+                title = song.findtext('title', '') or song.get('title', '')
+                artist = song.findtext('art', '') or song.get('art', '')
+                album = song.findtext('alb', '') or song.get('alb', '')
+                entries.append({
+                    'title': title.strip(),
+                    'artist': artist.strip(),
+                    'album': album.strip(),
+                })
+            return entries
+        except requests.RequestException as e:
+            logger.error(f"Error getting playlist: {e}")
+            return []
 
     def browse_path(self, *names: str) -> Tuple[bool, List['PlayerSource']]:
         """Navigate the browse hierarchy by matching item names at each level.

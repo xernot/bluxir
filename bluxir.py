@@ -88,9 +88,6 @@ class BlusoundCLI:
         height, width = stdscr.getmaxyx()
         # Top line
         stdscr.hline(0, 0, curses.ACS_HLINE, width)
-        brand = "music is my drug"
-        if width > len(brand) + 2:
-            stdscr.addstr(0, width - len(brand) - 2, brand)
         # Header
         header = view
         if self.active_player:
@@ -766,6 +763,8 @@ class BlusoundCLI:
         if player_host:
             try:
                 player = BlusoundPlayer(host_name=player_host, name=player_name or player_host)
+                if player_name:
+                    player.name = player_name
                 success, status = player.get_status()
                 if success:
                     self.active_player = player
@@ -793,7 +792,7 @@ class BlusoundCLI:
             elif self.source_selection_mode:
                 view = "Source Selection"
             else:
-                view = "Player Control"
+                view = "BluOS Player Control"
 
             self.draw_header(stdscr, view)
 

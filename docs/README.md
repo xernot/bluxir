@@ -1,19 +1,13 @@
 # About bluxir
 
+This is an comprehensive command-line interface (CLI) for bluOS streamers.
+
+I wrote it, because its incredible borring to switch to a mobile phone while 
+working just because you want to hear different sounds, written in python.
+
 This project is originaly written by @irrelative and published on github
 under https://github.com/irrelative/blucli. if you want the original software
-get it there.
-i forked it on feb 15th 2026 and made some major changes to the interface
-and the behavior of the controller. i used the api from the original project.
-its only for private usage. i just made it, because its incredible borring
-to switch to a mobile phone while working just because you want to hear different
-sounds. how ever.  its all free. use it how ever you want. no licence at all.
-
-credits again to @irrelative. i just forked it and added the features i need.
-this readme is mainly written by irrelative.
-
-meanwhile its a different project and has less similarity with the original blucli.
-
+get it there.  I forked it on feb 15th 2026 and extensivly extended the project.
 
 
 # Blusound CLI

@@ -33,13 +33,16 @@ bluxir/
   bluxir.py          Main application (UI, keyboard handling, main loop)
   player.py          Blusound player API wrapper, mDNS discovery, data models
   musicbrainz.py     External metadata (MusicBrainz, OpenAI, Wikipedia)
-  config.py          Configuration persistence (~/.blusoundcli.json)
+  config.py          Configuration module (reads both config files)
+  config.json        Project config (player settings, system prompt)
   requirements.txt   Python dependencies
   docs/
     DOCUMENTATION.md This file
     README.md        Project readme
     LICENSE          GPL v3 license
   logs/              Log files (created at runtime)
+
+~/.bluxir.json       Private config (API keys, not in repo)
 ```
 
 ### Log Files
@@ -170,7 +173,7 @@ Rate limiting enforces 1 request per second as required by the MusicBrainz API t
 
 When the track changes, a background thread sends the track title and artist to OpenAI's `gpt-4o-mini` model. A configurable system prompt controls what information is returned (e.g. year written, songwriter). The response is displayed in the "Track Info" section below the detail box.
 
-The API key and system prompt are stored in `~/.blusoundcli.json` under `openai_api_key` and `openai_system_prompt`.
+The API key is stored in `~/.bluxir.json` and the system prompt in `config.json` in the project root.
 
 Both MusicBrainz and OpenAI results are cached in memory for the duration of the session to avoid redundant API calls.
 
@@ -180,13 +183,16 @@ All external API calls (MusicBrainz, OpenAI) run in daemon threads to avoid bloc
 
 ## Configuration
 
-Config file: `~/.blusoundcli.json`
+Configuration is split into two files:
+
+### Project config: `config.json` (in project root)
+
+Contains player settings and OpenAI system prompt. Safe to commit to version control.
 
 ```json
 {
   "player_host": "192.168.86.21",
   "player_name": "Living Room",
-  "openai_api_key": "sk-...",
   "openai_system_prompt": "Always include the year the song was first written and who wrote it. Keep it short, max 3-4 sentences."
 }
 ```
@@ -195,8 +201,21 @@ Config file: `~/.blusoundcli.json`
 |---|---|
 | `player_host` | IP address of the Blusound player (skip discovery on startup) |
 | `player_name` | Friendly name of the player |
-| `openai_api_key` | OpenAI API key for track info feature |
 | `openai_system_prompt` | System prompt sent to OpenAI to control the style and content of track info responses |
+
+### Private config: `~/.bluxir.json` (in home directory)
+
+Contains sensitive data like API keys. Not part of the repository.
+
+```json
+{
+  "openai_api_key": "sk-..."
+}
+```
+
+| Key | Purpose |
+|---|---|
+| `openai_api_key` | OpenAI API key for track info feature |
 
 ## Dependencies
 

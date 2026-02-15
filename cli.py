@@ -10,6 +10,8 @@ from config import get_preference, set_preference
 import curses.textpad
 import signal
 import sys
+import threading
+from musicbrainz import get_album_info, get_track_wiki
 
 # Set up logging
 log_file = 'logs/cli.log'
@@ -70,6 +72,12 @@ class BlusoundCLI:
         self.active_search_key: Optional[str] = None
         self.search_source_name: str = ""
         self.playlist: list = []
+        self.mb_info: Optional[dict] = None
+        self.mb_album_key: str = ""
+        self.mb_loading: bool = False
+        self.wiki_text: Optional[str] = None
+        self.wiki_track_key: str = ""
+        self.wiki_loading: bool = False
 
     def set_message(self, message: str):
         if message:
@@ -88,6 +96,14 @@ class BlusoundCLI:
         if self.active_player:
             header += f" - {self.active_player.name}"
         stdscr.addstr(1, 2, header[:width - 4], curses.A_BOLD)
+        # Status and Volume on the right side of header line
+        if self.player_status and isinstance(self.player_status, PlayerStatus):
+            state_str = self.player_status.state.capitalize() if self.player_status.state else "-"
+            vol_bar = create_volume_bar(self.player_status.volume, width=12)
+            info_right = f"Status: {state_str}  Volume: {vol_bar} {self.player_status.volume}%"
+            info_x = width - len(info_right) - 2
+            if info_x > len(header) + 4:
+                stdscr.addstr(1, info_x, info_right)
         if self.header_message and time.time() - self.header_message_time < 2:
             msg_start = len(header) + 6
             max_msg_width = width - msg_start - 2
@@ -103,10 +119,48 @@ class BlusoundCLI:
                 if success:
                     self.player_status = status
                     self.playlist = self.active_player.get_playlist()
+                    self._check_mb_update()
                 else:
                     logger.error(f"Error updating player status: {status}")
             except requests.RequestException as e:
                 logger.error(f"Error updating player status: {e}")
+
+    def _check_mb_update(self):
+        if not self.player_status:
+            return
+        album_key = f"{self.player_status.artist}|{self.player_status.album}"
+        logger.info(f"MB check: album_key='{album_key}', current='{self.mb_album_key}'")
+        if album_key != self.mb_album_key:
+            self.mb_album_key = album_key
+            self.mb_info = None
+            self.mb_loading = True
+            logger.info("Starting MB fetch thread")
+            threading.Thread(target=self._fetch_mb_info, daemon=True).start()
+
+        track_key = f"{self.player_status.name}|{self.player_status.artist}"
+        if track_key != self.wiki_track_key:
+            self.wiki_track_key = track_key
+            self.wiki_text = None
+            self.wiki_loading = True
+            logger.info(f"Starting Wiki fetch thread for: {track_key}")
+            threading.Thread(target=self._fetch_wiki, daemon=True).start()
+
+    def _fetch_mb_info(self):
+        if self.player_status:
+            logger.info(f"Fetching MB info for: {self.player_status.artist} - {self.player_status.album}")
+            info = get_album_info(self.player_status.artist, self.player_status.album)
+            self.mb_info = info
+            self.mb_loading = False
+            logger.info(f"MB fetch done: {info}")
+
+    def _fetch_wiki(self):
+        if self.player_status:
+            title = f"{self.player_status.name} - {self.player_status.artist}"
+            logger.info(f"Fetching Wiki for track: {title}")
+            text = get_track_wiki(title)
+            self.wiki_text = text
+            self.wiki_loading = False
+            logger.info(f"Wiki fetch done: {'found' if text else 'not found'}")
 
     def display_player_selection(self, stdscr: curses.window):
         if self.selector_shortcuts_open:
@@ -215,29 +269,26 @@ class BlusoundCLI:
 
         # === Left side: Player info ===
         left_max = divider_x - 1
-        labels = ["Status", "Volume", "Now Playing", "Album", "Service", "Progress"]
+        labels = ["Now Playing", "Album", "Service", "Progress"]
         max_label_width = max(len(label) for label in labels)
 
         def left_text(row, col, text, *args):
             stdscr.addstr(row, col, text[:left_max - col], *args)
 
-        left_text(3, 2, f"{'Status:':<{max_label_width + 1}} {player_status.state}")
-        volume_bar = create_volume_bar(player_status.volume)
-        left_text(4, 2, f"{'Volume:':<{max_label_width + 1}} {volume_bar} {player_status.volume}%")
-        left_text(5, 2, f"{'Now Playing:':<{max_label_width + 1}} {player_status.name} - {player_status.artist}")
-        left_text(6, 2, f"{'Album:':<{max_label_width + 1}} {player_status.album}")
-        left_text(7, 2, f"{'Service:':<{max_label_width + 1}} {player_status.service}")
+        left_text(3, 2, f"{'Now Playing:':<{max_label_width + 1}} {player_status.name} - {player_status.artist}")
+        left_text(4, 2, f"{'Album:':<{max_label_width + 1}} {player_status.album}")
+        left_text(5, 2, f"{'Service:':<{max_label_width + 1}} {player_status.service}")
 
         if player_status.totlen > 0:
             progress = f"{format_time(player_status.secs)} / {format_time(player_status.totlen)}"
         else:
             progress = format_time(player_status.secs)
-        left_text(8, 2, f"{'Progress:':<{max_label_width + 1}} {progress}")
+        left_text(6, 2, f"{'Progress:':<{max_label_width + 1}} {progress}")
 
         # Horizontal separator (left side only)
-        stdscr.hline(9, 0, curses.ACS_HLINE, divider_x)
+        stdscr.hline(7, 0, curses.ACS_HLINE, divider_x)
         try:
-            stdscr.addch(9, divider_x, curses.ACS_RTEE)
+            stdscr.addch(7, divider_x, curses.ACS_RTEE)
         except curses.error:
             pass
 
@@ -249,32 +300,67 @@ class BlusoundCLI:
             ("dB Level", f"{player_status.db:.1f}" if player_status.db else "-"),
             ("Service", player_status.service_name or player_status.service or "-"),
         ]
-        repeat_map = {0: "Off", 1: "All", 2: "One"}
+        mb = self.mb_info or {}
         detail_right = [
             ("Track-Nr", str(player_status.song + 1)),
-            ("Shuffle", "On" if player_status.shuffle else "Off"),
-            ("Repeat", repeat_map.get(player_status.repeat, "Off")),
-            ("Mute", "On" if player_status.mute else "Off"),
+            ("Year", mb.get("year", "-")),
+            ("Label", mb.get("label", "-")),
+            ("Genre", mb.get("genre", "-")),
         ]
         dl = max(len(k) for k, _ in detail_left)
         dr = max(len(k) for k, _ in detail_right)
-        for i, ((lk, lv), (rk, rv)) in enumerate(zip(detail_left, detail_right)):
-            row = 10 + i
+        max_detail_rows = max(len(detail_left), len(detail_right))
+        for i in range(max_detail_rows):
+            row = 8 + i
             if row >= bottom_line:
                 break
-            stdscr.addstr(row, 2, f"{lk + ':':<{dl + 2}}", curses.A_DIM)
-            stdscr.addstr(row, 2 + dl + 2, lv[:sub_col2_x - dl - 4])
-            stdscr.addstr(row, sub_col2_x, f"{rk + ':':<{dr + 2}}", curses.A_DIM)
-            stdscr.addstr(row, sub_col2_x + dr + 2, rv[:left_max - sub_col2_x - dr])
+            if i < len(detail_left):
+                lk, lv = detail_left[i]
+                stdscr.addstr(row, 2, f"{lk + ':':<{dl + 2}}", curses.A_DIM)
+                stdscr.addstr(row, 2 + dl + 2, lv[:sub_col2_x - dl - 4])
+            if i < len(detail_right):
+                rk, rv = detail_right[i]
+                val_start = sub_col2_x + dr + 2
+                val_max = max(0, left_max - val_start)
+                stdscr.addstr(row, sub_col2_x, f"{rk + ':':<{dr + 2}}"[:left_max - sub_col2_x], curses.A_DIM)
+                if val_max > 0:
+                    stdscr.addstr(row, val_start, rv[:val_max])
 
         # Horizontal line under detail section (left side only)
-        detail_bottom = 10 + len(detail_left)
+        detail_bottom = 8 + max_detail_rows
         if detail_bottom < bottom_line:
             stdscr.hline(detail_bottom, 0, curses.ACS_HLINE, divider_x)
             try:
                 stdscr.addch(detail_bottom, divider_x, curses.ACS_RTEE)
             except curses.error:
                 pass
+
+        # Wikipedia summary below detail section
+        current_row = detail_bottom + 1
+        if current_row < bottom_line:
+            if self.wiki_loading:
+                current_row += 1
+                if current_row < bottom_line:
+                    left_text(current_row, 2, "Loading Wikipedia...", curses.A_DIM)
+            elif self.wiki_text:
+                current_row += 1  # blank line
+                if current_row < bottom_line:
+                    stdscr.addstr(current_row, 2, "Wikipedia:", curses.A_BOLD)
+                    current_row += 1
+                    wrap_width = left_max - 4
+                    words = self.wiki_text.split()
+                    line = ""
+                    for word in words:
+                        if current_row >= bottom_line:
+                            break
+                        if line and len(line) + 1 + len(word) > wrap_width:
+                            stdscr.addstr(current_row, 2, line[:wrap_width])
+                            current_row += 1
+                            line = word
+                        else:
+                            line = f"{line} {word}" if line else word
+                    if line and current_row < bottom_line:
+                        stdscr.addstr(current_row, 2, line[:wrap_width])
 
         # === Right side: Playlist ===
         right_start = divider_x + 2
@@ -677,6 +763,7 @@ class BlusoundCLI:
                     self.active_player = player
                     self.player_status = status
                     self.playlist = player.get_playlist()
+                    self._check_mb_update()
                     self.players = [player]
                     player_mode = True
             except Exception as e:

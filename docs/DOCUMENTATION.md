@@ -26,16 +26,21 @@ The project originated as a fork of [blucli](https://github.com/irrelative/blucl
         +---------------+------------------+
 ```
 
-### Files
+### Project Structure
 
-| File | Purpose |
-|---|---|
-| `bluxir.py` | Main application. Curses UI, keyboard handling, display rendering, main loop. |
-| `player.py` | Blusound player API wrapper. Handles all HTTP communication with the BluOS device, mDNS discovery, and data models (`PlayerStatus`, `PlayerSource`). |
-| `musicbrainz.py` | External metadata services. MusicBrainz album lookup, OpenAI track info, Wikipedia fallback. |
-| `config.py` | Configuration persistence. Reads/writes `~/.blusoundcli.json`. |
-| `requirements.txt` | Python dependencies. |
-| `LICENSE` | GPL v3 license. |
+```
+bluxir/
+  bluxir.py          Main application (UI, keyboard handling, main loop)
+  player.py          Blusound player API wrapper, mDNS discovery, data models
+  musicbrainz.py     External metadata (MusicBrainz, OpenAI, Wikipedia)
+  config.py          Configuration persistence (~/.blusoundcli.json)
+  requirements.txt   Python dependencies
+  docs/
+    DOCUMENTATION.md This file
+    README.md        Project readme
+    LICENSE          GPL v3 license
+  logs/              Log files (created at runtime)
+```
 
 ### Log Files
 

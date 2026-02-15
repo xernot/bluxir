@@ -129,6 +129,45 @@ def get_track_wiki(title):
     return None
 
 
+def get_track_info_ai(title, artist, api_key):
+    """Fetch track information from OpenAI."""
+    if not title or not api_key:
+        return None
+
+    cache_key = f"ai|{title}|{artist}"
+    if cache_key in _cache:
+        logger.info(f"AI cache hit for: {title} - {artist}")
+        return _cache[cache_key]
+
+    try:
+        prompt = f"Tell me about the song \"{title}\" by {artist}. Keep it short, max 3-4 sentences."
+        logger.info(f"OpenAI request: {prompt}")
+        response = requests.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": "gpt-4o-mini",
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 200,
+                "temperature": 0.7,
+            },
+            timeout=10,
+        )
+        response.raise_for_status()
+        data = response.json()
+        text = data["choices"][0]["message"]["content"].strip()
+        logger.info(f"OpenAI response: {len(text)} chars")
+        _cache[cache_key] = text
+        return text
+    except Exception as e:
+        logger.error(f"OpenAI error: {e}")
+        _cache[cache_key] = None
+        return None
+
+
 def get_album_info(artist, album):
     logger.info(f"get_album_info called: artist='{artist}', album='{album}'")
 

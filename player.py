@@ -132,9 +132,44 @@ class BlusoundPlayer:
             logger.error(f"Error capturing sources for {self.name}: {str(e)}")
             return []
 
+    def capture_all_sources(self, browse_key: Optional[str] = None) -> List[PlayerSource]:
+        """Fetch all pages of browse results by following nextKey pagination."""
+        all_sources = []
+        current_key = browse_key
+        while True:
+            url = "/Browse"
+            params = {"key": current_key} if current_key else None
+            try:
+                response = self.request(url, params)
+                root = ET.fromstring(response.text)
+                browse_search_key = root.get('searchKey')
+
+                for item in root.findall('item'):
+                    source = PlayerSource(
+                        text=item.get('text', ''),
+                        image=item.get('image', ''),
+                        browse_key=item.get('browseKey'),
+                        play_url=item.get('playURL'),
+                        input_type=item.get('inputType'),
+                        type=item.get('type', ''),
+                        search_key=browse_search_key,
+                    )
+                    all_sources.append(source)
+
+                next_key = root.get('nextKey')
+                logger.info(f"Fetched {len(all_sources)} sources so far, nextKey={next_key}")
+                if not next_key:
+                    break
+                current_key = next_key
+            except requests.RequestException as e:
+                logger.error(f"Error fetching all sources: {str(e)}")
+                break
+        logger.info(f"Total sources fetched: {len(all_sources)}")
+        return all_sources
+
     def get_nested_sources(self, source: PlayerSource) -> None:
         if source.browse_key:
-            nested_sources = self.capture_sources(source.browse_key)
+            nested_sources = self.capture_all_sources(source.browse_key)
             if nested_sources:
                 source.children = nested_sources
             else:
@@ -318,7 +353,7 @@ class BlusoundPlayer:
                 logger.info(f"browse_path: '{name}' not found at depth {depth}. Available: {[i.text for i in items]}")
                 return False, items
             current_key = match.browse_key
-        results = self.capture_sources(current_key)
+        results = self.capture_all_sources(current_key)
         return bool(results), results
 
     def search(self, search_key: str, search_string: str) -> List[PlayerSource]:

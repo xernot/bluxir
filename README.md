@@ -56,7 +56,7 @@ A basic CLI interface to control Blusound streamers.
 Run the script using:
 
 ```
-python cli.py
+python bluxir.py
 ```
 
 

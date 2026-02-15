@@ -11,10 +11,10 @@ import curses.textpad
 import signal
 import sys
 import threading
-from musicbrainz import get_album_info, get_track_wiki
+from musicbrainz import get_album_info, get_track_info_ai
 
 # Set up logging
-log_file = 'logs/cli.log'
+log_file = 'logs/bluxir.log'
 log_handler = RotatingFileHandler(log_file, maxBytes=1024*1024, backupCount=1)
 log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                                   datefmt='%Y-%m-%d %H:%M:%S')
@@ -88,7 +88,7 @@ class BlusoundCLI:
         height, width = stdscr.getmaxyx()
         # Top line
         stdscr.hline(0, 0, curses.ACS_HLINE, width)
-        brand = "BLUXIR - CLI"
+        brand = "music is my drug"
         if width > len(brand) + 2:
             stdscr.addstr(0, width - len(brand) - 2, brand)
         # Header
@@ -142,8 +142,8 @@ class BlusoundCLI:
             self.wiki_track_key = track_key
             self.wiki_text = None
             self.wiki_loading = True
-            logger.info(f"Starting Wiki fetch thread for: {track_key}")
-            threading.Thread(target=self._fetch_wiki, daemon=True).start()
+            logger.info(f"Starting AI fetch thread for: {track_key}")
+            threading.Thread(target=self._fetch_track_info, daemon=True).start()
 
     def _fetch_mb_info(self):
         if self.player_status:
@@ -153,14 +153,16 @@ class BlusoundCLI:
             self.mb_loading = False
             logger.info(f"MB fetch done: {info}")
 
-    def _fetch_wiki(self):
+    def _fetch_track_info(self):
         if self.player_status:
-            title = f"{self.player_status.name} - {self.player_status.artist}"
-            logger.info(f"Fetching Wiki for track: {title}")
-            text = get_track_wiki(title)
+            title = self.player_status.name
+            artist = self.player_status.artist
+            api_key = get_preference('openai_api_key')
+            logger.info(f"Fetching AI info for: {title} - {artist}")
+            text = get_track_info_ai(title, artist, api_key)
             self.wiki_text = text
             self.wiki_loading = False
-            logger.info(f"Wiki fetch done: {'found' if text else 'not found'}")
+            logger.info(f"AI fetch done: {'found' if text else 'not found'}")
 
     def display_player_selection(self, stdscr: curses.window):
         if self.selector_shortcuts_open:
@@ -240,7 +242,7 @@ class BlusoundCLI:
 
         # Split layout: left 60%, right 40% for playlist
         divider_x = width * 60 // 100
-        bottom_line = height - 2
+        bottom_line = height - 3
 
         # Draw vertical divider
         for row in range(3, bottom_line):
@@ -262,10 +264,15 @@ class BlusoundCLI:
             pass
 
         # Help text
-        stdscr.addstr(height - 1, 2, "(s) search  (i) select source  (?) help")
-        version = "Version v1.2"
+        stdscr.addstr(height - 2, 2, "(s) search  (f) favorites  (i) select source  (?) help")
+        version = "bluxir v2.0 - GPL"
         if width > len(version) + 2:
-            stdscr.addstr(height - 1, width - len(version) - 2, version)
+            stdscr.addstr(height - 2, width - len(version) - 2, version)
+        # Bottom horizontal line
+        try:
+            stdscr.hline(height - 1, 0, curses.ACS_HLINE, width)
+        except curses.error:
+            pass
 
         # === Left side: Player info ===
         left_max = divider_x - 1
@@ -335,17 +342,17 @@ class BlusoundCLI:
             except curses.error:
                 pass
 
-        # Wikipedia summary below detail section
+        # Track info below detail section
         current_row = detail_bottom + 1
         if current_row < bottom_line:
             if self.wiki_loading:
                 current_row += 1
                 if current_row < bottom_line:
-                    left_text(current_row, 2, "Loading Wikipedia...", curses.A_DIM)
+                    left_text(current_row, 2, "Loading track info...", curses.A_DIM)
             elif self.wiki_text:
                 current_row += 1  # blank line
                 if current_row < bottom_line:
-                    stdscr.addstr(current_row, 2, "Wikipedia:", curses.A_BOLD)
+                    stdscr.addstr(current_row, 2, "Track Info:", curses.A_BOLD)
                     current_row += 1
                     wrap_width = left_max - 4
                     words = self.wiki_text.split()

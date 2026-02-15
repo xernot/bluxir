@@ -305,7 +305,7 @@ class BlusoundCLI:
         detail_left = [
             ("Format", player_status.stream_format or "-"),
             ("Quality", "HR" if player_status.quality == 0 else str(player_status.quality)),
-            ("dB Level", f"{player_status.db:.1f}" if player_status.db else "-"),
+            ("dB Level", f"{player_status.db:.1f}" if player_status.db is not None else "-"),
             ("Service", player_status.service_name or player_status.service or "-"),
         ]
         mb = self.mb_info or {}

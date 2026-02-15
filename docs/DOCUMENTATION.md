@@ -168,9 +168,9 @@ Rate limiting enforces 1 request per second as required by the MusicBrainz API t
 
 ### OpenAI (Track Info)
 
-When the track changes, a background thread sends the track title and artist to OpenAI's `gpt-4o-mini` model with a prompt requesting a short 3-4 sentence description. The response is displayed in the "Track Info" section below the detail box.
+When the track changes, a background thread sends the track title and artist to OpenAI's `gpt-4o-mini` model. A configurable system prompt controls what information is returned (e.g. year written, songwriter). The response is displayed in the "Track Info" section below the detail box.
 
-The API key is stored in `~/.blusoundcli.json` under the `openai_api_key` field.
+The API key and system prompt are stored in `~/.blusoundcli.json` under `openai_api_key` and `openai_system_prompt`.
 
 Both MusicBrainz and OpenAI results are cached in memory for the duration of the session to avoid redundant API calls.
 
@@ -186,7 +186,8 @@ Config file: `~/.blusoundcli.json`
 {
   "player_host": "192.168.86.21",
   "player_name": "Living Room",
-  "openai_api_key": "sk-..."
+  "openai_api_key": "sk-...",
+  "openai_system_prompt": "Always include the year the song was first written and who wrote it. Keep it short, max 3-4 sentences."
 }
 ```
 
@@ -195,6 +196,7 @@ Config file: `~/.blusoundcli.json`
 | `player_host` | IP address of the Blusound player (skip discovery on startup) |
 | `player_name` | Friendly name of the player |
 | `openai_api_key` | OpenAI API key for track info feature |
+| `openai_system_prompt` | System prompt sent to OpenAI to control the style and content of track info responses |
 
 ## Dependencies
 
@@ -208,6 +210,7 @@ Config file: `~/.blusoundcli.json`
 
 1. The main loop runs with a 100ms timeout on keyboard input
 2. Every second, the local progress counter increments (client-side interpolation)
-3. Every 10 seconds, a full status refresh is fetched from the player via `/Status`
+3. Every 3 seconds, a full status refresh is fetched from the player via `/Status`
 4. On track/album change, background metadata fetches are triggered
-5. On any user action (play/pause, skip, volume), an immediate status refresh occurs
+5. On skip/back, a refresh is scheduled after ~1 second to allow the player to transition
+6. On other user actions (play/pause, volume), an immediate status refresh occurs

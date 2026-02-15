@@ -158,8 +158,9 @@ class BlusoundCLI:
             title = self.player_status.name
             artist = self.player_status.artist
             api_key = get_preference('openai_api_key')
+            system_prompt = get_preference('openai_system_prompt')
             logger.info(f"Fetching AI info for: {title} - {artist}")
-            text = get_track_info_ai(title, artist, api_key)
+            text = get_track_info_ai(title, artist, api_key, system_prompt)
             self.wiki_text = text
             self.wiki_loading = False
             logger.info(f"AI fetch done: {'found' if text else 'not found'}")
@@ -518,12 +519,12 @@ class BlusoundCLI:
         elif key == KEY_RIGHT and self.active_player:
             success, message = self.active_player.skip()
             if success:
-                self.update_player_status()
+                self.last_update_time = time.time() - 2
             self.set_message(message)
         elif key == KEY_LEFT and self.active_player:
             success, message = self.active_player.back()
             if success:
-                self.update_player_status()
+                self.last_update_time = time.time() - 2
             self.set_message(message)
         elif key == KEY_I:
             self.source_selection_mode = True
@@ -844,7 +845,7 @@ class BlusoundCLI:
                     if self.player_status.totlen > 0:
                         self.player_status.secs = min(self.player_status.secs, self.player_status.totlen)
                     self.last_progress_time = current_time
-            if self.active_player and current_time - self.last_update_time >= 10:
+            if self.active_player and current_time - self.last_update_time >= 3:
                 self.update_player_status()
                 self.last_update_time = current_time
                 self.last_progress_time = current_time

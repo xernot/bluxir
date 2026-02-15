@@ -129,7 +129,7 @@ def get_track_wiki(title):
     return None
 
 
-def get_track_info_ai(title, artist, api_key):
+def get_track_info_ai(title, artist, api_key, system_prompt=None):
     """Fetch track information from OpenAI."""
     if not title or not api_key:
         return None
@@ -140,8 +140,12 @@ def get_track_info_ai(title, artist, api_key):
         return _cache[cache_key]
 
     try:
-        prompt = f"Tell me about the song \"{title}\" by {artist}. Keep it short, max 3-4 sentences."
-        logger.info(f"OpenAI request: {prompt}")
+        user_prompt = f"Tell me about the song \"{title}\" by {artist}."
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": user_prompt})
+        logger.info(f"OpenAI request: system='{system_prompt}', user='{user_prompt}'")
         response = requests.post(
             "https://api.openai.com/v1/chat/completions",
             headers={
@@ -150,7 +154,7 @@ def get_track_info_ai(title, artist, api_key):
             },
             json={
                 "model": "gpt-4o-mini",
-                "messages": [{"role": "user", "content": prompt}],
+                "messages": messages,
                 "max_tokens": 200,
                 "temperature": 0.7,
             },

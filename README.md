@@ -6,7 +6,7 @@ get it there.
 i forked it on feb 15th 2026 and made some major changes to the interface
 and the behavior of the controller. i used the api from the original project.
 its only for private usage. i just made it, because its incredible borring
-to switch to a mobile phone while working just because you want to here different
+to switch to a mobile phone while working just because you want to hear different
 sounds. how ever.  its all free. use it how ever you want. no licence at all.
 
 credits again to irrelative. i just forked it and added the features i need.

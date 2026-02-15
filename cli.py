@@ -205,7 +205,6 @@ class BlusoundCLI:
         col2_x = width // 2
         detail_left = [
             ("Format", player_status.stream_format or "-"),
-            ("Quality", str(player_status.quality) if player_status.quality else "-"),
             ("dB Level", f"{player_status.db:.1f}" if player_status.db else "-"),
             ("Service", player_status.service_name or player_status.service or "-"),
         ]

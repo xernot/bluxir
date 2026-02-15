@@ -818,7 +818,18 @@ class BlusoundCLI:
             key = stdscr.getch()
 
             if key == ord('q'):
-                break
+                height, width = stdscr.getmaxyx()
+                footer_row = height - 2
+                stdscr.move(footer_row, 0)
+                stdscr.clrtoeol()
+                stdscr.addstr(footer_row, 2, "Quit bluxir? (y/n)", curses.A_BOLD)
+                stdscr.refresh()
+                stdscr.timeout(-1)
+                confirm = stdscr.getch()
+                stdscr.timeout(100)
+                if confirm in (ord('y'), ord('Y'), KEY_ENTER):
+                    break
+                continue
             elif not player_mode:
                 if self.selector_shortcuts_open:
                     if key != -1:

@@ -1,0 +1,6 @@
+.aider*
+venv/
+__pycache__/
+logs/
+.claude/
+*.swp

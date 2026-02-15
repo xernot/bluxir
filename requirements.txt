@@ -1,0 +1,3 @@
+zeroconf==0.135.*
+requests==2.*
+textual==0.81.*

@@ -18,7 +18,7 @@ meanwhile its a different project and has less similarity with the original bluc
 
 # Blusound CLI
 
-A basic CLI interface to control Blusound streamers.
+A comprehensive CLI interface to control Blusound streamers.
 
 ## Features
 
@@ -30,6 +30,9 @@ A basic CLI interface to control Blusound streamers.
 * Display of currently playing information
 * Input selection for each player
 * Detailed view of player status
+* Displays the current playlist and let you toggle
+* API call to musicbrainz for additional information about the track
+* openai API call to get textbased information about the track
 
 ## Requirements
 

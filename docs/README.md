@@ -9,9 +9,7 @@ This project is originaly written by @irrelative and published on github
 under https://github.com/irrelative/blucli. if you want the original software
 get it there.  I forked it on feb 15th 2026 and extensivly extended the project.
 
-
-* I built bluxir with extensive usage of claude-code (opus4.6) 
-* so if you find any code-quality issues blame it to anthropic :-)
+Extensive usage of claude-code (opus4.6) 
 
 
 # Blusound CLI
@@ -33,6 +31,9 @@ A comprehensive CLI interface to control Blusound streamers.
 * openai API call to get textbased information about the track
 
 ## Known Limitations
+* No Spotify Support. BluOS does not support it
+* Not tested local/private streaming-services
+
 
 
 

@@ -65,7 +65,7 @@ class PlayerStatus:
     mute: bool = False
     pid: int = 0
     prid: int = 0
-    quality: int = 0
+    quality: str = ''
     repeat: int = 0
     service_icon: str = ''
     service_name: str = ''
@@ -260,7 +260,7 @@ class BlusoundPlayer:
                 mute=safe_int(safe_find(root, 'mute')) == 1,
                 pid=safe_int(safe_find(root, 'pid')),
                 prid=safe_int(safe_find(root, 'prid')),
-                quality=safe_int(safe_find(root, 'quality')),
+                quality=safe_find(root, 'quality'),
                 repeat=safe_int(safe_find(root, 'repeat')),
                 service_icon=safe_find(root, 'serviceIcon'),
                 service_name=safe_find(root, 'serviceName'),

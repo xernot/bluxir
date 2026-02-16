@@ -100,6 +100,25 @@ class BlusoundCLI:
         self.wiki_track_key: str = ""
         self.wiki_loading: bool = False
 
+    def _derive_quality(self, stream_format: str) -> str:
+        if not stream_format:
+            return "-"
+        fmt = stream_format.upper()
+        if "MQA" in fmt:
+            return "MQA"
+        if "MP3" in fmt:
+            return "MP3"
+        # Parse bit depth and sample rate from formats like "FLAC 24/96"
+        import re
+        m = re.search(r'(\d+)/(\d+\.?\d*)', stream_format)
+        if m:
+            bit_depth = int(m.group(1))
+            sample_rate = float(m.group(2))
+            if bit_depth > 16 or sample_rate > 44.1:
+                return "Hi-Res"
+            return "CD-Quality"
+        return "-"
+
     def set_message(self, message: str):
         if message:
             self.header_message = message
@@ -322,7 +341,7 @@ class BlusoundCLI:
         sub_col2_x = 2 + (left_max // 2)
         detail_left = [
             ("Format", player_status.stream_format or "-"),
-            ("Quality", "HR" if player_status.quality == 0 else str(player_status.quality)),
+            ("Quality", self._derive_quality(player_status.stream_format)),
             ("dB Level", f"{player_status.db:.1f}" if player_status.db is not None else "-"),
             ("Service", player_status.service_name or player_status.service or "-"),
         ]

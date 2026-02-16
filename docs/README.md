@@ -31,10 +31,12 @@ A comprehensive CLI interface to control Blusound streamers.
 * openai API call to get textbased information about the track
 
 ## Known Limitations
+* It mainly works well for qobuz support
 * No Spotify Support. BluOS does not support it
 * Not tested local/private streaming-services
 * The information form MusicBrainz is sometimes wrong. It is used
   when no OPENAI_API_KEY is present.
+
 
 
 

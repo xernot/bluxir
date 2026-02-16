@@ -379,6 +379,58 @@ class BlusoundPlayer:
             logger.error(f"Error toggling favourite: {str(e)}")
             return False, str(e)
 
+    def get_queue_actions(self, source: PlayerSource) -> Dict[str, str]:
+        """Fetch queue actions (play now, add next, add last) from context menu."""
+        if not source.context_menu_key:
+            return {}
+
+        try:
+            response = self.request("/Browse", {"key": source.context_menu_key})
+            root = ET.fromstring(response.text)
+
+            action_map = {
+                "play now": "play_now",
+                "add next": "add_next",
+                "add last": "add_last",
+            }
+            actions = {}
+            for item in root.findall('item'):
+                text = item.get('text', '').lower()
+                action_url = item.get('actionURL')
+                if action_url:
+                    for menu_text, key in action_map.items():
+                        if menu_text in text:
+                            actions[key] = action_url
+            logger.info(f"Queue actions for '{source.text}': {list(actions.keys())}")
+            return actions
+        except requests.RequestException as e:
+            logger.error(f"Error fetching queue actions: {e}")
+            return {}
+
+    def save_playlist(self, name: str) -> Tuple[bool, str]:
+        """Save the current play queue as a named playlist."""
+        try:
+            response = self.request("/Save", {"name": name})
+            root = ET.fromstring(response.text)
+            entries = root.findtext("entries", "0")
+            return True, f"Saved '{name}' ({entries} tracks)"
+        except requests.RequestException as e:
+            logger.error(f"Error saving playlist: {e}")
+            return False, str(e)
+
+    def get_playlists(self) -> List[PlayerSource]:
+        """List all saved playlists."""
+        return self.capture_sources("playlists")
+
+    def delete_playlist(self, name: str) -> Tuple[bool, str]:
+        """Delete a saved playlist."""
+        try:
+            self.request("/Delete", {"name": name})
+            return True, f"Deleted '{name}'"
+        except requests.RequestException as e:
+            logger.error(f"Error deleting playlist: {e}")
+            return False, str(e)
+
     def get_playlist(self) -> list:
         url = "/Playlist"
         try:

@@ -55,6 +55,8 @@ KEY_RIGHT = curses.KEY_RIGHT
 KEY_LEFT = curses.KEY_LEFT
 KEY_S = ord('s')
 KEY_F = ord('f')
+KEY_W = ord('w')
+KEY_L = ord('l')
 
 def create_volume_bar(volume, width=20):
     filled = int(volume / 100 * width)
@@ -118,6 +120,45 @@ class BlusoundCLI:
                 return "Hi-Res"
             return "CD-Quality"
         return "-"
+
+    def _show_queue_dialog(self, stdscr: curses.window) -> Optional[str]:
+        height, width = stdscr.getmaxyx()
+        footer_row = height - 2
+        stdscr.move(footer_row, 0)
+        stdscr.clrtoeol()
+        stdscr.addstr(footer_row, 2, "(1) Play now  (2) Add next  (3) Add last  (ESC) Cancel", curses.A_BOLD)
+        stdscr.refresh()
+        stdscr.timeout(-1)
+        key = stdscr.getch()
+        stdscr.timeout(100)
+        if key == ord('1'):
+            return "play_now"
+        elif key == ord('2'):
+            return "add_next"
+        elif key == ord('3'):
+            return "add_last"
+        return None
+
+    def _execute_queue_action(self, source: PlayerSource, stdscr: curses.window) -> bool:
+        choice = self._show_queue_dialog(stdscr)
+        if not choice:
+            self.set_message("Cancelled")
+            return False
+
+        actions = self.active_player.get_queue_actions(source)
+        if choice not in actions:
+            self.set_message(f"Action not available for: {source.text}")
+            return False
+
+        try:
+            self.active_player.request(actions[choice])
+            labels = {"play_now": "Playing", "add_next": "Added next", "add_last": "Added to end"}
+            self.set_message(f"{labels[choice]}: {source.text}")
+            self.update_player_status()
+            return True
+        except Exception as e:
+            self.set_message(f"Error: {e}")
+            return False
 
     def set_message(self, message: str):
         if message:
@@ -302,7 +343,7 @@ class BlusoundCLI:
             pass
 
         # Help text
-        stdscr.addstr(height - 2, 2, "(s) search  (f) favorites  (i) select source  (?) help  (q) quit")
+        stdscr.addstr(height - 2, 2, "(s) search  (f) favorites  (l) playlists  (w) save playlist  (i) select source  (?) help  (q) quit")
         version = "bluxir v2.0"
         if width > len(version) + 2:
             stdscr.addstr(height - 2, width - len(version) - 2, version)
@@ -448,10 +489,13 @@ class BlusoundCLI:
         shortcuts = [
             ("UP/DOWN", "Adjust volume"),
             ("SPACE", "Play/Pause"),
+            ("ENTER", "Play now / Add next / Add last"),
             (">/<", "Skip/Previous track"),
             ("i", "Select input"),
             ("s", "Search"),
             ("f", "Qobuz favorites"),
+            ("l", "Load playlist"),
+            ("w", "Save playlist"),
             ("+/-", "Add/Remove favourite"),
             ("p", "Pretty print"),
             ("b", "Back to player list"),
@@ -597,6 +641,26 @@ class BlusoundCLI:
                     self.set_message("Navigate to find your favorites")
             else:
                 self.set_message("Qobuz not found in sources")
+        elif key == KEY_W and self.active_player:
+            height, width = stdscr.getmaxyx()
+            footer_row = height - 2
+            stdscr.move(footer_row, 0)
+            stdscr.clrtoeol()
+            name = self.get_input(stdscr, "Save playlist as: ")
+            if name:
+                success, message = self.active_player.save_playlist(name)
+                self.set_message(message)
+            else:
+                self.set_message("Cancelled")
+        elif key == KEY_L and self.active_player:
+            playlists = self.active_player.get_playlists()
+            if playlists:
+                self.source_selection_mode = True
+                self.current_sources = playlists
+                self.selected_source_index = [0]
+                self.set_message(f"Found {len(playlists)} playlists")
+            else:
+                self.set_message("No saved playlists")
         elif key == KEY_QUESTION:
             self.shortcuts_open = not self.shortcuts_open
         elif key == KEY_P:
@@ -765,7 +829,9 @@ class BlusoundCLI:
                 self.set_message(f"Cannot expand: {selected_source.text}")
         elif key == KEY_ENTER:
             selected_source = self.current_sources[self.selected_source_index[-1]]
-            if selected_source.play_url:
+            if selected_source.context_menu_key and selected_source.type != 'album':
+                self._execute_queue_action(selected_source, stdscr)
+            elif selected_source.play_url:
                 self.set_message(f"Playing: {selected_source.text}")
                 success, message = self.active_player.select_input(selected_source)
                 if success:
@@ -1061,7 +1127,9 @@ class BlusoundCLI:
                     self.set_message(f"Cannot expand: {selected.text}")
             elif key == KEY_ENTER and self.search_results:
                 selected = self.search_results[self.search_selected_index]
-                if selected.play_url:
+                if selected.context_menu_key and selected.type != 'album':
+                    self._execute_queue_action(selected, stdscr)
+                elif selected.play_url:
                     success, message = self.active_player.select_input(selected)
                     self.set_message(message)
                     if success:

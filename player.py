@@ -89,6 +89,7 @@ class PlayerSource:
     play_url: Optional[str]
     input_type: Optional[str]
     type: str
+    text2: str = ''
     search_key: Optional[str] = None
     children: List['PlayerSource'] = field(default_factory=list)
 
@@ -142,7 +143,8 @@ class BlusoundPlayer:
                     play_url=item.get('playURL'),
                     input_type=item.get('inputType'),
                     type=item.get('type', ''),
-                    search_key=browse_search_key  # Add the search_key to each source
+                    text2=item.get('text2', ''),
+                    search_key=browse_search_key,
                 )
                 sources.append(source)
             logger.info(f"Captured {len(sources)} sources for {self.name}")
@@ -171,6 +173,7 @@ class BlusoundPlayer:
                         play_url=item.get('playURL'),
                         input_type=item.get('inputType'),
                         type=item.get('type', ''),
+                        text2=item.get('text2', ''),
                         search_key=browse_search_key,
                     )
                     all_sources.append(source)
@@ -398,7 +401,8 @@ class BlusoundPlayer:
                             play_url=library_item.get('playURL'),
                             input_type=library_item.get('inputType'),
                             type=library_item.get('type', ''),
-                            search_key=library_root.get('searchKey')
+                            text2=library_item.get('text2', ''),
+                            search_key=library_root.get('searchKey'),
                         )
                         sources.append(source)
                 else:
@@ -409,7 +413,8 @@ class BlusoundPlayer:
                         play_url=item.get('playURL'),
                         input_type=item.get('inputType'),
                         type=item.get('type', ''),
-                        search_key=root.get('searchKey')
+                        text2=item.get('text2', ''),
+                        search_key=root.get('searchKey'),
                     )
                     sources.append(source)
             logger.info(f"Found {len(sources)} results for search '{search_string}' on {self.name}")

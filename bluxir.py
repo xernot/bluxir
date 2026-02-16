@@ -91,6 +91,8 @@ class BlusoundCLI:
         self.active_search_key: Optional[str] = None
         self.search_source_name: str = ""
         self.playlist: list = []
+        self.source_sort: str = 'original'
+        self.unsorted_sources: List[PlayerSource] = []
         self.mb_info: Optional[dict] = None
         self.mb_album_key: str = ""
         self.mb_loading: bool = False
@@ -446,7 +448,9 @@ class BlusoundCLI:
 
         stdscr.addstr(3, 2, "UP/DOWN: select, ENTER: play, RIGHT: expand, LEFT: back")
         stdscr.addstr(4, 2, "s: search, n: next page, p: previous page, b: back to player control")
-        stdscr.addstr(6, 2, "Select Source:")
+        stdscr.addstr(5, 2, "Sort: (t) title  (a) artist  (o) original")
+        sort_label = {"original": "Original", "title": "Title", "artist": "Artist"}.get(self.source_sort, "")
+        stdscr.addstr(7, 2, f"Select Source:  [sorted by {sort_label}]")
 
         if not self.current_sources and self.active_player:
             self.current_sources = self.active_player.sources
@@ -455,7 +459,7 @@ class BlusoundCLI:
             self.selected_source_index = [0]
 
         if not self.current_sources:
-            stdscr.addstr(7, 4, "No sources available.")
+            stdscr.addstr(8, 4, "No sources available.")
             return
 
         if self.selected_source_index[-1] >= len(self.current_sources):
@@ -475,7 +479,8 @@ class BlusoundCLI:
             prefix = ">" if i == self.selected_source_index[-1] else " "
             expand_indicator = "+" if source.browse_key else " "
             display_index = i - start_index
-            stdscr.addstr(7 + display_index, 4, f"{indent}{prefix} {expand_indicator} {source.text}")
+            label = f"{source.text} - {source.text2}" if source.text2 else source.text
+            stdscr.addstr(8 + display_index, 4, f"{indent}{prefix} {expand_indicator} {label}")
 
         if total_items > max_display_items:
             page_info = f"Page {current_page + 1}/{(total_items + max_display_items - 1) // max_display_items}"
@@ -667,6 +672,8 @@ class BlusoundCLI:
             self.source_selection_mode = False
             self.current_sources = []
             self.selected_source_index = [0]
+            self.source_sort = 'original'
+            self.unsorted_sources = []
             return False, self.selected_source_index
 
         if not self.selected_source_index:
@@ -766,6 +773,23 @@ class BlusoundCLI:
                 return False, self.selected_source_index
             else:
                 self.set_message("Search not available for this source")
+        elif key == ord('t'):
+            if not self.unsorted_sources:
+                self.unsorted_sources = list(self.current_sources)
+            self.current_sources.sort(key=lambda s: s.text.lower())
+            self.source_sort = 'title'
+            self.selected_source_index[-1] = 0
+        elif key == ord('a'):
+            if not self.unsorted_sources:
+                self.unsorted_sources = list(self.current_sources)
+            self.current_sources.sort(key=lambda s: (s.text2 or '').lower())
+            self.source_sort = 'artist'
+            self.selected_source_index[-1] = 0
+        elif key == ord('o'):
+            if self.unsorted_sources:
+                self.current_sources = list(self.unsorted_sources)
+            self.source_sort = 'original'
+            self.selected_source_index[-1] = 0
         return True, self.selected_source_index
 
     def main(self, stdscr: curses.window):
@@ -1025,7 +1049,8 @@ class BlusoundCLI:
             prefix = "+" if source.browse_key else " "
             if i == self.search_selected_index:
                 stdscr.attron(curses.color_pair(2))
-            stdscr.addstr(6 + display_i, 4, f"{prefix} {source.text}")
+            label = f"{source.text} - {source.text2}" if source.text2 else source.text
+            stdscr.addstr(6 + display_i, 4, f"{prefix} {label}")
             if i == self.search_selected_index:
                 stdscr.attroff(curses.color_pair(2))
 

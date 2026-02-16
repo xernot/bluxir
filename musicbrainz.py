@@ -216,6 +216,99 @@ def get_track_info_ai(title, artist, api_key, system_prompt=None):
         return None
 
 
+def get_combined_info(title, artist, album, api_key, system_prompt=None):
+    """Fetch album metadata and track info in a single OpenAI call.
+
+    Returns a dict with keys: year, label, genre, track_info.
+    Falls back to MusicBrainz for album metadata if no API key is set.
+    """
+    cache_key = f"combined|{title}|{artist}|{album}"
+    cached = _cache_get(cache_key)
+    if cached is not None or _cache_has(cache_key):
+        logger.info(f"Combined cache hit for: {title} - {artist} - {album}")
+        return cached
+
+    if not api_key:
+        # No OpenAI key — fall back to MusicBrainz for album info only
+        logger.info("No API key, falling back to MusicBrainz")
+        mb = get_album_info(artist, album)
+        result = {
+            "year": mb.get("year", "-") if mb else "-",
+            "label": mb.get("label", "-") if mb else "-",
+            "genre": mb.get("genre", "-") if mb else "-",
+            "track_info": None,
+        }
+        _cache_set(cache_key, result)
+        return result
+
+    try:
+        import json as _json
+
+        user_prompt = (
+            f'Song: "{title}" by {artist}, from the album "{album}".\n\n'
+            f"Return a JSON object with these exact keys:\n"
+            f'- "year": the original release year of the album (4-digit string, or "-" if unknown)\n'
+            f'- "label": the record label that released the album (or "-" if unknown)\n'
+            f'- "genre": the genre(s) of this album, comma-separated (or "-" if unknown)\n'
+            f'- "track_info": a short paragraph (2-4 sentences) about this specific song\n\n'
+            f"Respond ONLY with the JSON object, no markdown, no explanation."
+        )
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": user_prompt})
+        logger.info(f"Combined AI request for: {title} - {artist} - {album}")
+
+        response = requests.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": "gpt-4o-mini",
+                "messages": messages,
+                "max_tokens": 300,
+                "temperature": 0.3,
+            },
+            timeout=15,
+        )
+        response.raise_for_status()
+        data = response.json()
+        raw = data["choices"][0]["message"]["content"].strip()
+        logger.info(f"Combined AI raw response: {raw[:500]}")
+
+        # Strip markdown code fences if present
+        if raw.startswith("```"):
+            raw = raw.split("\n", 1)[1] if "\n" in raw else raw[3:]
+            if raw.endswith("```"):
+                raw = raw[:-3]
+            raw = raw.strip()
+
+        result = _json.loads(raw)
+        # Ensure all expected keys exist
+        for key in ("year", "label", "genre", "track_info"):
+            if key not in result:
+                result[key] = "-" if key != "track_info" else None
+
+        logger.info(f"Combined AI parsed: year={result.get('year')}, label={result.get('label')}, genre={result.get('genre')}")
+        _cache_set(cache_key, result)
+        return result
+    except Exception as e:
+        logger.error(f"Combined AI error: {e}")
+        # Fall back to MusicBrainz on OpenAI failure
+        logger.info("Falling back to MusicBrainz after AI failure")
+        mb = get_album_info(artist, album)
+        result = {
+            "year": mb.get("year", "-") if mb else "-",
+            "label": mb.get("label", "-") if mb else "-",
+            "genre": mb.get("genre", "-") if mb else "-",
+            "track_info": None,
+        }
+        _cache_set(cache_key, result)
+        return result
+
+
 def get_album_info(artist, album):
     logger.info(f"get_album_info called: artist='{artist}', album='{album}'")
 

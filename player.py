@@ -165,11 +165,12 @@ class BlusoundPlayer:
             response = self.request(url, params)
             root = ET.fromstring(response.text)
             sources = []
-            
+
             # Capture the search_key from the <browse> element
             browse_search_key = root.get('searchKey')
-            
-            for item in root.findall('item'):
+
+            # Find items both at root level and inside <category> elements
+            for item in root.iter('item'):
                 sources.append(self._make_source(item, browse_search_key))
             logger.info(f"Captured {len(sources)} sources for {self.name}")
             return sources
@@ -189,7 +190,7 @@ class BlusoundPlayer:
                 root = ET.fromstring(response.text)
                 browse_search_key = root.get('searchKey')
 
-                for item in root.findall('item'):
+                for item in root.iter('item'):
                     all_sources.append(self._make_source(item, browse_search_key))
 
                 next_key = root.get('nextKey')
@@ -516,13 +517,13 @@ class BlusoundPlayer:
             response = self.request(url, params)
             root = ET.fromstring(response.text)
             sources = []
-            for item in root.findall('item'):
+            for item in root.iter('item'):
                 text = item.get('text', '').strip()
                 browse_key = item.get('browseKey')
                 if text == "Library" and browse_key:
                     library_response = self.request(url, {'key': browse_key})
                     library_root = ET.fromstring(library_response.text)
-                    for library_item in library_root.findall('item'):
+                    for library_item in library_root.iter('item'):
                         sources.append(self._make_source(library_item, library_root.get('searchKey')))
                 else:
                     sources.append(self._make_source(item, root.get('searchKey')))

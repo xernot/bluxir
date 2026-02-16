@@ -32,7 +32,7 @@ import signal
 import sys
 import threading
 import io
-from musicbrainz import get_album_info, get_track_info_ai
+from musicbrainz import get_album_info, get_track_info_ai, get_combined_info
 from PIL import Image
 
 _QUALITY_RE = re.compile(r'(\d+)/(\d+\.?\d*)')
@@ -101,7 +101,6 @@ class BlusoundCLI:
         self.source_sort: str = 'original'
         self.unsorted_sources: List[PlayerSource] = []
         self.mb_info: Optional[dict] = None
-        self.mb_album_key: str = ""
         self.mb_loading: bool = False
         self.wiki_text: Optional[str] = None
         self.wiki_track_key: str = ""
@@ -216,38 +215,47 @@ class BlusoundCLI:
     def _check_mb_update(self):
         if not self.player_status:
             return
-        album_key = f"{self.player_status.artist}|{self.player_status.album}"
-        logger.info(f"MB check: album_key='{album_key}', current='{self.mb_album_key}'")
-        if album_key != self.mb_album_key:
-            self.mb_album_key = album_key
-            self.mb_info = None
-            self.mb_loading = True
-            logger.info("Starting MB fetch thread")
-            threading.Thread(target=self._fetch_mb_info, daemon=True).start()
 
-            cover_key = self.player_status.image or ""
-            if cover_key != self.cover_art_key:
-                self.cover_art_key = cover_key
-                self.cover_art = None
-                self.cover_art_loading = True
-                threading.Thread(target=self._fetch_cover_art, daemon=True).start()
+        cover_key = self.player_status.image or ""
+        if cover_key != self.cover_art_key:
+            self.cover_art_key = cover_key
+            self.cover_art = None
+            self.cover_art_loading = True
+            threading.Thread(target=self._fetch_cover_art, daemon=True).start()
 
-        track_key = f"{self.player_status.name}|{self.player_status.artist}"
+        track_key = f"{self.player_status.name}|{self.player_status.artist}|{self.player_status.album}"
         if track_key != self.wiki_track_key:
             self.wiki_track_key = track_key
+            self.mb_info = None
+            self.mb_loading = True
             self.wiki_text = None
             self.wiki_loading = True
-            logger.info(f"Starting AI fetch thread for: {track_key}")
-            threading.Thread(target=self._fetch_track_info, daemon=True).start()
+            logger.info(f"Starting combined info fetch for: {track_key}")
+            threading.Thread(target=self._fetch_combined_info, daemon=True).start()
 
-    def _fetch_mb_info(self):
+    def _fetch_combined_info(self):
         if self.player_status:
-            logger.info(f"Fetching MB info for: {self.player_status.artist} - {self.player_status.album}")
-            info = get_album_info(self.player_status.artist, self.player_status.album)
+            title = self.player_status.name
+            artist = self.player_status.artist
+            album = self.player_status.album
+            api_key = get_preference('openai_api_key')
+            system_prompt = get_preference('openai_system_prompt')
+            logger.info(f"Fetching combined info for: {title} - {artist} - {album}")
+            result = get_combined_info(title, artist, album, api_key, system_prompt)
             with self._data_lock:
-                self.mb_info = info
+                if result:
+                    self.mb_info = {
+                        "year": result.get("year", "-"),
+                        "label": result.get("label", "-"),
+                        "genre": result.get("genre", "-"),
+                    }
+                    self.wiki_text = result.get("track_info")
+                else:
+                    self.mb_info = None
+                    self.wiki_text = None
                 self.mb_loading = False
-            logger.info(f"MB fetch done: {info}")
+                self.wiki_loading = False
+            logger.info(f"Combined info done: {result}")
 
     def _rgb_to_256(self, r, g, b):
         """Map RGB (0-255) to the nearest xterm-256 color index."""
@@ -329,19 +337,6 @@ class BlusoundCLI:
                 self._cover_art_raw = None
         with self._data_lock:
             self.cover_art_loading = False
-
-    def _fetch_track_info(self):
-        if self.player_status:
-            title = self.player_status.name
-            artist = self.player_status.artist
-            api_key = get_preference('openai_api_key')
-            system_prompt = get_preference('openai_system_prompt')
-            logger.info(f"Fetching AI info for: {title} - {artist}")
-            text = get_track_info_ai(title, artist, api_key, system_prompt)
-            with self._data_lock:
-                self.wiki_text = text
-                self.wiki_loading = False
-            logger.info(f"AI fetch done: {'found' if text else 'not found'}")
 
     def display_player_selection(self, stdscr: curses.window):
         if self.selector_shortcuts_open:

@@ -30,7 +30,9 @@ import curses.textpad
 import signal
 import sys
 import threading
+import io
 from musicbrainz import get_album_info, get_track_info_ai
+from PIL import Image
 
 # Set up logging
 log_file = 'logs/bluxir.log'
@@ -101,6 +103,11 @@ class BlusoundCLI:
         self.wiki_text: Optional[str] = None
         self.wiki_track_key: str = ""
         self.wiki_loading: bool = False
+        self.cover_art: Optional[bool] = None
+        self._cover_art_raw: Optional[bytes] = None
+        self.cover_art_key: str = ""
+        self.cover_art_loading: bool = False
+        self.show_cover_art: bool = False
 
     def _derive_quality(self, stream_format: str) -> str:
         if not stream_format:
@@ -215,6 +222,13 @@ class BlusoundCLI:
             logger.info("Starting MB fetch thread")
             threading.Thread(target=self._fetch_mb_info, daemon=True).start()
 
+            cover_key = self.player_status.image or ""
+            if cover_key != self.cover_art_key:
+                self.cover_art_key = cover_key
+                self.cover_art = None
+                self.cover_art_loading = True
+                threading.Thread(target=self._fetch_cover_art, daemon=True).start()
+
         track_key = f"{self.player_status.name}|{self.player_status.artist}"
         if track_key != self.wiki_track_key:
             self.wiki_track_key = track_key
@@ -230,6 +244,83 @@ class BlusoundCLI:
             self.mb_info = info
             self.mb_loading = False
             logger.info(f"MB fetch done: {info}")
+
+    def _rgb_to_256(self, r, g, b):
+        """Map RGB (0-255) to the nearest xterm-256 color index."""
+        # Check if close to grayscale
+        if abs(r - g) < 10 and abs(g - b) < 10:
+            gray = (r + g + b) // 3
+            if gray < 8:
+                return 16
+            if gray > 248:
+                return 231
+            return round((gray - 8) / 247 * 23) + 232
+        # Map to 6x6x6 color cube (indices 16-231)
+        ri = round(r / 255 * 5)
+        gi = round(g / 255 * 5)
+        bi = round(b / 255 * 5)
+        return 16 + 36 * ri + 6 * gi + bi
+
+    def _init_cover_colors(self, stdscr, image_data: bytes, width: int, height: int):
+        """Render cover art using half-block chars with 256 colors.
+        Each terminal row represents 2 pixel rows using the ▀ character
+        with foreground=top pixel color, background=bottom pixel color."""
+        img = Image.open(io.BytesIO(image_data)).convert('RGB')
+        # Album covers are square; terminal chars are ~2:1 tall:wide
+        # So for a square result, pixel height = width * 2 (2 pixel rows per char row)
+        pixel_h = height * 2
+        img = img.resize((width, pixel_h), Image.LANCZOS)
+        pixels = list(img.getdata())
+
+        # Build color pair cache, starting from pair 10 to avoid conflicts
+        pair_map = {}
+        next_pair = [10]
+
+        def get_pair(fg_idx, bg_idx):
+            key = (fg_idx, bg_idx)
+            if key not in pair_map:
+                pid = next_pair[0]
+                next_pair[0] += 1
+                try:
+                    curses.init_pair(pid, fg_idx, bg_idx)
+                except curses.error:
+                    return 0
+                pair_map[key] = pid
+            return pair_map[key]
+
+        result = []
+        for row in range(height):
+            top_y = row * 2
+            bot_y = top_y + 1
+            cells = []
+            for col in range(width):
+                tr, tg, tb = pixels[top_y * width + col]
+                br, bg_, bb = pixels[bot_y * width + col]
+                fg = self._rgb_to_256(tr, tg, tb)
+                bg = self._rgb_to_256(br, bg_, bb)
+                pair_id = get_pair(fg, bg)
+                cells.append(("▀", curses.color_pair(pair_id)))
+            result.append(cells)
+        return result
+
+    def _fetch_cover_art(self):
+        if not self.player_status or not self.player_status.image:
+            self.cover_art = None
+            self.cover_art_loading = False
+            return
+        try:
+            url = f"{self.active_player.base_url}{self.player_status.image}"
+            logger.info(f"Fetching cover art: {url}")
+            response = requests.get(url, timeout=5, allow_redirects=True)
+            response.raise_for_status()
+            self._cover_art_raw = response.content
+            self.cover_art = True  # signal that raw data is ready
+            logger.info(f"Cover art downloaded: {len(response.content)} bytes")
+        except Exception as e:
+            logger.error(f"Error fetching cover art: {e}")
+            self.cover_art = None
+            self._cover_art_raw = None
+        self.cover_art_loading = False
 
     def _fetch_track_info(self):
         if self.player_status:
@@ -343,7 +434,7 @@ class BlusoundCLI:
             pass
 
         # Help text
-        stdscr.addstr(height - 2, 2, "(s) search  (f) favorites  (l) playlists  (w) save playlist  (i) select source  (?) help  (q) quit")
+        stdscr.addstr(height - 2, 2, "(s) search  (f) favorites  (l) playlists  (w) save  (c) cover  (i) source  (?) help  (q) quit")
         version = "bluxir v2.0"
         if width > len(version) + 2:
             stdscr.addstr(height - 2, width - len(version) - 2, version)
@@ -378,75 +469,97 @@ class BlusoundCLI:
         except curses.error:
             pass
 
-        # Detail section (two sub-columns within left half)
-        sub_col2_x = 2 + (left_max // 2)
-        detail_left = [
-            ("Format", player_status.stream_format or "-"),
-            ("Quality", self._derive_quality(player_status.stream_format)),
-            ("dB Level", f"{player_status.db:.1f}" if player_status.db is not None else "-"),
-            ("Service", player_status.service_name or player_status.service or "-"),
-        ]
-        mb = self.mb_info or {}
-        detail_right = [
-            ("Track-Nr", str(player_status.song + 1)),
-            ("Year", mb.get("year", "-")),
-            ("Label", mb.get("label", "-")),
-            ("Genre", mb.get("genre", "-")),
-        ]
-        dl = max(len(k) for k, _ in detail_left)
-        dr = max(len(k) for k, _ in detail_right)
-        max_detail_rows = max(len(detail_left), len(detail_right))
-        for i in range(max_detail_rows):
-            row = 8 + i
-            if row >= bottom_line:
-                break
-            if i < len(detail_left):
-                lk, lv = detail_left[i]
-                stdscr.addstr(row, 2, f"{lk + ':':<{dl + 2}}", curses.A_DIM)
-                stdscr.addstr(row, 2 + dl + 2, lv[:sub_col2_x - dl - 4])
-            if i < len(detail_right):
-                rk, rv = detail_right[i]
-                val_start = sub_col2_x + dr + 2
-                val_max = max(0, left_max - val_start)
-                stdscr.addstr(row, sub_col2_x, f"{rk + ':':<{dr + 2}}"[:left_max - sub_col2_x], curses.A_DIM)
-                if val_max > 0:
-                    stdscr.addstr(row, val_start, rv[:val_max])
+        if self.show_cover_art:
+            # === Cover art mode ===
+            art_start_row = 8
+            available_rows = bottom_line - art_start_row
+            available_cols = left_max - 4
+            if self.cover_art_loading:
+                left_text(art_start_row, 2, "Loading cover art...", curses.A_DIM)
+            elif self.cover_art and hasattr(self, '_cover_art_raw') and self._cover_art_raw:
+                art_cells = self._init_cover_colors(stdscr, self._cover_art_raw, available_cols, available_rows)
+                for i, cells in enumerate(art_cells):
+                    row = art_start_row + i
+                    if row >= bottom_line:
+                        break
+                    for col, (ch, attr) in enumerate(cells):
+                        try:
+                            stdscr.addstr(row, 2 + col, ch, attr)
+                        except curses.error:
+                            pass
+            else:
+                left_text(art_start_row, 2, "No cover art available.", curses.A_DIM)
+        else:
+            # === Detail + Track info mode ===
+            # Detail section (two sub-columns within left half)
+            sub_col2_x = 2 + (left_max // 2)
+            detail_left = [
+                ("Format", player_status.stream_format or "-"),
+                ("Quality", self._derive_quality(player_status.stream_format)),
+                ("dB Level", f"{player_status.db:.1f}" if player_status.db is not None else "-"),
+                ("Service", player_status.service_name or player_status.service or "-"),
+            ]
+            mb = self.mb_info or {}
+            detail_right = [
+                ("Track-Nr", str(player_status.song + 1)),
+                ("Year", mb.get("year", "-")),
+                ("Label", mb.get("label", "-")),
+                ("Genre", mb.get("genre", "-")),
+            ]
+            dl = max(len(k) for k, _ in detail_left)
+            dr = max(len(k) for k, _ in detail_right)
+            max_detail_rows = max(len(detail_left), len(detail_right))
+            for i in range(max_detail_rows):
+                row = 8 + i
+                if row >= bottom_line:
+                    break
+                if i < len(detail_left):
+                    lk, lv = detail_left[i]
+                    stdscr.addstr(row, 2, f"{lk + ':':<{dl + 2}}", curses.A_DIM)
+                    stdscr.addstr(row, 2 + dl + 2, lv[:sub_col2_x - dl - 4])
+                if i < len(detail_right):
+                    rk, rv = detail_right[i]
+                    val_start = sub_col2_x + dr + 2
+                    val_max = max(0, left_max - val_start)
+                    stdscr.addstr(row, sub_col2_x, f"{rk + ':':<{dr + 2}}"[:left_max - sub_col2_x], curses.A_DIM)
+                    if val_max > 0:
+                        stdscr.addstr(row, val_start, rv[:val_max])
 
-        # Horizontal line under detail section (left side only)
-        detail_bottom = 8 + max_detail_rows
-        if detail_bottom < bottom_line:
-            stdscr.hline(detail_bottom, 0, curses.ACS_HLINE, divider_x)
-            try:
-                stdscr.addch(detail_bottom, divider_x, curses.ACS_RTEE)
-            except curses.error:
-                pass
+            # Horizontal line under detail section (left side only)
+            detail_bottom = 8 + max_detail_rows
+            if detail_bottom < bottom_line:
+                stdscr.hline(detail_bottom, 0, curses.ACS_HLINE, divider_x)
+                try:
+                    stdscr.addch(detail_bottom, divider_x, curses.ACS_RTEE)
+                except curses.error:
+                    pass
 
-        # Track info below detail section
-        current_row = detail_bottom + 1
-        if current_row < bottom_line:
-            if self.wiki_loading:
-                current_row += 1
-                if current_row < bottom_line:
-                    left_text(current_row, 2, "Loading track info...", curses.A_DIM)
-            elif self.wiki_text:
-                current_row += 1  # blank line
-                if current_row < bottom_line:
-                    stdscr.addstr(current_row, 2, "Track Info:", curses.A_BOLD)
+            # Track info below detail section
+            current_row = detail_bottom + 1
+            if current_row < bottom_line:
+                if self.wiki_loading:
                     current_row += 1
-                    wrap_width = left_max - 4
-                    words = self.wiki_text.split()
-                    line = ""
-                    for word in words:
-                        if current_row >= bottom_line:
-                            break
-                        if line and len(line) + 1 + len(word) > wrap_width:
+                    if current_row < bottom_line:
+                        left_text(current_row, 2, "Loading track info...", curses.A_DIM)
+                elif self.wiki_text:
+                    current_row += 1  # blank line
+                    if current_row < bottom_line:
+                        stdscr.addstr(current_row, 2, "Track Info:", curses.A_BOLD)
+                        current_row += 1
+                        wrap_width = left_max - 4
+                        words = self.wiki_text.split()
+                        line = ""
+                        for word in words:
+                            if current_row >= bottom_line:
+                                break
+                            if line and len(line) + 1 + len(word) > wrap_width:
+                                stdscr.addstr(current_row, 2, line[:wrap_width])
+                                current_row += 1
+                                line = word
+                            else:
+                                line = f"{line} {word}" if line else word
+                        if line and current_row < bottom_line:
                             stdscr.addstr(current_row, 2, line[:wrap_width])
-                            current_row += 1
-                            line = word
-                        else:
-                            line = f"{line} {word}" if line else word
-                    if line and current_row < bottom_line:
-                        stdscr.addstr(current_row, 2, line[:wrap_width])
 
         # === Right side: Playlist ===
         right_start = divider_x + 2
@@ -496,6 +609,7 @@ class BlusoundCLI:
             ("f", "Qobuz favorites"),
             ("l", "Load playlist"),
             ("w", "Save playlist"),
+            ("c", "Toggle cover art"),
             ("+/-", "Add/Remove favourite"),
             ("p", "Pretty print"),
             ("b", "Back to player list"),
@@ -661,6 +775,8 @@ class BlusoundCLI:
                 self.set_message(f"Found {len(playlists)} playlists")
             else:
                 self.set_message("No saved playlists")
+        elif key == ord('c') and self.active_player:
+            self.show_cover_art = not self.show_cover_art
         elif key == KEY_QUESTION:
             self.shortcuts_open = not self.shortcuts_open
         elif key == KEY_P:
@@ -929,6 +1045,8 @@ class BlusoundCLI:
     def main(self, stdscr: curses.window):
         stdscr.erase()
         curses.curs_set(0)
+        curses.start_color()
+        curses.use_default_colors()
         curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
 
         player_mode: bool = False

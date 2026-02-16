@@ -10,6 +10,10 @@ under https://github.com/irrelative/blucli. if you want the original software
 get it there.  I forked it on feb 15th 2026 and extensivly extended the project.
 
 
+*I built bluxir with extensive usage of claude-code (opus4.6) 
+*so if you find any code-quality issues blame it to anthropic :-)
+
+
 # Blusound CLI
 
 A comprehensive CLI interface to control Blusound streamers.
@@ -27,6 +31,10 @@ A comprehensive CLI interface to control Blusound streamers.
 * Displays the current playlist and let you toggle
 * API call to musicbrainz for additional information about the track
 * openai API call to get textbased information about the track
+
+## Known Limitations
+
+
 
 ## Requirements
 

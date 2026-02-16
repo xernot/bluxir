@@ -28,7 +28,6 @@ from zeroconf import ServiceBrowser, ServiceListener, Zeroconf
 from typing import List, Dict, Tuple, Optional, Union
 from dataclasses import dataclass, field
 import os
-import xml.etree.ElementTree as ET
 
 # Ensure logs directory exists
 os.makedirs('logs', exist_ok=True)
@@ -80,6 +79,9 @@ class PlayerStatus:
     title3: str = ''
     totlen: int = 0
     secs: int = 0
+    albumid: str = ''
+    artistid: str = ''
+    is_favourite: bool = False
 
 @dataclass
 class PlayerSource:
@@ -94,6 +96,20 @@ class PlayerSource:
     is_favourite: bool = False
     search_key: Optional[str] = None
     children: List['PlayerSource'] = field(default_factory=list)
+
+def _safe_find(element, tag, default=''):
+    """Safely find an XML element's text, returning default if not found."""
+    found = element.find(tag)
+    return found.text if found is not None else default
+
+
+def _safe_int(value, default=0):
+    """Safely convert a value to int, returning default on failure."""
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return default
+
 
 class BlusoundPlayer:
     def __init__(self, host_name, name):
@@ -118,13 +134,29 @@ class BlusoundPlayer:
 
     def request(self, url: str, params: Optional[Dict] = None) -> requests.Response:
         full_url = f"{self.base_url}{url}"
-        logger.info(f"Sending request to: {full_url}")
-        logger.info(f"Request params: {params}")
-        response = requests.get(full_url, params=params)
-        logger.info(f"Response status code: {response.status_code}")
-        logger.info(f"Response content: {response.text}")
+        logger.debug(f"Sending request to: {full_url}")
+        logger.debug(f"Request params: {params}")
+        response = requests.get(full_url, params=params, timeout=5)
+        logger.debug(f"Response status code: {response.status_code}")
+        logger.debug(f"Response content: {response.text[:500]}")
         response.raise_for_status()
         return response
+
+    @staticmethod
+    def _make_source(item, search_key=None) -> PlayerSource:
+        """Create a PlayerSource from an XML item element."""
+        return PlayerSource(
+            text=item.get('text', '').strip(),
+            image=item.get('image', ''),
+            browse_key=item.get('browseKey'),
+            play_url=item.get('playURL'),
+            input_type=item.get('inputType'),
+            type=item.get('type', ''),
+            text2=item.get('text2', ''),
+            context_menu_key=item.get('contextMenuKey'),
+            is_favourite=item.get('isFavourite') == 'true',
+            search_key=search_key,
+        )
 
     def capture_sources(self, browse_key: Optional[str] = None) -> List[PlayerSource]:
         url = "/Browse"
@@ -138,19 +170,7 @@ class BlusoundPlayer:
             browse_search_key = root.get('searchKey')
             
             for item in root.findall('item'):
-                source = PlayerSource(
-                    text=item.get('text', ''),
-                    image=item.get('image', ''),
-                    browse_key=item.get('browseKey'),
-                    play_url=item.get('playURL'),
-                    input_type=item.get('inputType'),
-                    type=item.get('type', ''),
-                    text2=item.get('text2', ''),
-                    context_menu_key=item.get('contextMenuKey'),
-                    is_favourite=item.get('isFavourite') == 'true',
-                    search_key=browse_search_key,
-                )
-                sources.append(source)
+                sources.append(self._make_source(item, browse_search_key))
             logger.info(f"Captured {len(sources)} sources for {self.name}")
             return sources
         except requests.RequestException as e:
@@ -170,19 +190,7 @@ class BlusoundPlayer:
                 browse_search_key = root.get('searchKey')
 
                 for item in root.findall('item'):
-                    source = PlayerSource(
-                        text=item.get('text', ''),
-                        image=item.get('image', ''),
-                        browse_key=item.get('browseKey'),
-                        play_url=item.get('playURL'),
-                        input_type=item.get('inputType'),
-                        type=item.get('type', ''),
-                        text2=item.get('text2', ''),
-                        context_menu_key=item.get('contextMenuKey'),
-                        is_favourite=item.get('isFavourite') == 'true',
-                        search_key=browse_search_key,
-                    )
-                    all_sources.append(source)
+                    all_sources.append(self._make_source(item, browse_search_key))
 
                 next_key = root.get('nextKey')
                 logger.info(f"Fetched {len(all_sources)} sources so far, nextKey={next_key}")
@@ -229,52 +237,45 @@ class BlusoundPlayer:
             response = self.request(url, params)
             root = ET.fromstring(response.text)
             
-            def safe_find(element, tag, default=''):
-                found = element.find(tag)
-                return found.text if found is not None else default
-
-            def safe_int(value, default=0):
-                try:
-                    return int(value)
-                except (ValueError, TypeError):
-                    return default
-
             status = PlayerStatus(
                 etag=root.get('etag', ''),
-                album=safe_find(root, 'album'),
-                artist=safe_find(root, 'artist'),
-                name=safe_find(root, 'title1'),
-                state=safe_find(root, 'state'),
-                volume=safe_int(safe_find(root, 'volume')),
-                service=safe_find(root, 'service'),
-                inputId=safe_find(root, 'inputId'),
-                can_move_playback=safe_find(root, 'canMovePlayback') == 'true',
-                can_seek=safe_int(safe_find(root, 'canSeek')) == 1,
-                cursor=safe_int(safe_find(root, 'cursor')),
-                db=float(safe_find(root, 'db', '0')),
-                fn=safe_find(root, 'fn'),
-                image=safe_find(root, 'image'),
-                indexing=safe_int(safe_find(root, 'indexing')),
-                mid=safe_int(safe_find(root, 'mid')),
-                mode=safe_int(safe_find(root, 'mode')),
-                mute=safe_int(safe_find(root, 'mute')) == 1,
-                pid=safe_int(safe_find(root, 'pid')),
-                prid=safe_int(safe_find(root, 'prid')),
-                quality=safe_find(root, 'quality'),
-                repeat=safe_int(safe_find(root, 'repeat')),
-                service_icon=safe_find(root, 'serviceIcon'),
-                service_name=safe_find(root, 'serviceName'),
-                shuffle=safe_int(safe_find(root, 'shuffle')) == 1,
-                sid=safe_int(safe_find(root, 'sid')),
-                sleep=safe_find(root, 'sleep'),
-                song=safe_int(safe_find(root, 'song')),
-                stream_format=safe_find(root, 'streamFormat'),
-                sync_stat=safe_int(safe_find(root, 'syncStat')),
-                title1=safe_find(root, 'title1'),
-                title2=safe_find(root, 'title2'),
-                title3=safe_find(root, 'title3'),
-                totlen=safe_int(safe_find(root, 'totlen')),
-                secs=safe_int(safe_find(root, 'secs'))
+                album=_safe_find(root, 'album'),
+                artist=_safe_find(root, 'artist'),
+                name=_safe_find(root, 'title1'),
+                state=_safe_find(root, 'state'),
+                volume=_safe_int(_safe_find(root, 'volume')),
+                service=_safe_find(root, 'service'),
+                inputId=_safe_find(root, 'inputId'),
+                can_move_playback=_safe_find(root, 'canMovePlayback') == 'true',
+                can_seek=_safe_int(_safe_find(root, 'canSeek')) == 1,
+                cursor=_safe_int(_safe_find(root, 'cursor')),
+                db=float(_safe_find(root, 'db', '0')),
+                fn=_safe_find(root, 'fn'),
+                image=_safe_find(root, 'image'),
+                indexing=_safe_int(_safe_find(root, 'indexing')),
+                mid=_safe_int(_safe_find(root, 'mid')),
+                mode=_safe_int(_safe_find(root, 'mode')),
+                mute=_safe_int(_safe_find(root, 'mute')) == 1,
+                pid=_safe_int(_safe_find(root, 'pid')),
+                prid=_safe_int(_safe_find(root, 'prid')),
+                quality=_safe_find(root, 'quality'),
+                repeat=_safe_int(_safe_find(root, 'repeat')),
+                service_icon=_safe_find(root, 'serviceIcon'),
+                service_name=_safe_find(root, 'serviceName'),
+                shuffle=_safe_int(_safe_find(root, 'shuffle')) == 1,
+                sid=_safe_int(_safe_find(root, 'sid')),
+                sleep=_safe_find(root, 'sleep'),
+                song=_safe_int(_safe_find(root, 'song')),
+                stream_format=_safe_find(root, 'streamFormat'),
+                sync_stat=_safe_int(_safe_find(root, 'syncStat')),
+                title1=_safe_find(root, 'title1'),
+                title2=_safe_find(root, 'title2'),
+                title3=_safe_find(root, 'title3'),
+                totlen=_safe_int(_safe_find(root, 'totlen')),
+                secs=_safe_int(_safe_find(root, 'secs')),
+                albumid=_safe_find(root, 'albumid'),
+                artistid=_safe_find(root, 'artistid'),
+                is_favourite=_safe_find(root, 'isFavourite') == '1',
             )
             logger.info(f"Status for {self.name}: {status}")
             return True, status
@@ -377,6 +378,40 @@ class BlusoundPlayer:
             return False, f"'Favourite' not found in context menu"
         except requests.RequestException as e:
             logger.error(f"Error toggling favourite: {str(e)}")
+            return False, str(e)
+
+    def add_album_favourite(self, status: PlayerStatus) -> Tuple[bool, str]:
+        """Add the currently playing album to favourites using the API."""
+        if not status.albumid or not status.service:
+            return False, "No album info available"
+        try:
+            self.request("/AddFavourite", {
+                "albumid": status.albumid,
+                "service": status.service,
+            })
+            return True, f"Added to favourites: {status.album}"
+        except requests.RequestException as e:
+            logger.error(f"Error adding favourite: {e}")
+            return False, str(e)
+
+    def remove_album_favourite(self, status: PlayerStatus) -> Tuple[bool, str]:
+        """Remove the currently playing album from favourites via context menu."""
+        if not status.albumid or not status.service or not status.artistid:
+            return False, "No album info available"
+        from urllib.parse import quote
+        cm_key = f"{status.service}:CM/{status.service}-Album?albumid={status.albumid}&artist={quote(status.artist)}&artistid={status.artistid}"
+        try:
+            response = self.request("/Browse", {"key": cm_key})
+            root = ET.fromstring(response.text)
+            for item in root.findall('item'):
+                text = item.get('text', '')
+                action_url = item.get('actionURL')
+                if 'favourite' in text.lower() and action_url:
+                    self.request(action_url)
+                    return True, f"Removed from favourites: {status.album}"
+            return False, "Favourite action not found in context menu"
+        except requests.RequestException as e:
+            logger.error(f"Error removing favourite: {e}")
             return False, str(e)
 
     def get_queue_actions(self, source: PlayerSource) -> Dict[str, str]:
@@ -485,37 +520,12 @@ class BlusoundPlayer:
                 text = item.get('text', '').strip()
                 browse_key = item.get('browseKey')
                 if text == "Library" and browse_key:
-                    # Follow up with a second request for Library search
                     library_response = self.request(url, {'key': browse_key})
                     library_root = ET.fromstring(library_response.text)
                     for library_item in library_root.findall('item'):
-                        source = PlayerSource(
-                            text=library_item.get('text', '').strip(),
-                            image=library_item.get('image', ''),
-                            browse_key=library_item.get('browseKey'),
-                            play_url=library_item.get('playURL'),
-                            input_type=library_item.get('inputType'),
-                            type=library_item.get('type', ''),
-                            text2=library_item.get('text2', ''),
-                            context_menu_key=library_item.get('contextMenuKey'),
-                            is_favourite=library_item.get('isFavourite') == 'true',
-                            search_key=library_root.get('searchKey'),
-                        )
-                        sources.append(source)
+                        sources.append(self._make_source(library_item, library_root.get('searchKey')))
                 else:
-                    source = PlayerSource(
-                        text=text,
-                        image=item.get('image', ''),
-                        browse_key=browse_key,
-                        play_url=item.get('playURL'),
-                        input_type=item.get('inputType'),
-                        type=item.get('type', ''),
-                        text2=item.get('text2', ''),
-                        context_menu_key=item.get('contextMenuKey'),
-                        is_favourite=item.get('isFavourite') == 'true',
-                        search_key=root.get('searchKey'),
-                    )
-                    sources.append(source)
+                    sources.append(self._make_source(item, root.get('searchKey')))
             logger.info(f"Found {len(sources)} results for search '{search_string}' on {self.name}")
             return sources
         except requests.RequestException as e:

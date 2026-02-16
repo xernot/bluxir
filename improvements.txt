@@ -1,0 +1,129 @@
+BLUXIR CODE REVIEW - Improvement Notes
+=======================================
+
+Reviewed: bluxir.py, player.py, musicbrainz.py, config.py
+
+
+1. THREAD SAFETY (HIGH)
+------------------------
+- mb_info, _cover_art_raw, wiki_text, cover_art_loading, mb_loading, wiki_loading
+  are all written in daemon threads and read in the main (curses) thread with no
+  synchronization. A threading.Lock should protect shared mutable state.
+  Affected: bluxir.py ~lines 240-245, 306-323, 325-335, 479+
+
+- musicbrainz.py: global _cache dict and _last_request_time are accessed from
+  multiple threads without a lock.
+  Affected: musicbrainz.py ~lines 37-38
+
+
+2. COLOR PAIR LIMIT (MEDIUM)
+-----------------------------
+- _init_cover_colors creates unlimited curses color pairs (starting at 10,
+  incrementing forever). Most terminals support 256 pairs; some support more
+  but it's not guaranteed. Should cap at curses.COLOR_PAIRS and reuse or
+  degrade gracefully.
+  Affected: bluxir.py ~lines 275-304
+
+
+3. NO REQUEST TIMEOUT IN player.py (MEDIUM)
+---------------------------------------------
+- player.py request() has no timeout on requests.get(). A dead network will
+  hang the app forever. Add timeout=5 (or similar).
+  Affected: player.py ~lines 119-127
+
+
+4. COVER ART RENDERING ERROR HANDLING (MEDIUM)
+------------------------------------------------
+- If _cover_art_raw contains corrupt/invalid image data, _init_cover_colors
+  will throw an unhandled exception inside the curses render loop. Wrap in
+  try/except and show a fallback message.
+  Affected: bluxir.py ~lines 479-489
+
+- The hasattr(self, '_cover_art_raw') check is redundant since it's set in
+  __init__. Can simplify to: elif self.cover_art and self._cover_art_raw:
+
+
+5. REGEX COMPILED EVERY CALL (LOW-MEDIUM)
+-------------------------------------------
+- _derive_quality() does `import re` and re.search() with a raw pattern on
+  every call. Compile once at module level.
+  Affected: bluxir.py ~lines 121-122
+
+
+6. TEXT WRAPPING REPEATED EVERY FRAME (LOW-MEDIUM)
+----------------------------------------------------
+- wiki_text.split() + word-wrap loop runs on every render cycle. Should cache
+  the wrapped result and only recompute when wiki_text or width changes.
+  Affected: bluxir.py ~lines 549-562
+
+
+7. UNBOUNDED CACHE IN musicbrainz.py (MEDIUM)
+-----------------------------------------------
+- _cache dict grows forever. For a long-running app this is a slow memory
+  leak. Use an OrderedDict with a max size, or functools.lru_cache.
+  Affected: musicbrainz.py ~line 37
+
+
+8. DUPLICATE PlayerSource CREATION (LOW-MEDIUM)
+-------------------------------------------------
+- PlayerSource objects are constructed identically in 4 places in player.py:
+  capture_sources(), capture_all_sources(), and twice in search().
+  Extract a _make_player_source(item) helper.
+  Affected: player.py ~lines 140-154, 173-185, 492-504, 506-518
+
+
+9. DUPLICATE FAVORITE CONFIRM LOGIC (LOW)
+-------------------------------------------
+- Add/remove favorite confirmation prompts appear ~3 times with near-identical
+  code. Extract a _confirm_action(stdscr, prompt) -> bool helper.
+  Affected: bluxir.py ~lines 995-1042, 1265-1284
+
+
+10. PIL IMAGE NOT EXPLICITLY CLOSED (LOW)
+-------------------------------------------
+- _init_cover_colors opens a PIL Image but never calls .close(). Use a
+  try/finally or context manager.
+  Affected: bluxir.py ~line 268
+
+
+11. TERMINAL RESIZE NOT HANDLED (LOW-MEDIUM)
+----------------------------------------------
+- No SIGWINCH handling. Resizing the terminal mid-session can corrupt display.
+  Could check getmaxyx() each loop iteration and erase on size change.
+  Affected: bluxir.py main loop ~lines 1080-1156
+
+
+12. VERBOSE LOGGING IN player.py (LOW)
+----------------------------------------
+- Full response.text is logged at INFO level for every request. This bloats
+  log files fast. Change to DEBUG or truncate.
+  Affected: player.py ~lines 121-125
+
+
+13. HARDCODED "Library" STRING MATCH (LOW-MEDIUM)
+---------------------------------------------------
+- player.py search() checks `if text == "Library"` to decide whether to
+  recurse into a browse key. Brittle if the player uses different labels.
+  Affected: player.py ~line 487
+
+
+14. MAGIC NUMBERS (LOW)
+-------------------------
+- Various hardcoded values: volume bar width=20, port 11000, panel split
+  60%/40%, rate limit 1.0s. Define as module-level constants.
+
+
+15. MISSING re IMPORT AT MODULE LEVEL (LOW)
+---------------------------------------------
+- `import re` is inside _derive_quality() instead of at the top of the file.
+  Affected: bluxir.py ~line 121
+
+
+PRIORITY ORDER
+==============
+1. Thread safety (#1) - can cause data corruption / crashes
+2. Request timeout (#3) - can hang the entire app
+3. Color pair limit (#2) - crashes on complex cover art
+4. Cover art error handling (#4) - unhandled exceptions in render loop
+5. Unbounded cache (#7) - slow memory leak
+6. Everything else is quality-of-life / cleanup

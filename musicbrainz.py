@@ -21,6 +21,8 @@ import requests
 import logging
 import time
 import os
+import threading
+from collections import OrderedDict
 from logging.handlers import RotatingFileHandler
 
 os.makedirs('logs', exist_ok=True)
@@ -34,17 +36,38 @@ logger.addHandler(log_handler)
 MUSICBRAINZ_API = "https://musicbrainz.org/ws/2"
 USER_AGENT = "bluxir/1.2 (https://github.com/xernot/bluxir)"
 
-_cache = {}
+_MAX_CACHE_SIZE = 256
+_cache = OrderedDict()
+_cache_lock = threading.Lock()
 _last_request_time = 0
+_rate_lock = threading.Lock()
+
+
+def _cache_get(key):
+    with _cache_lock:
+        return _cache.get(key)
+
+
+def _cache_set(key, value):
+    with _cache_lock:
+        _cache[key] = value
+        if len(_cache) > _MAX_CACHE_SIZE:
+            _cache.popitem(last=False)
+
+
+def _cache_has(key):
+    with _cache_lock:
+        return key in _cache
 
 
 def _rate_limit():
     global _last_request_time
-    now = time.time()
-    elapsed = now - _last_request_time
-    if elapsed < 1.0:
-        time.sleep(1.0 - elapsed)
-    _last_request_time = time.time()
+    with _rate_lock:
+        now = time.time()
+        elapsed = now - _last_request_time
+        if elapsed < 1.0:
+            time.sleep(1.0 - elapsed)
+        _last_request_time = time.time()
 
 
 def _match_score(release, artist, album):
@@ -114,9 +137,10 @@ def get_track_wiki(title):
 
     title = title.strip()
     cache_key = f"wiki|{title}"
-    if cache_key in _cache:
+    cached = _cache_get(cache_key)
+    if cached is not None or _cache_has(cache_key):
         logger.info(f"Wiki cache hit for: {title}")
-        return _cache[cache_key]
+        return cached
 
     from urllib.parse import quote
     encoded = quote(title, safe="")
@@ -139,12 +163,12 @@ def get_track_wiki(title):
             extract = data.get("extract", "")
             if extract:
                 logger.info(f"Found on {lang}.wikipedia.org: {len(extract)} chars")
-                _cache[cache_key] = extract
+                _cache_set(cache_key, extract)
                 return extract
         except Exception as e:
             logger.error(f"Wikipedia error ({lang}): {e}")
 
-    _cache[cache_key] = None
+    _cache_set(cache_key, None)
     return None
 
 
@@ -154,9 +178,10 @@ def get_track_info_ai(title, artist, api_key, system_prompt=None):
         return None
 
     cache_key = f"ai|{title}|{artist}"
-    if cache_key in _cache:
+    cached = _cache_get(cache_key)
+    if cached is not None or _cache_has(cache_key):
         logger.info(f"AI cache hit for: {title} - {artist}")
-        return _cache[cache_key]
+        return cached
 
     try:
         user_prompt = f"Tell me about the song \"{title}\" by {artist}."
@@ -183,11 +208,11 @@ def get_track_info_ai(title, artist, api_key, system_prompt=None):
         data = response.json()
         text = data["choices"][0]["message"]["content"].strip()
         logger.info(f"OpenAI response: {len(text)} chars")
-        _cache[cache_key] = text
+        _cache_set(cache_key, text)
         return text
     except Exception as e:
         logger.error(f"OpenAI error: {e}")
-        _cache[cache_key] = None
+        _cache_set(cache_key, None)
         return None
 
 
@@ -199,9 +224,10 @@ def get_album_info(artist, album):
         return None
 
     cache_key = f"{artist}|{album}"
-    if cache_key in _cache:
+    cached = _cache_get(cache_key)
+    if cached is not None or _cache_has(cache_key):
         logger.info(f"Cache hit for: {cache_key}")
-        return _cache[cache_key]
+        return cached
 
     headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
 
@@ -239,7 +265,7 @@ def get_album_info(artist, album):
 
         if not best_release:
             logger.info("No matching release found")
-            _cache[cache_key] = None
+            _cache_set(cache_key, None)
             return None
 
         release = best_release
@@ -285,9 +311,9 @@ def get_album_info(artist, album):
                 logger.error(f"Error fetching release-group details: {e}")
 
         logger.info(f"Final info: {info}")
-        _cache[cache_key] = info
+        _cache_set(cache_key, info)
         return info
     except Exception as e:
         logger.error(f"MusicBrainz error: {e}")
-        _cache[cache_key] = None
+        _cache_set(cache_key, None)
         return None

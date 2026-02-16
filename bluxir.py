@@ -19,6 +19,7 @@
 
 import curses
 import time
+import re
 import requests
 from typing import List, Optional, Tuple
 from player import BlusoundPlayer, PlayerStatus, PlayerSource, threaded_discover
@@ -33,6 +34,8 @@ import threading
 import io
 from musicbrainz import get_album_info, get_track_info_ai
 from PIL import Image
+
+_QUALITY_RE = re.compile(r'(\d+)/(\d+\.?\d*)')
 
 # Set up logging
 log_file = 'logs/bluxir.log'
@@ -108,6 +111,7 @@ class BlusoundCLI:
         self.cover_art_key: str = ""
         self.cover_art_loading: bool = False
         self.show_cover_art: bool = False
+        self._data_lock = threading.Lock()
 
     def _derive_quality(self, stream_format: str) -> str:
         if not stream_format:
@@ -118,8 +122,7 @@ class BlusoundCLI:
         if "MP3" in fmt:
             return "MP3"
         # Parse bit depth and sample rate from formats like "FLAC 24/96"
-        import re
-        m = re.search(r'(\d+)/(\d+\.?\d*)', stream_format)
+        m = _QUALITY_RE.search(stream_format)
         if m:
             bit_depth = int(m.group(1))
             sample_rate = float(m.group(2))
@@ -241,8 +244,9 @@ class BlusoundCLI:
         if self.player_status:
             logger.info(f"Fetching MB info for: {self.player_status.artist} - {self.player_status.album}")
             info = get_album_info(self.player_status.artist, self.player_status.album)
-            self.mb_info = info
-            self.mb_loading = False
+            with self._data_lock:
+                self.mb_info = info
+                self.mb_loading = False
             logger.info(f"MB fetch done: {info}")
 
     def _rgb_to_256(self, r, g, b):
@@ -265,62 +269,66 @@ class BlusoundCLI:
         """Render cover art using half-block chars with 256 colors.
         Each terminal row represents 2 pixel rows using the ▀ character
         with foreground=top pixel color, background=bottom pixel color."""
+        max_pairs = curses.COLOR_PAIRS - 10 if hasattr(curses, 'COLOR_PAIRS') else 246
         img = Image.open(io.BytesIO(image_data)).convert('RGB')
-        # Album covers are square; terminal chars are ~2:1 tall:wide
-        # So for a square result, pixel height = width * 2 (2 pixel rows per char row)
-        pixel_h = height * 2
-        img = img.resize((width, pixel_h), Image.LANCZOS)
-        pixels = list(img.getdata())
+        try:
+            pixel_h = height * 2
+            img = img.resize((width, pixel_h), Image.LANCZOS)
+            pixels = list(img.getdata())
 
-        # Build color pair cache, starting from pair 10 to avoid conflicts
-        pair_map = {}
-        next_pair = [10]
+            pair_map = {}
+            next_pair = 10
 
-        def get_pair(fg_idx, bg_idx):
-            key = (fg_idx, bg_idx)
-            if key not in pair_map:
-                pid = next_pair[0]
-                next_pair[0] += 1
-                try:
-                    curses.init_pair(pid, fg_idx, bg_idx)
-                except curses.error:
-                    return 0
-                pair_map[key] = pid
-            return pair_map[key]
-
-        result = []
-        for row in range(height):
-            top_y = row * 2
-            bot_y = top_y + 1
-            cells = []
-            for col in range(width):
-                tr, tg, tb = pixels[top_y * width + col]
-                br, bg_, bb = pixels[bot_y * width + col]
-                fg = self._rgb_to_256(tr, tg, tb)
-                bg = self._rgb_to_256(br, bg_, bb)
-                pair_id = get_pair(fg, bg)
-                cells.append(("▀", curses.color_pair(pair_id)))
-            result.append(cells)
-        return result
+            result = []
+            for row in range(height):
+                top_y = row * 2
+                bot_y = top_y + 1
+                cells = []
+                for col in range(width):
+                    tr, tg, tb = pixels[top_y * width + col]
+                    br, bg_, bb = pixels[bot_y * width + col]
+                    fg = self._rgb_to_256(tr, tg, tb)
+                    bg = self._rgb_to_256(br, bg_, bb)
+                    key = (fg, bg)
+                    if key not in pair_map:
+                        if next_pair >= max_pairs:
+                            pair_map[key] = 0
+                        else:
+                            try:
+                                curses.init_pair(next_pair, fg, bg)
+                            except curses.error:
+                                pair_map[key] = 0
+                            else:
+                                pair_map[key] = next_pair
+                                next_pair += 1
+                    cells.append(("▀", curses.color_pair(pair_map[key])))
+                result.append(cells)
+            return result
+        finally:
+            img.close()
 
     def _fetch_cover_art(self):
         if not self.player_status or not self.player_status.image:
-            self.cover_art = None
-            self.cover_art_loading = False
+            with self._data_lock:
+                self.cover_art = None
+                self.cover_art_loading = False
             return
         try:
             url = f"{self.active_player.base_url}{self.player_status.image}"
             logger.info(f"Fetching cover art: {url}")
             response = requests.get(url, timeout=5, allow_redirects=True)
             response.raise_for_status()
-            self._cover_art_raw = response.content
-            self.cover_art = True  # signal that raw data is ready
+            with self._data_lock:
+                self._cover_art_raw = response.content
+                self.cover_art = True
             logger.info(f"Cover art downloaded: {len(response.content)} bytes")
         except Exception as e:
             logger.error(f"Error fetching cover art: {e}")
-            self.cover_art = None
-            self._cover_art_raw = None
-        self.cover_art_loading = False
+            with self._data_lock:
+                self.cover_art = None
+                self._cover_art_raw = None
+        with self._data_lock:
+            self.cover_art_loading = False
 
     def _fetch_track_info(self):
         if self.player_status:
@@ -330,8 +338,9 @@ class BlusoundCLI:
             system_prompt = get_preference('openai_system_prompt')
             logger.info(f"Fetching AI info for: {title} - {artist}")
             text = get_track_info_ai(title, artist, api_key, system_prompt)
-            self.wiki_text = text
-            self.wiki_loading = False
+            with self._data_lock:
+                self.wiki_text = text
+                self.wiki_loading = False
             logger.info(f"AI fetch done: {'found' if text else 'not found'}")
 
     def display_player_selection(self, stdscr: curses.window):
@@ -406,6 +415,23 @@ class BlusoundCLI:
         elif self.active_player and isinstance(self.player_status, PlayerStatus):
             self.display_summary_view(stdscr)
 
+    def _confirm_prompt(self, stdscr, prompt: str) -> bool:
+        """Show a y/n confirmation prompt on the footer line."""
+        height, width = stdscr.getmaxyx()
+        footer_row = height - 2
+        stdscr.move(footer_row, 0)
+        stdscr.clrtoeol()
+        stdscr.addstr(footer_row, 2, prompt, curses.A_BOLD)
+        stdscr.refresh()
+        stdscr.timeout(-1)
+        confirm = stdscr.getch()
+        stdscr.timeout(100)
+        return confirm in (ord('y'), ord('Y'))
+
+    def _left_text(self, stdscr, left_max, row, col, text, *args):
+        """Write text truncated to the left panel boundary."""
+        stdscr.addstr(row, col, text[:left_max - col], *args)
+
     def display_summary_view(self, stdscr: curses.window):
         player_status = self.player_status
         height, width = stdscr.getmaxyx()
@@ -434,7 +460,7 @@ class BlusoundCLI:
             pass
 
         # Help text
-        stdscr.addstr(height - 2, 2, "(s) search  (f) favorites  (l) playlists  (w) save  (c) cover  (i) source  (?) help  (q) quit")
+        stdscr.addstr(height - 2, 2, "(s) search  (f) fav  (l) playlists  (w) save  (c) cover  (+/-) fav  (i) source  (?) help  (q) quit")
         version = "bluxir v2.0"
         if width > len(version) + 2:
             stdscr.addstr(height - 2, width - len(version) - 2, version)
@@ -449,18 +475,15 @@ class BlusoundCLI:
         labels = ["Now Playing", "Album", "Service", "Progress"]
         max_label_width = max(len(label) for label in labels)
 
-        def left_text(row, col, text, *args):
-            stdscr.addstr(row, col, text[:left_max - col], *args)
-
-        left_text(3, 2, f"{'Now Playing:':<{max_label_width + 1}} {player_status.name} - {player_status.artist}")
-        left_text(4, 2, f"{'Album:':<{max_label_width + 1}} {player_status.album}")
-        left_text(5, 2, f"{'Service:':<{max_label_width + 1}} {player_status.service}")
+        self._left_text(stdscr, left_max, 3, 2, f"{'Now Playing:':<{max_label_width + 1}} {player_status.name} - {player_status.artist}")
+        self._left_text(stdscr, left_max, 4, 2, f"{'Album:':<{max_label_width + 1}} {player_status.album}")
+        self._left_text(stdscr, left_max, 5, 2, f"{'Service:':<{max_label_width + 1}} {player_status.service}")
 
         if player_status.totlen > 0:
             progress = f"{format_time(player_status.secs)} / {format_time(player_status.totlen)}"
         else:
             progress = format_time(player_status.secs)
-        left_text(6, 2, f"{'Progress:':<{max_label_width + 1}} {progress}")
+        self._left_text(stdscr, left_max, 6, 2, f"{'Progress:':<{max_label_width + 1}} {progress}")
 
         # Horizontal separator (left side only)
         stdscr.hline(7, 0, curses.ACS_HLINE, divider_x)
@@ -475,20 +498,24 @@ class BlusoundCLI:
             available_rows = bottom_line - art_start_row
             available_cols = left_max - 4
             if self.cover_art_loading:
-                left_text(art_start_row, 2, "Loading cover art...", curses.A_DIM)
-            elif self.cover_art and hasattr(self, '_cover_art_raw') and self._cover_art_raw:
-                art_cells = self._init_cover_colors(stdscr, self._cover_art_raw, available_cols, available_rows)
-                for i, cells in enumerate(art_cells):
-                    row = art_start_row + i
-                    if row >= bottom_line:
-                        break
-                    for col, (ch, attr) in enumerate(cells):
-                        try:
-                            stdscr.addstr(row, 2 + col, ch, attr)
-                        except curses.error:
-                            pass
+                self._left_text(stdscr, left_max, art_start_row, 2, "Loading cover art...", curses.A_DIM)
+            elif self.cover_art and self._cover_art_raw:
+                try:
+                    art_cells = self._init_cover_colors(stdscr, self._cover_art_raw, available_cols, available_rows)
+                    for i, cells in enumerate(art_cells):
+                        row = art_start_row + i
+                        if row >= bottom_line:
+                            break
+                        for col, (ch, attr) in enumerate(cells):
+                            try:
+                                stdscr.addstr(row, 2 + col, ch, attr)
+                            except curses.error:
+                                pass
+                except Exception as e:
+                    logger.error(f"Cover art rendering error: {e}")
+                    self._left_text(stdscr, left_max, art_start_row, 2, "Error rendering cover art.", curses.A_DIM)
             else:
-                left_text(art_start_row, 2, "No cover art available.", curses.A_DIM)
+                self._left_text(stdscr, left_max, art_start_row, 2, "No cover art available.", curses.A_DIM)
         else:
             # === Detail + Track info mode ===
             # Detail section (two sub-columns within left half)
@@ -540,7 +567,7 @@ class BlusoundCLI:
                 if self.wiki_loading:
                     current_row += 1
                     if current_row < bottom_line:
-                        left_text(current_row, 2, "Loading track info...", curses.A_DIM)
+                        self._left_text(stdscr, left_max, current_row, 2, "Loading track info...", curses.A_DIM)
                 elif self.wiki_text:
                     current_row += 1  # blank line
                     if current_row < bottom_line:
@@ -777,6 +804,32 @@ class BlusoundCLI:
                 self.set_message("No saved playlists")
         elif key == ord('c') and self.active_player:
             self.show_cover_art = not self.show_cover_art
+        elif key == ord('+') and self.active_player and self.player_status:
+            if not self.player_status.albumid:
+                self.set_message("No album info available")
+            elif self.player_status.is_favourite:
+                self.set_message("Already in favourites")
+            else:
+                album = self.player_status.album or "this album"
+                if self._confirm_prompt(stdscr, f"Add '{album}' to favourites? (y/n)"):
+                    success, message = self.active_player.add_album_favourite(self.player_status)
+                    self.set_message(message)
+                    if success:
+                        self.update_player_status()
+                else:
+                    self.set_message("Cancelled")
+        elif key == ord('-') and self.active_player and self.player_status:
+            if not self.player_status.albumid:
+                self.set_message("No album info available")
+            else:
+                album = self.player_status.album or "this album"
+                if self._confirm_prompt(stdscr, f"Remove '{album}' from favourites? (y/n)"):
+                    success, message = self.active_player.remove_album_favourite(self.player_status)
+                    self.set_message(message)
+                    if success:
+                        self.update_player_status()
+                else:
+                    self.set_message("Cancelled")
         elif key == KEY_QUESTION:
             self.shortcuts_open = not self.shortcuts_open
         elif key == KEY_P:
@@ -999,17 +1052,8 @@ class BlusoundCLI:
             elif selected.is_favourite:
                 self.set_message("Already in favourites")
             else:
-                height, width = stdscr.getmaxyx()
-                footer_row = height - 2
-                stdscr.move(footer_row, 0)
-                stdscr.clrtoeol()
                 label = f"{selected.text} - {selected.text2}" if selected.text2 else selected.text
-                stdscr.addstr(footer_row, 2, f"Add '{label}' to favourites? (y/n)", curses.A_BOLD)
-                stdscr.refresh()
-                stdscr.timeout(-1)
-                confirm = stdscr.getch()
-                stdscr.timeout(100)
-                if confirm in (ord('y'), ord('Y')):
+                if self._confirm_prompt(stdscr, f"Add '{label}' to favourites? (y/n)"):
                     success, message = self.active_player.toggle_favourite(selected, add=True)
                     self.set_message(message)
                 else:
@@ -1019,17 +1063,8 @@ class BlusoundCLI:
             if not selected.context_menu_key:
                 self.set_message("Cannot remove this item from favourites")
             else:
-                height, width = stdscr.getmaxyx()
-                footer_row = height - 2
-                stdscr.move(footer_row, 0)
-                stdscr.clrtoeol()
                 label = f"{selected.text} - {selected.text2}" if selected.text2 else selected.text
-                stdscr.addstr(footer_row, 2, f"Remove '{label}' from favourites? (y/n)", curses.A_BOLD)
-                stdscr.refresh()
-                stdscr.timeout(-1)
-                confirm = stdscr.getch()
-                stdscr.timeout(100)
-                if confirm in (ord('y'), ord('Y')):
+                if self._confirm_prompt(stdscr, f"Remove '{label}' from favourites? (y/n)"):
                     success, message = self.active_player.toggle_favourite(selected, add=False)
                     self.set_message(message)
                     if success:
@@ -1078,6 +1113,12 @@ class BlusoundCLI:
             stdscr.refresh()
 
         while True:
+            # Handle terminal resize
+            if curses.is_term_resized(stdscr.getmaxyx()[0], stdscr.getmaxyx()[1]):
+                new_h, new_w = stdscr.getmaxyx()
+                curses.resizeterm(new_h, new_w)
+                stdscr.clear()
+
             stdscr.erase()
 
             if not player_mode:
@@ -1112,16 +1153,7 @@ class BlusoundCLI:
             key = stdscr.getch()
 
             if key == ord('q'):
-                height, width = stdscr.getmaxyx()
-                footer_row = height - 2
-                stdscr.move(footer_row, 0)
-                stdscr.clrtoeol()
-                stdscr.addstr(footer_row, 2, "Quit bluxir? (y/n)", curses.A_BOLD)
-                stdscr.refresh()
-                stdscr.timeout(-1)
-                confirm = stdscr.getch()
-                stdscr.timeout(100)
-                if confirm in (ord('y'), ord('Y'), KEY_ENTER):
+                if self._confirm_prompt(stdscr, "Quit bluxir? (y/n)"):
                     break
                 continue
             elif not player_mode:
@@ -1265,17 +1297,8 @@ class BlusoundCLI:
             elif key == ord('+') and self.search_results:
                 selected = self.search_results[self.search_selected_index]
                 if selected.context_menu_key and not selected.is_favourite:
-                    height, width = stdscr.getmaxyx()
-                    footer_row = height - 2
-                    stdscr.move(footer_row, 0)
-                    stdscr.clrtoeol()
                     label = f"{selected.text} - {selected.text2}" if selected.text2 else selected.text
-                    stdscr.addstr(footer_row, 2, f"Add '{label}' to favourites? (y/n)", curses.A_BOLD)
-                    stdscr.refresh()
-                    stdscr.timeout(-1)
-                    confirm = stdscr.getch()
-                    stdscr.timeout(100)
-                    if confirm in (ord('y'), ord('Y')):
+                    if self._confirm_prompt(stdscr, f"Add '{label}' to favourites? (y/n)"):
                         success, message = self.active_player.toggle_favourite(selected, add=True)
                         self.set_message(message)
                     else:

@@ -33,6 +33,9 @@ A comprehensive CLI interface to control Blusound streamers.
 ## Known Limitations
 * No Spotify Support. BluOS does not support it
 * Not tested local/private streaming-services
+* The information form MusicBrainz is sometimes wrong. It is used
+  when no OPENAI_API_KEY is present.
+
 
 
 

@@ -515,15 +515,18 @@ class BlusoundCLI:
             # === Detail + Track info mode ===
             # Detail section (two sub-columns within left half)
             sub_col2_x = 2 + (left_max // 2)
+            _qm = _QUALITY_RE.search(player_status.stream_format) if player_status.stream_format else None
             detail_left = [
                 ("Format", player_status.stream_format or "-"),
                 ("Quality", self._derive_quality(player_status.stream_format)),
+                ("Sample Rate", f"{_qm.group(2)} kHz" if _qm else "-"),
+                ("Bit Depth", f"{_qm.group(1)} bit" if _qm else "-"),
                 ("dB Level", f"{player_status.db:.1f}" if player_status.db is not None else "-"),
-                ("Service", player_status.service_name or player_status.service or "-"),
             ]
             mb = self.mb_info or {}
             detail_right = [
                 ("Track-Nr", str(player_status.song + 1)),
+                ("Composer", player_status.composer or "-"),
                 ("Year", mb.get("year", "-")),
                 ("Label", mb.get("label", "-")),
                 ("Genre", mb.get("genre", "-")),
@@ -1088,8 +1091,6 @@ class BlusoundCLI:
         if player_host:
             try:
                 player = BlusoundPlayer(host_name=player_host, name=player_name or player_host)
-                if player_name:
-                    player.name = player_name
                 success, status = player.get_status()
                 if success:
                     self.active_player = player

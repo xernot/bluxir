@@ -81,6 +81,7 @@ class PlayerStatus:
     secs: int = 0
     albumid: str = ''
     artistid: str = ''
+    composer: str = ''
     is_favourite: bool = False
 
 @dataclass
@@ -276,6 +277,7 @@ class BlusoundPlayer:
                 secs=_safe_int(_safe_find(root, 'secs')),
                 albumid=_safe_find(root, 'albumid'),
                 artistid=_safe_find(root, 'artistid'),
+                composer=_safe_find(root, 'composer'),
                 is_favourite=_safe_find(root, 'isFavourite') == '1',
             )
             logger.info(f"Status for {self.name}: {status}")

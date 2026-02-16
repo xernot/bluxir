@@ -244,20 +244,21 @@ def get_combined_info(title, artist, album, api_key, system_prompt=None):
     try:
         import json as _json
 
+        track_info_instruction = "a short paragraph (2-4 sentences) about this specific song"
+        if system_prompt:
+            track_info_instruction += f". {system_prompt}"
+
         user_prompt = (
             f'Song: "{title}" by {artist}, from the album "{album}".\n\n'
             f"Return a JSON object with these exact keys:\n"
             f'- "year": the original release year of the album (4-digit string, or "-" if unknown)\n'
             f'- "label": the record label that released the album (or "-" if unknown)\n'
             f'- "genre": the genre(s) of this album, comma-separated (or "-" if unknown)\n'
-            f'- "track_info": a short paragraph (2-4 sentences) about this specific song\n\n'
+            f'- "track_info": {track_info_instruction}\n\n'
             f"Respond ONLY with the JSON object, no markdown, no explanation."
         )
-        messages = []
-        if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
-        messages.append({"role": "user", "content": user_prompt})
-        logger.info(f"Combined AI request for: {title} - {artist} - {album}")
+        messages = [{"role": "user", "content": user_prompt}]
+        logger.info(f"Combined AI request — full prompt:\n{user_prompt}")
 
         response = requests.post(
             "https://api.openai.com/v1/chat/completions",

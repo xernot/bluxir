@@ -216,7 +216,7 @@ def get_track_info_ai(title, artist, api_key, system_prompt=None):
         return None
 
 
-def get_combined_info(title, artist, album, api_key, system_prompt=None):
+def get_combined_info(title, artist, album, api_key, system_prompt=None, model="gpt-4o-mini"):
     """Fetch album metadata and track info in a single OpenAI call.
 
     Returns a dict with keys: year, label, genre, track_info.
@@ -255,11 +255,14 @@ def get_combined_info(title, artist, album, api_key, system_prompt=None):
             f'- "label": the record label that released the album (or "-" if unknown)\n'
             f'- "genre": the genre(s) of this album, comma-separated (or "-" if unknown)\n'
             f'- "track_info": {track_info_instruction}\n\n'
+            f'IMPORTANT: Only include facts you are certain about. If you don\'t know the artist or song, '
+            f'set "track_info" to "-" rather than guessing. Never invent musician names, studios, or details.\n\n'
             f"Respond ONLY with the JSON object, no markdown, no explanation."
         )
         messages = [{"role": "user", "content": user_prompt}]
         logger.info(f"Combined AI request — full prompt:\n{user_prompt}")
 
+        logger.info(f"Using model: {model}")
         response = requests.post(
             "https://api.openai.com/v1/chat/completions",
             headers={
@@ -267,7 +270,7 @@ def get_combined_info(title, artist, album, api_key, system_prompt=None):
                 "Content-Type": "application/json",
             },
             json={
-                "model": "gpt-4o-mini",
+                "model": model,
                 "messages": messages,
                 "max_tokens": 300,
                 "temperature": 0.3,

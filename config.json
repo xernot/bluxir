@@ -1,5 +1,6 @@
 {
   "player_host": "192.168.86.21",
   "player_name": "40ST",
+  "openai_model": "gpt-4o-mini",
   "openai_system_prompt": "Always include the year the song was first written and who wrote it. Give me all information about the involved musicians and studios. Keep it short, max 3-4 sentences."
 }

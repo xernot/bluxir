@@ -433,6 +433,7 @@ class BlusoundCLI:
             ("i", "Select input"),
             ("s", "Search"),
             ("f", "Qobuz favorites"),
+            ("+/-", "Add/Remove favourite"),
             ("p", "Pretty print"),
             ("b", "Back to player list"),
             ("ESC", "Cancel"),
@@ -447,7 +448,7 @@ class BlusoundCLI:
         max_display_items = height - 10
 
         stdscr.addstr(3, 2, "UP/DOWN: select, ENTER: play, RIGHT: expand, LEFT: back")
-        stdscr.addstr(4, 2, "s: search, n: next page, p: previous page, b: back to player control")
+        stdscr.addstr(4, 2, "s: search, n/p: next/prev page, +: add fav, -: remove fav, b: back")
         stdscr.addstr(5, 2, "Sort: (t) title  (a) artist  (o) original")
         sort_label = {"original": "Original", "title": "Title", "artist": "Artist"}.get(self.source_sort, "")
         stdscr.addstr(7, 2, f"Select Source:  [sorted by {sort_label}]")
@@ -790,6 +791,54 @@ class BlusoundCLI:
                 self.current_sources = list(self.unsorted_sources)
             self.source_sort = 'original'
             self.selected_source_index[-1] = 0
+        elif key == ord('+') and self.current_sources:
+            selected = self.current_sources[self.selected_source_index[-1]]
+            if not selected.context_menu_key:
+                self.set_message("Cannot add this item to favourites")
+            elif selected.is_favourite:
+                self.set_message("Already in favourites")
+            else:
+                height, width = stdscr.getmaxyx()
+                footer_row = height - 2
+                stdscr.move(footer_row, 0)
+                stdscr.clrtoeol()
+                label = f"{selected.text} - {selected.text2}" if selected.text2 else selected.text
+                stdscr.addstr(footer_row, 2, f"Add '{label}' to favourites? (y/n)", curses.A_BOLD)
+                stdscr.refresh()
+                stdscr.timeout(-1)
+                confirm = stdscr.getch()
+                stdscr.timeout(100)
+                if confirm in (ord('y'), ord('Y')):
+                    success, message = self.active_player.toggle_favourite(selected, add=True)
+                    self.set_message(message)
+                else:
+                    self.set_message("Cancelled")
+        elif key == ord('-') and self.current_sources:
+            selected = self.current_sources[self.selected_source_index[-1]]
+            if not selected.context_menu_key:
+                self.set_message("Cannot remove this item from favourites")
+            else:
+                height, width = stdscr.getmaxyx()
+                footer_row = height - 2
+                stdscr.move(footer_row, 0)
+                stdscr.clrtoeol()
+                label = f"{selected.text} - {selected.text2}" if selected.text2 else selected.text
+                stdscr.addstr(footer_row, 2, f"Remove '{label}' from favourites? (y/n)", curses.A_BOLD)
+                stdscr.refresh()
+                stdscr.timeout(-1)
+                confirm = stdscr.getch()
+                stdscr.timeout(100)
+                if confirm in (ord('y'), ord('Y')):
+                    success, message = self.active_player.toggle_favourite(selected, add=False)
+                    self.set_message(message)
+                    if success:
+                        self.current_sources.remove(selected)
+                        if self.unsorted_sources and selected in self.unsorted_sources:
+                            self.unsorted_sources.remove(selected)
+                        if self.selected_source_index[-1] >= len(self.current_sources):
+                            self.selected_source_index[-1] = max(0, len(self.current_sources) - 1)
+                else:
+                    self.set_message("Cancelled")
         return True, self.selected_source_index
 
     def main(self, stdscr: curses.window):
@@ -1008,6 +1057,26 @@ class BlusoundCLI:
                         self.set_message(f"No items in: {selected.text}")
                 else:
                     self.set_message(f"Cannot play: {selected.text}")
+            elif key == ord('+') and self.search_results:
+                selected = self.search_results[self.search_selected_index]
+                if selected.context_menu_key and not selected.is_favourite:
+                    height, width = stdscr.getmaxyx()
+                    footer_row = height - 2
+                    stdscr.move(footer_row, 0)
+                    stdscr.clrtoeol()
+                    label = f"{selected.text} - {selected.text2}" if selected.text2 else selected.text
+                    stdscr.addstr(footer_row, 2, f"Add '{label}' to favourites? (y/n)", curses.A_BOLD)
+                    stdscr.refresh()
+                    stdscr.timeout(-1)
+                    confirm = stdscr.getch()
+                    stdscr.timeout(100)
+                    if confirm in (ord('y'), ord('Y')):
+                        success, message = self.active_player.toggle_favourite(selected, add=True)
+                        self.set_message(message)
+                    else:
+                        self.set_message("Cancelled")
+                else:
+                    self.set_message("Cannot add to favourites" if not selected.context_menu_key else "Already in favourites")
             elif key == KEY_B:
                 return False
             return True

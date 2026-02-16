@@ -90,6 +90,8 @@ class PlayerSource:
     input_type: Optional[str]
     type: str
     text2: str = ''
+    context_menu_key: Optional[str] = None
+    is_favourite: bool = False
     search_key: Optional[str] = None
     children: List['PlayerSource'] = field(default_factory=list)
 
@@ -144,6 +146,8 @@ class BlusoundPlayer:
                     input_type=item.get('inputType'),
                     type=item.get('type', ''),
                     text2=item.get('text2', ''),
+                    context_menu_key=item.get('contextMenuKey'),
+                    is_favourite=item.get('isFavourite') == 'true',
                     search_key=browse_search_key,
                 )
                 sources.append(source)
@@ -174,6 +178,8 @@ class BlusoundPlayer:
                         input_type=item.get('inputType'),
                         type=item.get('type', ''),
                         text2=item.get('text2', ''),
+                        context_menu_key=item.get('contextMenuKey'),
+                        is_favourite=item.get('isFavourite') == 'true',
                         search_key=browse_search_key,
                     )
                     all_sources.append(source)
@@ -336,6 +342,43 @@ class BlusoundPlayer:
             logger.error(f"Error selecting source for {self.name}: {str(e)}")
             return False, str(e)
 
+    def toggle_favourite(self, source: PlayerSource, add: bool) -> Tuple[bool, str]:
+        """Add or remove an album from favourites via context menu."""
+        if not source.context_menu_key:
+            return False, "No context menu available for this item"
+
+        try:
+            # Fetch context menu actions
+            response = self.request("/Browse", {"key": source.context_menu_key})
+            root = ET.fromstring(response.text)
+
+            for item in root.findall('item'):
+                text = item.get('text', '')
+                action_url = item.get('actionURL')
+                logger.info(f"Context menu item: '{text}' actionURL={action_url} browseKey={item.get('browseKey')}")
+
+                # Match "Favourite" menu item - actionURL tells us what it does
+                if 'favourite' in text.lower():
+                    if action_url:
+                        # actionURL is a direct endpoint path (e.g. /AddFavourite?... or /RemoveFavourite?...)
+                        self.request(action_url)
+                        source.is_favourite = add
+                        return True, f"{'Added to' if add else 'Removed from'} favourites: {source.text}"
+                    browse_key = item.get('browseKey')
+                    if browse_key:
+                        self.request("/Browse", {"key": browse_key})
+                        source.is_favourite = add
+                        return True, f"{'Added to' if add else 'Removed from'} favourites: {source.text}"
+                    return False, f"No action URL for: {text}"
+
+            # Log all available actions for debugging
+            available = [item.get('text', '') for item in root.findall('item')]
+            logger.info(f"Available context menu actions: {available}")
+            return False, f"'Favourite' not found in context menu"
+        except requests.RequestException as e:
+            logger.error(f"Error toggling favourite: {str(e)}")
+            return False, str(e)
+
     def get_playlist(self) -> list:
         url = "/Playlist"
         try:
@@ -402,6 +445,8 @@ class BlusoundPlayer:
                             input_type=library_item.get('inputType'),
                             type=library_item.get('type', ''),
                             text2=library_item.get('text2', ''),
+                            context_menu_key=library_item.get('contextMenuKey'),
+                            is_favourite=library_item.get('isFavourite') == 'true',
                             search_key=library_root.get('searchKey'),
                         )
                         sources.append(source)
@@ -414,6 +459,8 @@ class BlusoundPlayer:
                         input_type=item.get('inputType'),
                         type=item.get('type', ''),
                         text2=item.get('text2', ''),
+                        context_menu_key=item.get('contextMenuKey'),
+                        is_favourite=item.get('isFavourite') == 'true',
                         search_key=root.get('searchKey'),
                     )
                     sources.append(source)

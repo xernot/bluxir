@@ -313,6 +313,60 @@ def get_combined_info(title, artist, album, api_key, system_prompt=None, model="
         return result
 
 
+def get_station_info(station_name, api_key, model="gpt-4o-mini"):
+    """Fetch radio station info from OpenAI."""
+    if not station_name or not api_key:
+        return None
+
+    cache_key = f"station|{station_name}"
+    cached = _cache_get(cache_key)
+    if cached is not None or _cache_has(cache_key):
+        logger.info(f"Station cache hit for: {station_name}")
+        return cached
+
+    try:
+        import json as _json
+
+        user_prompt = (
+            f'Radio station: "{station_name}".\n\n'
+            f"Tell me about this radio station in 3-5 sentences. "
+            f"Include: what kind of station it is, what country/region it serves, "
+            f"what type of music or content it broadcasts, and any notable facts.\n\n"
+            f'IMPORTANT: Only include facts you are certain about. If you don\'t know '
+            f'this station, respond with just "-".'
+        )
+        logger.info(f"Station AI request — full prompt:\n{user_prompt}")
+        logger.info(f"Using model: {model}")
+
+        response = requests.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": model,
+                "messages": [{"role": "user", "content": user_prompt}],
+                "max_tokens": 300,
+                "temperature": 0.3,
+            },
+            timeout=15,
+        )
+        response.raise_for_status()
+        data = response.json()
+        text = data["choices"][0]["message"]["content"].strip()
+        logger.info(f"Station AI response: {text[:500]}")
+
+        if text == "-":
+            text = None
+        _cache_set(cache_key, text)
+        return text
+    except Exception as e:
+        logger.error(f"Station AI error: {e}")
+        _cache_set(cache_key, None)
+        return None
+
+
 def get_album_info(artist, album):
     logger.info(f"get_album_info called: artist='{artist}', album='{album}'")
 

@@ -29,13 +29,15 @@ A comprehensive CLI interface to control Blusound streamers.
 * Displays the current playlist and let you toggle
 * API call to musicbrainz for additional information about the track
 * openai API call to get textbased information about the track
+* Displays an ascii-art image from the cover (c)
 
 ## Known Limitations
 * It mainly works well for qobuz support
 * No Spotify Support. BluOS does not support it
 * Not tested local/private streaming-services
 * The information form MusicBrainz is sometimes wrong. It is used
-  when no OPENAI_API_KEY is present.
+  when no OPENAI_API_KEY is present. 
+  All other additional Informations are from chatgpt - so it could be wrong
 
 
 

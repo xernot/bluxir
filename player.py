@@ -311,6 +311,9 @@ class BlusoundPlayer:
         new_state = 0 if current else 1
         logger.info(f"Setting shuffle for {self.name} to {new_state}")
         try:
+            if new_state == 1:
+                # Toggle off then on to force a fresh reshuffle
+                self.request("/Shuffle", {'state': 0})
             self.request("/Shuffle", {'state': new_state})
             return True, f"Shuffle {'on' if new_state else 'off'}"
         except requests.RequestException as e:
@@ -327,6 +330,15 @@ class BlusoundPlayer:
             return True, labels[next_state]
         except requests.RequestException as e:
             logger.error(f"Error setting repeat for {self.name}: {str(e)}")
+            return False, str(e)
+
+    def play_queue_track(self, index: int) -> Tuple[bool, str]:
+        logger.info(f"Jumping to track {index} on {self.name}")
+        try:
+            self.request("/Play", {'id': index})
+            return True, f"Playing track {index + 1}"
+        except requests.RequestException as e:
+            logger.error(f"Error jumping to track on {self.name}: {str(e)}")
             return False, str(e)
 
     def toggle_play_pause(self) -> Tuple[bool, str]:

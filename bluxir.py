@@ -726,6 +726,7 @@ class BlusoundCLI:
             ("l", "Load playlist"),
             ("w", "Save playlist"),
             ("c", "Toggle cover art"),
+            ("g", "Go to track number"),
             ("m", "Toggle mute"),
             ("r", "Cycle repeat (off/queue/track)"),
             ("x", "Toggle shuffle"),
@@ -859,6 +860,32 @@ class BlusoundCLI:
             if success:
                 self.player_status.shuffle = not self.player_status.shuffle
             self.set_message(message)
+        elif key == ord('g') and self.active_player and self.player_status and self.playlist:
+            height, width = stdscr.getmaxyx()
+            footer_row = height - 2
+            stdscr.move(footer_row, 0)
+            stdscr.clrtoeol()
+            stdscr.addstr(footer_row, 2, f"Go to track (1-{len(self.playlist)}): ", curses.A_BOLD)
+            curses.echo()
+            curses.curs_set(1)
+            stdscr.timeout(-1)
+            try:
+                input_str = stdscr.getstr(footer_row, 2 + len(f"Go to track (1-{len(self.playlist)}): "), 5).decode('utf-8').strip()
+                if input_str.isdigit():
+                    track_num = int(input_str)
+                    if 1 <= track_num <= len(self.playlist):
+                        success, message = self.active_player.play_queue_track(track_num - 1)
+                        if success:
+                            self.update_player_status()
+                        self.set_message(message)
+                    else:
+                        self.set_message(f"Invalid track number: {track_num}")
+                elif input_str:
+                    self.set_message("Cancelled")
+            finally:
+                curses.noecho()
+                curses.curs_set(0)
+                stdscr.timeout(100)
         elif key == KEY_I:
             self.source_selection_mode = True
             self.selected_source_index = [0]

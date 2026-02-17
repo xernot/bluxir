@@ -41,7 +41,6 @@ A comprehensive CLI interface to control Blusound streamers.
   All other additional Informations are from chatgpt - so it could be wrong
 * Radio Stations cannot be stored as favorites. 
 * No Multi-Room feature (planned)
-* The used source for lyrics returns FALSE for many songs
 
 
 ## Requirements

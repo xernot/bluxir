@@ -769,11 +769,19 @@ class BlusoundCLI:
     def display_shortcuts(self, stdscr: curses.window):
         height, width = stdscr.getmaxyx()
 
-        shortcuts = [
+        left_col = [
             ("UP/DOWN", "Adjust volume"),
             ("SPACE", "Play/Pause"),
-            ("ENTER", "Play now / Add next / Add last"),
+            ("ENTER", "Play / Add next / Add last"),
             (">/<", "Skip/Previous track"),
+            ("g", "Go to track number"),
+            ("m", "Toggle mute"),
+            ("r", "Cycle repeat"),
+            ("x", "Toggle shuffle"),
+            ("+/-", "Add/Remove favourite"),
+            ("ESC", "Cancel"),
+        ]
+        right_col = [
             ("i", "Select input"),
             ("s", "Search"),
             ("f", "Qobuz favorites"),
@@ -781,18 +789,90 @@ class BlusoundCLI:
             ("w", "Save playlist"),
             ("c", "Toggle cover art"),
             ("t", "Toggle lyrics"),
-            ("g", "Go to track number"),
-            ("m", "Toggle mute"),
-            ("r", "Cycle repeat (off/queue/track)"),
-            ("x", "Toggle shuffle"),
-            ("+/-", "Add/Remove favourite"),
             ("p", "Pretty print"),
             ("b", "Back to player list"),
-            ("ESC", "Cancel"),
             ("q", "Quit"),
         ]
 
-        self.draw_modal(stdscr, "Keyboard Shortcuts", shortcuts)
+        col_w = 30
+        div_x_offset = col_w + 3  # position of vertical divider within modal
+        modal_w = min(width - 4, col_w * 2 + 7)
+        num_rows = max(len(left_col), len(right_col))
+        # title + title-sep + entries + footer-sep + copyright + repo + borders
+        modal_h = num_rows + 7
+        start_y = max(0, (height - modal_h) // 2)
+        start_x = max(0, (width - modal_w) // 2)
+        div_x = start_x + div_x_offset
+
+        # Top border
+        stdscr.addch(start_y, start_x, curses.ACS_ULCORNER)
+        stdscr.hline(start_y, start_x + 1, curses.ACS_HLINE, modal_w - 2)
+        stdscr.addch(start_y, start_x + modal_w - 1, curses.ACS_URCORNER)
+
+        # Bottom border
+        stdscr.addch(start_y + modal_h - 1, start_x, curses.ACS_LLCORNER)
+        stdscr.hline(start_y + modal_h - 1, start_x + 1, curses.ACS_HLINE, modal_w - 2)
+        try:
+            stdscr.addch(start_y + modal_h - 1, start_x + modal_w - 1, curses.ACS_LRCORNER)
+        except curses.error:
+            pass
+
+        # Side borders and fill interior
+        for row in range(1, modal_h - 1):
+            stdscr.addch(start_y + row, start_x, curses.ACS_VLINE)
+            stdscr.addstr(start_y + row, start_x + 1, " " * (modal_w - 2))
+            try:
+                stdscr.addch(start_y + row, start_x + modal_w - 1, curses.ACS_VLINE)
+            except curses.error:
+                pass
+
+        # Title
+        stdscr.addstr(start_y + 1, start_x + 2, "Keyboard Shortcuts"[:modal_w - 4], curses.A_BOLD)
+
+        # Horizontal line under title
+        title_sep_y = start_y + 2
+        stdscr.addch(title_sep_y, start_x, curses.ACS_LTEE)
+        stdscr.hline(title_sep_y, start_x + 1, curses.ACS_HLINE, modal_w - 2)
+        stdscr.addch(title_sep_y, div_x, curses.ACS_TTEE)
+        try:
+            stdscr.addch(title_sep_y, start_x + modal_w - 1, curses.ACS_RTEE)
+        except curses.error:
+            pass
+
+        # Vertical divider between columns
+        for i in range(num_rows):
+            row = start_y + 3 + i
+            try:
+                stdscr.addch(row, div_x, curses.ACS_VLINE)
+            except curses.error:
+                pass
+
+        # Two-column entries
+        col2_x = div_x + 1
+        for i in range(num_rows):
+            row = start_y + 3 + i
+            if i < len(left_col):
+                k, v = left_col[i]
+                line = f"  {k:<10} {v}"
+                stdscr.addstr(row, start_x + 2, line[:div_x_offset - 2])
+            if i < len(right_col):
+                k, v = right_col[i]
+                line = f" {k:<10} {v}"
+                stdscr.addstr(row, col2_x, line[:modal_w - div_x_offset - 2])
+
+        # Horizontal separator above footer
+        sep_y = start_y + 3 + num_rows
+        stdscr.addch(sep_y, start_x, curses.ACS_LTEE)
+        stdscr.hline(sep_y, start_x + 1, curses.ACS_HLINE, modal_w - 2)
+        stdscr.addch(sep_y, div_x, curses.ACS_BTEE)
+        try:
+            stdscr.addch(sep_y, start_x + modal_w - 1, curses.ACS_RTEE)
+        except curses.error:
+            pass
+
+        # Footer
+        stdscr.addstr(start_y + modal_h - 3, start_x + 2, "(c) written by xir - under GPL"[:modal_w - 4], curses.A_DIM)
+        stdscr.addstr(start_y + modal_h - 2, start_x + 2, "https://github.com/xernot/bluxir"[:modal_w - 4], curses.A_DIM)
 
     def display_source_selection(self, stdscr: curses.window):
         active_player = self.active_player

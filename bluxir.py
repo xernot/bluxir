@@ -402,7 +402,7 @@ class BlusoundCLI:
     def draw_modal(self, stdscr: curses.window, title: str, entries: list):
         height, width = stdscr.getmaxyx()
         modal_w = min(width - 4, max(len(title) + 4, max(len(k) + len(v) + 7 for k, v in entries)))
-        modal_h = len(entries) + 4  # title + blank + entries + footer
+        modal_h = len(entries) + 6  # title + entries + blank + copyright + repo + border
         start_y = max(0, (height - modal_h) // 2)
         start_x = max(0, (width - modal_w) // 2)
 
@@ -437,8 +437,8 @@ class BlusoundCLI:
             stdscr.addstr(start_y + 2 + i, start_x + 2, line[:modal_w - 4])
 
         # Footer
-        footer = "Press any key to close"
-        stdscr.addstr(start_y + modal_h - 2, start_x + 2, footer[:modal_w - 4], curses.A_DIM)
+        stdscr.addstr(start_y + modal_h - 3, start_x + 2, "(c) written by xir - under GPL"[:modal_w - 4], curses.A_DIM)
+        stdscr.addstr(start_y + modal_h - 2, start_x + 2, "https://github.com/xernot/bluxir"[:modal_w - 4], curses.A_DIM)
 
     def display_selector_shortcuts(self, stdscr: curses.window):
         shortcuts = [

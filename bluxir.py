@@ -843,7 +843,9 @@ class BlusoundCLI:
             self.selected_source_index = [0]
             self.current_sources = self.active_player.sources
         elif key == KEY_S:
-            searchable = [s for s in self.active_player.sources if s.browse_key]
+            _search_services = ('Qobuz:', 'TuneIn:')
+            searchable = [s for s in self.active_player.sources if s.browse_key in _search_services]
+            searchable.sort(key=lambda s: _search_services.index(s.browse_key))
             if searchable:
                 self.search_mode = True
                 self.search_phase = 'source_select'

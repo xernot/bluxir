@@ -207,7 +207,7 @@ class BlusoundPlayer:
 
     def get_nested_sources(self, source: PlayerSource) -> None:
         if source.browse_key:
-            nested_sources = self.capture_all_sources(source.browse_key)
+            nested_sources = self.capture_sources(source.browse_key)
             if nested_sources:
                 source.children = nested_sources
             else:
@@ -518,10 +518,13 @@ class BlusoundPlayer:
         try:
             response = self.request(url, params)
             root = ET.fromstring(response.text)
+            _skip = {'Artists', 'Playlists'}
             sources = []
             for item in root.iter('item'):
                 text = item.get('text', '').strip()
                 browse_key = item.get('browseKey')
+                if text in _skip:
+                    continue
                 if text == "Library" and browse_key:
                     library_response = self.request(url, {'key': browse_key})
                     library_root = ET.fromstring(library_response.text)

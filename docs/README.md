@@ -5,9 +5,8 @@ This is an comprehensive command-line interface (CLI) for bluOS streamers.
 I wrote it, because its incredible borring to switch to a mobile phone while 
 working just because you want to hear different sounds, written in python.
 
-This project is originaly written by @irrelative and published on github
-under https://github.com/irrelative/blucli. if you want the original software
-get it there.  I forked it on feb 15th 2026 and extensivly extended the project.
+Originally based on https://github.com/irrelative/blucli (opens in a new tab)
+This project has since diverged significantly and is maintained independently.
 
 Extensive usage of claude-code (opus4.6) 
 
@@ -30,6 +29,7 @@ A comprehensive CLI interface to control Blusound streamers.
 * API call to musicbrainz for additional information about the track
 * openai API call to get textbased information about the track
 * Displays an ascii-art image from the cover (c)
+* Radio Integration with Tunein & Radio Paradise
 
 ## Known Limitations
 * It mainly works well for qobuz support
@@ -38,10 +38,7 @@ A comprehensive CLI interface to control Blusound streamers.
 * The information form MusicBrainz is sometimes wrong. It is used
   when no OPENAI_API_KEY is present. 
   All other additional Informations are from chatgpt - so it could be wrong
-
-
-
-
+* Radio Stations cannot be stored as favorites. 
 
 
 ## Requirements

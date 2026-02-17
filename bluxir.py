@@ -120,6 +120,7 @@ class BlusoundCLI:
         self.lyrics_track_key: str = ""
         self.lyrics_loading: bool = False
         self.show_lyrics: bool = False
+        self.lyrics_scroll: int = 0
         self._data_lock = threading.Lock()
 
     def _derive_quality(self, stream_format: str) -> str:
@@ -271,6 +272,7 @@ class BlusoundCLI:
             self.lyrics_track_key = lyrics_key
             self.lyrics_text = None
             self.lyrics_loading = True
+            self.lyrics_scroll = 0
             if not self.is_radio:
                 threading.Thread(target=self._fetch_lyrics, daemon=True).start()
             else:
@@ -710,28 +712,42 @@ class BlusoundCLI:
             if self.lyrics_loading:
                 stdscr.addstr(5, right_start, "Loading lyrics..."[:right_w], curses.A_DIM)
             elif self.lyrics_text:
-                lyrics_lines = self.lyrics_text.splitlines()
-                row = 4
-                for lyric_line in lyrics_lines:
-                    if row >= bottom_line:
-                        break
+                # Pre-render all wrapped lines
+                wrapped = []
+                for lyric_line in self.lyrics_text.splitlines():
                     if not lyric_line.strip():
-                        row += 1
+                        wrapped.append("")
                         continue
-                    # Word-wrap long lines
-                    while lyric_line and row < bottom_line:
+                    while lyric_line:
                         if len(lyric_line) <= right_w:
-                            stdscr.addstr(row, right_start, lyric_line)
-                            row += 1
+                            wrapped.append(lyric_line)
                             break
-                        # Find break point
                         split_at = lyric_line[:right_w].rfind(' ')
                         if split_at <= 0:
                             split_at = right_w
-                        stdscr.addstr(row, right_start, lyric_line[:split_at])
+                        wrapped.append(lyric_line[:split_at])
                         lyric_line = lyric_line[split_at:].lstrip()
-                        row += 1
-                stdscr.addstr(bottom_line - 1, right_start, "(lyrics from lrclib.net)"[:right_w], curses.A_DIM)
+
+                # Clamp scroll
+                max_visible = bottom_line - 5  # rows 4..(bottom_line-2), reserve last for attribution
+                max_scroll = max(0, len(wrapped) - max_visible)
+                if self.lyrics_scroll > max_scroll:
+                    self.lyrics_scroll = max_scroll
+
+                # Display scrolled lyrics
+                visible = wrapped[self.lyrics_scroll:self.lyrics_scroll + max_visible]
+                for i, line in enumerate(visible):
+                    row = 4 + i
+                    if row >= bottom_line - 1:
+                        break
+                    if line:
+                        stdscr.addstr(row, right_start, line[:right_w])
+
+                # Attribution + scroll hint
+                attr_text = "(lyrics from lrclib.net)"
+                if max_scroll > 0:
+                    attr_text += "  [PgUp/PgDn to scroll]"
+                stdscr.addstr(bottom_line - 1, right_start, attr_text[:right_w], curses.A_DIM)
             else:
                 stdscr.addstr(5, right_start, "No lyrics available."[:right_w], curses.A_DIM)
         else:
@@ -789,6 +805,7 @@ class BlusoundCLI:
             ("w", "Save playlist"),
             ("c", "Toggle cover art"),
             ("t", "Toggle lyrics"),
+            ("PgUp/PgDn", "Scroll lyrics"),
             ("p", "Pretty print"),
             ("b", "Back to player list"),
             ("q", "Quit"),
@@ -1077,6 +1094,11 @@ class BlusoundCLI:
             self.show_cover_art = not self.show_cover_art
         elif key == ord('t') and self.active_player and not self.is_radio:
             self.show_lyrics = not self.show_lyrics
+            self.lyrics_scroll = 0
+        elif key == curses.KEY_PPAGE and self.show_lyrics:
+            self.lyrics_scroll = max(0, self.lyrics_scroll - 5)
+        elif key == curses.KEY_NPAGE and self.show_lyrics:
+            self.lyrics_scroll += 5
         elif key == ord('+') and self.active_player and self.player_status:
             if not self.player_status.albumid:
                 self.set_message("No album info available")

@@ -382,7 +382,7 @@ def get_lyrics(title, artist):
         from urllib.parse import quote
         url = f"https://lrclib.net/api/get?artist_name={quote(artist)}&track_name={quote(title)}"
         logger.info(f"Fetching lyrics: {url}")
-        response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=5)
+        response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=10)
         if response.status_code == 404:
             logger.info(f"No lyrics found for: {title} - {artist}")
             _cache_set(cache_key, None)
@@ -399,7 +399,7 @@ def get_lyrics(title, artist):
         return None
     except Exception as e:
         logger.error(f"LRCLIB error: {e}")
-        _cache_set(cache_key, None)
+        # Don't cache timeouts/network errors — allow retry on next track change
         return None
 
 

@@ -192,8 +192,10 @@ class BlusoundCLI:
         # Status and Volume on the right side of header line
         if self.player_status and isinstance(self.player_status, PlayerStatus):
             state_str = self.player_status.state.capitalize() if self.player_status.state else "-"
+            repeat_str = {0: "Queue", 1: "Track", 2: "Off"}.get(self.player_status.repeat, "Off")
+            shuffle_str = "On" if self.player_status.shuffle else "Off"
             vol_bar = create_volume_bar(self.player_status.volume, width=12)
-            info_right = f"Status: {state_str}  Volume: {vol_bar} {self.player_status.volume}%"
+            info_right = f"Repeat:{repeat_str} Shuffle:{shuffle_str}  {state_str}  {vol_bar} {self.player_status.volume}%"
             info_x = width - len(info_right) - 2
             if info_x > len(header) + 4:
                 stdscr.addstr(1, info_x, info_right)
@@ -723,6 +725,8 @@ class BlusoundCLI:
             ("l", "Load playlist"),
             ("w", "Save playlist"),
             ("c", "Toggle cover art"),
+            ("r", "Cycle repeat (off/queue/track)"),
+            ("x", "Toggle shuffle"),
             ("+/-", "Add/Remove favourite"),
             ("p", "Pretty print"),
             ("b", "Back to player list"),
@@ -837,6 +841,16 @@ class BlusoundCLI:
             success, message = self.active_player.back()
             if success:
                 self.last_update_time = time.time() - 2
+            self.set_message(message)
+        elif key == ord('r') and self.active_player and self.player_status:
+            success, message = self.active_player.cycle_repeat(self.player_status.repeat)
+            if success:
+                self.player_status.repeat = {2: 0, 0: 1, 1: 2}[self.player_status.repeat]
+            self.set_message(message)
+        elif key == ord('x') and self.active_player and self.player_status:
+            success, message = self.active_player.toggle_shuffle(self.player_status.shuffle)
+            if success:
+                self.player_status.shuffle = not self.player_status.shuffle
             self.set_message(message)
         elif key == KEY_I:
             self.source_selection_mode = True

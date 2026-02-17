@@ -297,6 +297,28 @@ class BlusoundPlayer:
             logger.error(f"Error setting volume for {self.name}: {str(e)}")
             return False, str(e)
 
+    def toggle_shuffle(self, current: bool) -> Tuple[bool, str]:
+        new_state = 0 if current else 1
+        logger.info(f"Setting shuffle for {self.name} to {new_state}")
+        try:
+            self.request("/Shuffle", {'state': new_state})
+            return True, f"Shuffle {'on' if new_state else 'off'}"
+        except requests.RequestException as e:
+            logger.error(f"Error setting shuffle for {self.name}: {str(e)}")
+            return False, str(e)
+
+    def cycle_repeat(self, current: int) -> Tuple[bool, str]:
+        # 0=repeat queue, 1=repeat track, 2=off → cycle: 2→0→1→2
+        next_state = {2: 0, 0: 1, 1: 2}[current]
+        labels = {0: "Repeat queue", 1: "Repeat track", 2: "Repeat off"}
+        logger.info(f"Setting repeat for {self.name} to {next_state}")
+        try:
+            self.request("/Repeat", {'state': next_state})
+            return True, labels[next_state]
+        except requests.RequestException as e:
+            logger.error(f"Error setting repeat for {self.name}: {str(e)}")
+            return False, str(e)
+
     def toggle_play_pause(self) -> Tuple[bool, str]:
         url = "/Pause"
         params = {'toggle': 1}

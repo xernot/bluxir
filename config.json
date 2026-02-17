@@ -2,5 +2,5 @@
   "player_host": "192.168.86.21",
   "player_name": "Livingroom 40ST",
   "openai_model": "gpt-4o-mini",
-  "openai_system_prompt": "Always include the year the song was first written and who wrote it. Give me all information about the involved musicians and studios. Keep it short, max 3-4 sentences."
+  "openai_system_prompt": "Always include the year the song was first written and who wrote it. Make sure you mention the first year of the song. When it appeared for the first time. Give me all information about the involved musicians and studios. Keep it short, max 3-4 sentences. Make sure there are no contradictions in your text"
 }

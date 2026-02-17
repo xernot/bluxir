@@ -814,14 +814,14 @@ class BlusoundCLI:
         elif key == KEY_UP and self.active_player:
             new_volume = min(100, self.player_status.volume + 5) if self.player_status else 5
             success, message = self.active_player.set_volume(new_volume)
-            if success:
-                self.update_player_status()
+            if success and self.player_status:
+                self.player_status.volume = new_volume
             self.set_message(message)
         elif key == KEY_DOWN and self.active_player:
             new_volume = max(0, self.player_status.volume - 5) if self.player_status else 0
             success, message = self.active_player.set_volume(new_volume)
-            if success:
-                self.update_player_status()
+            if success and self.player_status:
+                self.player_status.volume = new_volume
             self.set_message(message)
         elif key == KEY_SPACE and self.active_player:
             success, message = self.active_player.toggle_play_pause()

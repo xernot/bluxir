@@ -195,7 +195,8 @@ class BlusoundCLI:
             repeat_str = {0: "Queue", 1: "Track", 2: "Off"}.get(self.player_status.repeat, "Off")
             shuffle_str = "On" if self.player_status.shuffle else "Off"
             vol_bar = create_volume_bar(self.player_status.volume, width=12)
-            info_right = f"Repeat:{repeat_str} Shuffle:{shuffle_str}  {state_str}  {vol_bar} {self.player_status.volume}%"
+            mute_str = "MUTED | " if self.player_status.mute else ""
+            info_right = f"Repeat:{repeat_str} | Shuffle:{shuffle_str} | {state_str} | {mute_str}{vol_bar} {self.player_status.volume}%"
             info_x = width - len(info_right) - 2
             if info_x > len(header) + 4:
                 stdscr.addstr(1, info_x, info_right)
@@ -725,6 +726,7 @@ class BlusoundCLI:
             ("l", "Load playlist"),
             ("w", "Save playlist"),
             ("c", "Toggle cover art"),
+            ("m", "Toggle mute"),
             ("r", "Cycle repeat (off/queue/track)"),
             ("x", "Toggle shuffle"),
             ("+/-", "Add/Remove favourite"),
@@ -841,6 +843,11 @@ class BlusoundCLI:
             success, message = self.active_player.back()
             if success:
                 self.last_update_time = time.time() - 2
+            self.set_message(message)
+        elif key == ord('m') and self.active_player and self.player_status:
+            success, message = self.active_player.toggle_mute(self.player_status.mute)
+            if success:
+                self.player_status.mute = not self.player_status.mute
             self.set_message(message)
         elif key == ord('r') and self.active_player and self.player_status:
             success, message = self.active_player.cycle_repeat(self.player_status.repeat)

@@ -297,6 +297,16 @@ class BlusoundPlayer:
             logger.error(f"Error setting volume for {self.name}: {str(e)}")
             return False, str(e)
 
+    def toggle_mute(self, current: bool) -> Tuple[bool, str]:
+        new_state = 0 if current else 1
+        logger.info(f"Setting mute for {self.name} to {new_state}")
+        try:
+            self.request("/Volume", {'mute': new_state})
+            return True, f"Mute {'on' if new_state else 'off'}"
+        except requests.RequestException as e:
+            logger.error(f"Error setting mute for {self.name}: {str(e)}")
+            return False, str(e)
+
     def toggle_shuffle(self, current: bool) -> Tuple[bool, str]:
         new_state = 0 if current else 1
         logger.info(f"Setting shuffle for {self.name} to {new_state}")

@@ -103,6 +103,7 @@ class BlusoundCLI:
         self.playlist: list = []
         self.source_sort: str = 'original'
         self.unsorted_sources: List[PlayerSource] = []
+        self.source_filter_backup: List[PlayerSource] = []
         self.mb_info: Optional[dict] = None
         self.mb_loading: bool = False
         self.wiki_text: Optional[str] = None
@@ -897,7 +898,7 @@ class BlusoundCLI:
         max_display_items = height - 10
 
         stdscr.addstr(3, 2, "UP/DOWN: select, ENTER: play, RIGHT: expand, LEFT: back")
-        stdscr.addstr(4, 2, "s: search, n/p: next/prev page, +: add fav, -: remove fav, b: back")
+        stdscr.addstr(4, 2, "s: search, /: filter, n/p: next/prev page, +: add fav, -: remove fav, b: back")
         stdscr.addstr(5, 2, "Sort: (t) title  (a) artist  (o) original")
         sort_label = {"original": "Original", "title": "Title", "artist": "Artist"}.get(self.source_sort, "")
         stdscr.addstr(7, 2, f"Select Source:  [sorted by {sort_label}]")
@@ -1222,6 +1223,7 @@ class BlusoundCLI:
             self.selected_source_index = [0]
             self.source_sort = 'original'
             self.unsorted_sources = []
+            self.source_filter_backup = []
             return False, self.selected_source_index
 
         if not self.selected_source_index:
@@ -1364,10 +1366,37 @@ class BlusoundCLI:
                         self.current_sources.remove(selected)
                         if self.unsorted_sources and selected in self.unsorted_sources:
                             self.unsorted_sources.remove(selected)
+                        if self.source_filter_backup and selected in self.source_filter_backup:
+                            self.source_filter_backup.remove(selected)
                         if self.selected_source_index[-1] >= len(self.current_sources):
                             self.selected_source_index[-1] = max(0, len(self.current_sources) - 1)
                 else:
                     self.set_message("Cancelled")
+        elif key == ord('/') and self.current_sources:
+            height, width = stdscr.getmaxyx()
+            footer_row = height - 2
+            stdscr.move(footer_row, 0)
+            stdscr.clrtoeol()
+            filter_term = self.get_input(stdscr, "Filter: ")
+            if filter_term:
+                if not self.source_filter_backup:
+                    self.source_filter_backup = list(self.current_sources)
+                term = filter_term.lower()
+                self.current_sources = [
+                    s for s in self.source_filter_backup
+                    if term in s.text.lower() or term in (s.text2 or '').lower()
+                ]
+                self.selected_source_index[-1] = 0
+                if self.current_sources:
+                    self.set_message(f"Filter: '{filter_term}' ({len(self.current_sources)} matches)")
+                else:
+                    self.set_message(f"No matches for '{filter_term}'")
+                    self.current_sources = list(self.source_filter_backup)
+            elif self.source_filter_backup:
+                self.current_sources = list(self.source_filter_backup)
+                self.source_filter_backup = []
+                self.selected_source_index[-1] = 0
+                self.set_message("Filter cleared")
         return True, self.selected_source_index
 
     def main(self, stdscr: curses.window):

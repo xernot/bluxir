@@ -1002,9 +1002,7 @@ class BlusoundCLI:
                 self.set_message(f"Cannot expand: {selected_source.text}")
         elif key == KEY_ENTER:
             selected_source = self.current_sources[self.selected_source_index[-1]]
-            if selected_source.context_menu_key and selected_source.type != 'album':
-                self._execute_queue_action(selected_source, stdscr)
-            elif selected_source.play_url:
+            if selected_source.play_url:
                 self.set_message(f"Playing: {selected_source.text}")
                 success, message = self.active_player.select_input(selected_source)
                 if success:

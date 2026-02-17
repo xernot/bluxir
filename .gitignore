@@ -4,3 +4,4 @@ __pycache__/
 logs/
 .claude/
 *.swp
+improvements.txt

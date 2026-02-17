@@ -39,6 +39,7 @@ A comprehensive CLI interface to control Blusound streamers.
   when no OPENAI_API_KEY is present. 
   All other additional Informations are from chatgpt - so it could be wrong
 * Radio Stations cannot be stored as favorites. 
+* No Multi-Room feature (planned)
 
 
 ## Requirements

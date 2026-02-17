@@ -367,6 +367,42 @@ def get_station_info(station_name, api_key, model="gpt-4o-mini"):
         return None
 
 
+def get_lyrics(title, artist):
+    """Fetch lyrics from LRCLIB (free, no API key needed)."""
+    if not title or not artist:
+        return None
+
+    cache_key = f"lyrics|{title}|{artist}"
+    cached = _cache_get(cache_key)
+    if cached is not None or _cache_has(cache_key):
+        logger.info(f"Lyrics cache hit for: {title} - {artist}")
+        return cached
+
+    try:
+        from urllib.parse import quote
+        url = f"https://lrclib.net/api/get?artist_name={quote(artist)}&track_name={quote(title)}"
+        logger.info(f"Fetching lyrics: {url}")
+        response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=5)
+        if response.status_code == 404:
+            logger.info(f"No lyrics found for: {title} - {artist}")
+            _cache_set(cache_key, None)
+            return None
+        response.raise_for_status()
+        data = response.json()
+        plain = data.get("plainLyrics")
+        if plain:
+            logger.info(f"Lyrics found: {len(plain)} chars")
+            _cache_set(cache_key, plain)
+            return plain
+        logger.info(f"No plain lyrics in response for: {title} - {artist}")
+        _cache_set(cache_key, None)
+        return None
+    except Exception as e:
+        logger.error(f"LRCLIB error: {e}")
+        _cache_set(cache_key, None)
+        return None
+
+
 def get_album_info(artist, album):
     logger.info(f"get_album_info called: artist='{artist}', album='{album}'")
 

@@ -35,7 +35,7 @@ import signal
 import sys
 import threading
 import io
-from musicbrainz import get_album_info, get_track_info_ai, get_combined_info, get_station_info
+from musicbrainz import get_album_info, get_track_info_ai, get_combined_info, get_station_info, get_lyrics
 from PIL import Image
 
 _QUALITY_RE = re.compile(r'(\d+)/(\d+\.?\d*)')
@@ -116,6 +116,10 @@ class BlusoundCLI:
         self.cover_art_key: str = ""
         self.cover_art_loading: bool = False
         self.show_cover_art: bool = False
+        self.lyrics_text: Optional[str] = None
+        self.lyrics_track_key: str = ""
+        self.lyrics_loading: bool = False
+        self.show_lyrics: bool = False
         self._data_lock = threading.Lock()
 
     def _derive_quality(self, stream_format: str) -> str:
@@ -261,6 +265,27 @@ class BlusoundCLI:
             else:
                 logger.info(f"Starting combined info fetch for: {track_key}")
                 threading.Thread(target=self._fetch_combined_info, daemon=True).start()
+
+        lyrics_key = f"{self.player_status.name}|{self.player_status.artist}"
+        if lyrics_key != self.lyrics_track_key:
+            self.lyrics_track_key = lyrics_key
+            self.lyrics_text = None
+            self.lyrics_loading = True
+            if not self.is_radio:
+                threading.Thread(target=self._fetch_lyrics, daemon=True).start()
+            else:
+                self.lyrics_loading = False
+
+    def _fetch_lyrics(self):
+        if self.player_status:
+            title = self.player_status.name
+            artist = self.player_status.artist
+            logger.info(f"Fetching lyrics for: {title} - {artist}")
+            text = get_lyrics(title, artist)
+            with self._data_lock:
+                self.lyrics_text = text
+                self.lyrics_loading = False
+            logger.info(f"Lyrics done: {'found' if text else 'not found'}")
 
     def _fetch_station_info(self):
         if self.player_status:
@@ -503,7 +528,7 @@ class BlusoundCLI:
             pass
 
         # Help text
-        stdscr.addstr(height - 2, 2, "(s) search  (f) fav  (l) playlists  (w) save  (c) cover  (+/-) fav  (i) source  (?) help  (q) quit")
+        stdscr.addstr(height - 2, 2, "(s) search  (f) fav  (l) playlists  (w) save  (c) cover  (t) lyrics  (+/-) fav  (i) source  (?) help  (q) quit")
         version = "bluxir v2.0"
         if width > len(version) + 2:
             stdscr.addstr(height - 2, width - len(version) - 2, version)
@@ -680,6 +705,35 @@ class BlusoundCLI:
                             line = f"{line} {word}" if line else word
                     if line and row < bottom_line:
                         stdscr.addstr(row, right_start, line[:right_w])
+        elif self.show_lyrics:
+            stdscr.addstr(3, right_start, "Lyrics:"[:right_w], curses.A_BOLD)
+            if self.lyrics_loading:
+                stdscr.addstr(5, right_start, "Loading lyrics..."[:right_w], curses.A_DIM)
+            elif self.lyrics_text:
+                lyrics_lines = self.lyrics_text.splitlines()
+                row = 4
+                for lyric_line in lyrics_lines:
+                    if row >= bottom_line:
+                        break
+                    if not lyric_line.strip():
+                        row += 1
+                        continue
+                    # Word-wrap long lines
+                    while lyric_line and row < bottom_line:
+                        if len(lyric_line) <= right_w:
+                            stdscr.addstr(row, right_start, lyric_line)
+                            row += 1
+                            break
+                        # Find break point
+                        split_at = lyric_line[:right_w].rfind(' ')
+                        if split_at <= 0:
+                            split_at = right_w
+                        stdscr.addstr(row, right_start, lyric_line[:split_at])
+                        lyric_line = lyric_line[split_at:].lstrip()
+                        row += 1
+                stdscr.addstr(bottom_line - 1, right_start, "(lyrics from lrclib.net)"[:right_w], curses.A_DIM)
+            else:
+                stdscr.addstr(5, right_start, "No lyrics available."[:right_w], curses.A_DIM)
         else:
             stdscr.addstr(3, right_start, "Playlist:"[:right_w], curses.A_BOLD)
 
@@ -726,6 +780,7 @@ class BlusoundCLI:
             ("l", "Load playlist"),
             ("w", "Save playlist"),
             ("c", "Toggle cover art"),
+            ("t", "Toggle lyrics"),
             ("g", "Go to track number"),
             ("m", "Toggle mute"),
             ("r", "Cycle repeat (off/queue/track)"),
@@ -940,6 +995,8 @@ class BlusoundCLI:
                 self.set_message("No saved playlists")
         elif key == ord('c') and self.active_player:
             self.show_cover_art = not self.show_cover_art
+        elif key == ord('t') and self.active_player and not self.is_radio:
+            self.show_lyrics = not self.show_lyrics
         elif key == ord('+') and self.active_player and self.player_status:
             if not self.player_status.albumid:
                 self.set_message("No album info available")

@@ -532,7 +532,7 @@ class BlusoundCLI:
 
         # Help text
         stdscr.addstr(height - 2, 2, "(s) search  (f) fav  (l) playlists  (w) save  (c) cover  (t) lyrics  (+/-) fav  (i) source  (?) help  (q) quit")
-        version = "bluxir v2.0"
+        version = "bluxir v2.1"
         if width > len(version) + 2:
             stdscr.addstr(height - 2, width - len(version) - 2, version)
         # Bottom horizontal line
@@ -1400,6 +1400,8 @@ class BlusoundCLI:
         return True, self.selected_source_index
 
     def main(self, stdscr: curses.window):
+        sys.stdout.write("\033]0;bluxir\007")
+        sys.stdout.flush()
         stdscr.erase()
         curses.curs_set(0)
         curses.start_color()

@@ -118,6 +118,7 @@ class BlusoundPlayer:
         self.name = name
         self.base_url = f"http://{self.host_name}:11000"
         self.sources: List[PlayerSource] = []
+        self._browse_path_cache: Dict[str, str] = {}
         logger.info(f"Initialized BlusoundPlayer: {self.name} at {self.host_name}")
         self.fetch_player_name()
         self.initialize_sources()
@@ -537,6 +538,18 @@ class BlusoundPlayer:
         """Navigate the browse hierarchy by matching item names at each level.
         Returns (True, items) if full path reached, or (False, items_at_failed_level)
         so the user can continue navigating manually."""
+        cache_key = "/".join(names)
+        cached_browse_key = self._browse_path_cache.get(cache_key)
+
+        if cached_browse_key:
+            logger.info(f"browse_path cache hit for '{cache_key}', key={cached_browse_key}")
+            results = self.capture_all_sources(cached_browse_key)
+            if results:
+                return True, results
+            # Cache stale, fall through to full resolution
+            logger.info(f"browse_path cached key returned no results, re-resolving")
+            del self._browse_path_cache[cache_key]
+
         current_key = None
         for depth, name in enumerate(names):
             items = self.capture_sources(current_key)
@@ -552,6 +565,9 @@ class BlusoundPlayer:
                 logger.info(f"browse_path: '{name}' not found at depth {depth}. Available: {[i.text for i in items]}")
                 return False, items
             current_key = match.browse_key
+
+        self._browse_path_cache[cache_key] = current_key
+        logger.info(f"browse_path cached '{cache_key}' -> {current_key}")
         results = self.capture_all_sources(current_key)
         return bool(results), results
 

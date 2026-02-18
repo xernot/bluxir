@@ -102,6 +102,7 @@ The main view is split into two halves:
 
 **Right side** displays:
 - Playlist with the current track highlighted and auto-scrolling
+- Lyrics view (toggle with `t`, scroll with PgUp/PgDn) — fetched from lrclib.net
 - When playing radio: station info (Now playing / Next program)
 
 | Key     | Action |
@@ -116,6 +117,12 @@ The main view is split into two halves:
 | l       | Load a saved playlist |
 | w       | Save current playlist |
 | c       | Toggle cover art display |
+| t       | Toggle lyrics view |
+| PgUp/PgDn | Scroll lyrics |
+| g       | Go to track number |
+| m       | Toggle mute |
+| r       | Cycle repeat (off / queue / track) |
+| x       | Toggle shuffle |
 | +       | Add current album to favourites |
 | -       | Remove current album from favourites |
 | p       | Pretty print (JSON debug view of player status) |
@@ -136,6 +143,7 @@ Navigate the source hierarchy to find albums, playlists, or radio stations.
 | LEFT    | Go back one level |
 | s       | Search within current source |
 | n/p     | Next / previous page |
+| /       | Filter list by title or artist |
 | +       | Add to favourites |
 | -       | Remove from favourites |
 | t       | Sort by title |
@@ -160,6 +168,13 @@ showing the current program and next show. bluxir also fetches a description of 
 Press `c` to toggle cover art rendering. 
 Album covers and radio station logos are displayed using half-block 
 terminal characters with 256 colors. The image is rendered inline in the left panel.
+
+### Lyrics
+
+Press `t` to toggle the lyrics view in the right panel (replaces the playlist).
+Lyrics are fetched from [lrclib.net](https://lrclib.net) — a free lyrics database with no API key required.
+Use `PgUp`/`PgDn` to scroll when lyrics don't fit on screen.
+Lyrics update automatically when the track changes.
 
 ### OpenAI Integration
 

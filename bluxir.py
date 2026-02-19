@@ -532,7 +532,7 @@ class BlusoundCLI:
 
         # Help text
         stdscr.addstr(height - 2, 2, "(s) search  (f) fav  (l) playlists  (w) save  (c) cover  (t) lyrics  (+/-) fav  (i) source  (?) help  (q) quit")
-        version = "bluxir v2.1"
+        version = "bluxir v2.0"
         if width > len(version) + 2:
             stdscr.addstr(height - 2, width - len(version) - 2, version)
         # Bottom horizontal line

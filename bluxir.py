@@ -98,6 +98,7 @@ class BlusoundCLI:
         self.search_source_index: int = 0
         self.search_results: List[PlayerSource] = []
         self.search_selected_index: int = 0
+        self.search_history: list = []
         self.active_search_key: Optional[str] = None
         self.search_source_name: str = ""
         self.playlist: list = []
@@ -1054,6 +1055,7 @@ class BlusoundCLI:
                 self.search_source_index = 0
                 self.search_results = []
                 self.search_selected_index = 0
+                self.search_history = []
                 self.active_search_key = None
                 self.search_source_name = ""
             else:
@@ -1320,6 +1322,7 @@ class BlusoundCLI:
                 self.search_phase = 'input'
                 self.search_results = []
                 self.search_selected_index = 0
+                self.search_history = []
                 return False, self.selected_source_index
             else:
                 self.set_message("Search not available for this source")
@@ -1591,6 +1594,7 @@ class BlusoundCLI:
                 if selected.browse_key:
                     self.active_player.get_nested_sources(selected)
                     if selected.children:
+                        self.search_history.append((self.search_results, self.search_selected_index))
                         self.search_results = selected.children
                         self.search_selected_index = 0
                     else:
@@ -1610,6 +1614,7 @@ class BlusoundCLI:
                 elif selected.browse_key:
                     self.active_player.get_nested_sources(selected)
                     if selected.children:
+                        self.search_history.append((self.search_results, self.search_selected_index))
                         self.search_results = selected.children
                         self.search_selected_index = 0
                     else:
@@ -1627,8 +1632,11 @@ class BlusoundCLI:
                         self.set_message("Cancelled")
                 else:
                     self.set_message("Cannot add to favourites" if not selected.context_menu_key else "Already in favourites")
-            elif key == KEY_B:
-                return False
+            elif key in (KEY_B, KEY_LEFT):
+                if self.search_history:
+                    self.search_results, self.search_selected_index = self.search_history.pop()
+                else:
+                    return False
             return True
 
         return False

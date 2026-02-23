@@ -1603,14 +1603,14 @@ class BlusoundCLI:
                     self.set_message(f"Cannot expand: {selected.text}")
             elif key == KEY_ENTER and self.search_results:
                 selected = self.search_results[self.search_selected_index]
-                if selected.context_menu_key and selected.type != 'album':
-                    self._execute_queue_action(selected, stdscr)
-                elif selected.play_url:
+                if selected.play_url or self.search_source_name == 'TuneIn':
                     success, message = self.active_player.select_input(selected)
                     self.set_message(message)
                     if success:
                         self.update_player_status()
                         return False
+                elif selected.context_menu_key and selected.type != 'album':
+                    self._execute_queue_action(selected, stdscr)
                 elif selected.browse_key:
                     self.active_player.get_nested_sources(selected)
                     if selected.children:

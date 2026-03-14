@@ -2,13 +2,13 @@
 
 This is an comprehensive command-line interface (CLI) for bluOS streamers.
 
-I wrote it, because its incredible borring to switch to a mobile phone while 
+I wrote it, because its incredible borring to switch to a mobile phone while
 working just because you want to hear different sounds, written in python.
 
 Originally based on https://github.com/irrelative/blucli (opens in a new tab)
 This project has since diverged significantly and is maintained independently.
 
-Extensive usage of claude-code (opus4.6) 
+Extensive usage of claude-code (opus4.6)
 
 
 # Blusound CLI
@@ -31,15 +31,16 @@ A comprehensive CLI interface to control Blusound streamers.
 * Displays an ascii-art image from the cover (c)
 * Radio Integration with Tunein & Radio Paradise
 * Lyrics from lrclib.net integrated
+* Visual feedback: controls highlight green for 5 seconds after changes
 
 ## Known Limitations
 * It mainly works well for qobuz support
 * No Spotify Support. BluOS does not support it
 * Not tested local/private streaming-services
 * The information form MusicBrainz is sometimes wrong. It is used
-  when no OPENAI_API_KEY is present. 
+  when no OPENAI_API_KEY is present.
   All other additional Informations are from chatgpt - so it could be wrong
-* Radio Stations cannot be stored as favorites. 
+* Radio Stations cannot be stored as favorites.
 * No Multi-Room feature (planned)
 
 
@@ -105,6 +106,8 @@ The main view is split into two halves:
 - Lyrics view (toggle with `t`, scroll with PgUp/PgDn) — fetched from lrclib.net
 - When playing radio: station info (Now playing / Next program)
 
+**Header bar** displays playback state, repeat, shuffle, and volume. Controls that were just changed highlight green for 5 seconds as visual feedback.
+
 | Key     | Action |
 |---------|--------|
 | UP/DOWN | Adjust volume |
@@ -132,7 +135,7 @@ The main view is split into two halves:
 
 ### Source Browsing
 
-Press `i` to browse available sources (Qobuz, TuneIn, Radio Paradise, etc.). 
+Press `i` to browse available sources (Qobuz, TuneIn, Radio Paradise, etc.).
 Navigate the source hierarchy to find albums, playlists, or radio stations.
 
 | Key     | Action |
@@ -153,20 +156,20 @@ Navigate the source hierarchy to find albums, playlists, or radio stations.
 
 ### Search
 
-Press `s` from source browsing or player control to search within a source (e.g. Qobuz). 
-Type your search term and press ENTER. Results show albums and tracks. For tracks, 
+Press `s` from source browsing or player control to search within a source (e.g. Qobuz).
+Type your search term and press ENTER. Results show albums and tracks. For tracks,
 ENTER opens a queue dialog (Play now / Add next / Add last). For albums, ENTER browses into the album.
 
 ### Radio Streaming
 
-Select a radio station from TuneIn or Radio Paradise via source browsing. 
-Press ENTER to play directly. The right side switches to a radio info panel 
+Select a radio station from TuneIn or Radio Paradise via source browsing.
+Press ENTER to play directly. The right side switches to a radio info panel
 showing the current program and next show. bluxir also fetches a description of the station via OpenAI.
 
 ### Cover Art
 
-Press `c` to toggle cover art rendering. 
-Album covers and radio station logos are displayed using half-block 
+Press `c` to toggle cover art rendering.
+Album covers and radio station logos are displayed using half-block
 terminal characters with 256 colors. The image is rendered inline in the left panel.
 
 ### Lyrics

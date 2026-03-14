@@ -18,7 +18,6 @@
 #
 
 import json
-import os
 from pathlib import Path
 
 # Project config (player settings, system prompt) - in project root

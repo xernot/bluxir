@@ -30,27 +30,43 @@ import logging
 from logging.handlers import RotatingFileHandler
 import json
 from config import get_preference, set_preference
-import curses.textpad
 import signal
 import sys
 import threading
 import io
-from musicbrainz import get_album_info, get_track_info_ai, get_combined_info, get_station_info, get_lyrics
+from musicbrainz import get_combined_info, get_station_info, get_lyrics
 from PIL import Image
+from constants import (
+    LOG_MAX_BYTES, LOG_BACKUP_COUNT, LOG_FORMAT, LOG_DATE_FORMAT,
+    CURSES_POLL_MS, INPUT_BLOCKING, HTTP_TIMEOUT_PLAYER,
+    DEFAULT_OPENAI_MODEL,
+    SOURCE_NAME_MAX_LENGTH, VOLUME_BAR_WIDTH, VOLUME_INCREMENT,
+    LAYOUT_LEFT_PCT, SOURCE_LIST_HEIGHT_OFFSET, SEARCH_HEIGHT_OFFSET,
+    LYRICS_SCROLL_STEP, TRACK_INPUT_MAX_DIGITS,
+    HELP_COL_WIDTH, HELP_DIV_OFFSET, HEADER_MESSAGE_DURATION,
+    FOOTER_HELP, VERSION_STRING, ABOUT_ATTRIBUTION, PROJECT_URL,
+    BROWSE_INSTRUCTIONS_1, BROWSE_INSTRUCTIONS_2, BROWSE_SORT_INSTRUCTIONS,
+    SEARCH_SOURCE_INSTRUCTIONS, SEARCH_RESULTS_INSTRUCTIONS,
+    LYRICS_ATTRIBUTION, LYRICS_SCROLL_HINT,
+    DISCOVERY_HINT, TERMINAL_TITLE, PRETTY_PRINT_TITLE,
+    QUEUE_ACTION_PROMPT, SEARCH_SERVICES,
+    HELP_LEFT_KEYS, HELP_RIGHT_KEYS, SELECTOR_SHORTCUTS,
+    STATUS_POLL_INTERVAL, PROGRESS_INCREMENT_INTERVAL,
+    HIGHLIGHT_DURATION,
+)
 
 _QUALITY_RE = re.compile(r'(\d+)/(\d+\.?\d*)')
 
 # Set up logging
 log_file = 'logs/bluxir.log'
-log_handler = RotatingFileHandler(log_file, maxBytes=1024*1024, backupCount=1)
-log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                                  datefmt='%Y-%m-%d %H:%M:%S')
+log_handler = RotatingFileHandler(log_file, maxBytes=LOG_MAX_BYTES, backupCount=LOG_BACKUP_COUNT)
+log_formatter = logging.Formatter(LOG_FORMAT, datefmt=LOG_DATE_FORMAT)
 log_handler.setFormatter(log_formatter)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 logger.addHandler(log_handler)
 
-# Define key codes
+# Key codes
 KEY_UP = curses.KEY_UP
 KEY_DOWN = curses.KEY_DOWN
 KEY_ENTER = 10
@@ -66,7 +82,7 @@ KEY_F = ord('f')
 KEY_W = ord('w')
 KEY_L = ord('l')
 
-def create_volume_bar(volume, width=20):
+def create_volume_bar(volume, width=VOLUME_BAR_WIDTH):
     filled = int(volume / 100 * width)
     return f"[{'#' * filled}{'-' * (width - filled)}]"
 
@@ -76,6 +92,17 @@ def format_time(seconds):
     minutes = seconds // 60
     secs = seconds % 60
     return f"{minutes}:{secs:02d}"
+
+def serialize_source(source):
+    return {
+        "text": source.text,
+        "image": source.image,
+        "browse_key": source.browse_key,
+        "play_url": source.play_url,
+        "input_type": source.input_type,
+        "type": source.type,
+        "children": [serialize_source(child) for child in source.children]
+    }
 
 class BlusoundCLI:
     def __init__(self):
@@ -124,6 +151,7 @@ class BlusoundCLI:
         self.show_lyrics: bool = False
         self.lyrics_scroll: int = 0
         self._data_lock = threading.Lock()
+        self._highlight_times: dict = {}
 
     def _derive_quality(self, stream_format: str) -> str:
         if not stream_format:
@@ -148,11 +176,11 @@ class BlusoundCLI:
         footer_row = height - 2
         stdscr.move(footer_row, 0)
         stdscr.clrtoeol()
-        stdscr.addstr(footer_row, 2, "(1) Play now  (2) Add next  (3) Add last  (ESC) Cancel", curses.A_BOLD)
+        stdscr.addstr(footer_row, 2, QUEUE_ACTION_PROMPT, curses.A_BOLD)
         stdscr.refresh()
-        stdscr.timeout(-1)
+        stdscr.timeout(INPUT_BLOCKING)
         key = stdscr.getch()
-        stdscr.timeout(100)
+        stdscr.timeout(CURSES_POLL_MS)
         if key == ord('1'):
             return "play_now"
         elif key == ord('2'):
@@ -187,8 +215,18 @@ class BlusoundCLI:
             self.header_message = message
             self.header_message_time = time.time()
 
+    def _highlight(self, field: str):
+        """Mark a header field as recently changed so it renders in green."""
+        self._highlight_times[field] = time.time()
+
+    def _is_highlighted(self, field: str) -> bool:
+        """Check if a header field should still be highlighted."""
+        t = self._highlight_times.get(field, 0)
+        return time.time() - t < HIGHLIGHT_DURATION
+
     def draw_header(self, stdscr: curses.window, view: str):
         height, width = stdscr.getmaxyx()
+        green = curses.color_pair(3)
         # Top line
         stdscr.hline(0, 0, curses.ACS_HLINE, width)
         # Header
@@ -198,22 +236,43 @@ class BlusoundCLI:
         stdscr.addstr(1, 2, header[:width - 4], curses.A_BOLD)
         # Status and Volume on the right side of header line
         if self.player_status and isinstance(self.player_status, PlayerStatus):
-            state_str = self.player_status.state.capitalize() if self.player_status.state else "-"
-            repeat_str = {0: "Queue", 1: "Track", 2: "Off"}.get(self.player_status.repeat, "Off")
-            shuffle_str = "On" if self.player_status.shuffle else "Off"
-            vol_bar = create_volume_bar(self.player_status.volume, width=12)
-            mute_str = "MUTED | " if self.player_status.mute else ""
-            info_right = f"Repeat:{repeat_str} | Shuffle:{shuffle_str} | {state_str} | {mute_str}{vol_bar} {self.player_status.volume}%"
+            segments = self._build_header_segments()
+            info_right = " | ".join(text for text, _ in segments)
             info_x = width - len(info_right) - 2
             if info_x > len(header) + 4:
-                stdscr.addstr(1, info_x, info_right)
-        if self.header_message and time.time() - self.header_message_time < 2:
+                x = info_x
+                for i, (text, highlighted) in enumerate(segments):
+                    attr = green if highlighted else 0
+                    stdscr.addstr(1, x, text, attr)
+                    x += len(text)
+                    if i < len(segments) - 1:
+                        stdscr.addstr(1, x, " | ")
+                        x += 3
+        if self.header_message and time.time() - self.header_message_time < HEADER_MESSAGE_DURATION:
             msg_start = len(header) + 6
             max_msg_width = width - msg_start - 2
             if max_msg_width > 0:
-                stdscr.addstr(1, msg_start, self.header_message[:max_msg_width])
+                msg_attr = green if any(self._is_highlighted(f) for f in self._highlight_times) else 0
+                stdscr.addstr(1, msg_start, self.header_message[:max_msg_width], msg_attr)
         # Separator
         stdscr.hline(2, 0, curses.ACS_HLINE, width)
+
+    def _build_header_segments(self):
+        """Build header status segments as (text, highlighted) tuples."""
+        ps = self.player_status
+        repeat_str = {0: "Queue", 1: "Track", 2: "Off"}.get(ps.repeat, "Off")
+        shuffle_str = "On" if ps.shuffle else "Off"
+        state_str = ps.state.capitalize() if ps.state else "-"
+        vol_bar = create_volume_bar(ps.volume)
+        mute_prefix = "MUTED " if ps.mute else ""
+        vol_text = f"{mute_prefix}{vol_bar} {ps.volume}%"
+
+        return [
+            (f"Repeat:{repeat_str}", self._is_highlighted('repeat')),
+            (f"Shuffle:{shuffle_str}", self._is_highlighted('shuffle')),
+            (state_str, self._is_highlighted('state')),
+            (vol_text, self._is_highlighted('volume') or self._is_highlighted('mute')),
+        ]
 
     def update_player_status(self):
         if self.active_player:
@@ -295,7 +354,7 @@ class BlusoundCLI:
         if self.player_status:
             station_name = self.player_status.title1
             api_key = get_preference('openai_api_key')
-            openai_model = get_preference('openai_model') or 'gpt-4o-mini'
+            openai_model = get_preference('openai_model') or DEFAULT_OPENAI_MODEL
             logger.info(f"Fetching station info for: {station_name}")
             text = get_station_info(station_name, api_key, model=openai_model)
             with self._data_lock:
@@ -312,7 +371,7 @@ class BlusoundCLI:
             album = self.player_status.album
             api_key = get_preference('openai_api_key')
             system_prompt = get_preference('openai_system_prompt')
-            openai_model = get_preference('openai_model') or 'gpt-4o-mini'
+            openai_model = get_preference('openai_model') or DEFAULT_OPENAI_MODEL
             logger.info(f"Fetching combined info for: {title} - {artist} - {album}")
             result = get_combined_info(title, artist, album, api_key, system_prompt, model=openai_model)
             with self._data_lock:
@@ -401,7 +460,7 @@ class BlusoundCLI:
             else:
                 url = f"{self.active_player.base_url}{image}"
             logger.info(f"Fetching cover art: {url}")
-            response = requests.get(url, timeout=5, allow_redirects=True)
+            response = requests.get(url, timeout=HTTP_TIMEOUT_PLAYER, allow_redirects=True)
             response.raise_for_status()
             with self._data_lock:
                 self._cover_art_raw = response.content
@@ -469,17 +528,11 @@ class BlusoundCLI:
             stdscr.addstr(start_y + 2 + i, start_x + 2, line[:modal_w - 4])
 
         # Footer
-        stdscr.addstr(start_y + modal_h - 3, start_x + 2, "(c) written by xir - under GPL"[:modal_w - 4], curses.A_DIM)
-        stdscr.addstr(start_y + modal_h - 2, start_x + 2, "https://github.com/xernot/bluxir"[:modal_w - 4], curses.A_DIM)
+        stdscr.addstr(start_y + modal_h - 3, start_x + 2, ABOUT_ATTRIBUTION[:modal_w - 4], curses.A_DIM)
+        stdscr.addstr(start_y + modal_h - 2, start_x + 2, PROJECT_URL[:modal_w - 4], curses.A_DIM)
 
     def display_selector_shortcuts(self, stdscr: curses.window):
-        shortcuts = [
-            ("UP/DOWN", "Select player"),
-            ("ENTER", "Activate player"),
-            ("q", "Quit"),
-        ]
-
-        self.draw_modal(stdscr, "Player Selector Shortcuts", shortcuts)
+        self.draw_modal(stdscr, "Player Selector Shortcuts", SELECTOR_SHORTCUTS)
 
     def display_player_control(self, stdscr: curses.window):
         if self.shortcuts_open:
@@ -495,9 +548,9 @@ class BlusoundCLI:
         stdscr.clrtoeol()
         stdscr.addstr(footer_row, 2, prompt, curses.A_BOLD)
         stdscr.refresh()
-        stdscr.timeout(-1)
+        stdscr.timeout(INPUT_BLOCKING)
         confirm = stdscr.getch()
-        stdscr.timeout(100)
+        stdscr.timeout(CURSES_POLL_MS)
         return confirm in (ord('y'), ord('Y'))
 
     def _left_text(self, stdscr, left_max, row, col, text, *args):
@@ -508,8 +561,8 @@ class BlusoundCLI:
         player_status = self.player_status
         height, width = stdscr.getmaxyx()
 
-        # Split layout: left 60%, right 40% for playlist
-        divider_x = width * 60 // 100
+        # Split layout: left panel for info, right panel for playlist
+        divider_x = width * LAYOUT_LEFT_PCT // 100
         bottom_line = height - 3
 
         # Draw vertical divider
@@ -531,18 +584,30 @@ class BlusoundCLI:
         except curses.error:
             pass
 
-        # Help text
-        stdscr.addstr(height - 2, 2, "(s) search  (f) fav  (l) playlists  (w) save  (c) cover  (t) lyrics  (+/-) fav  (i) source  (?) help  (q) quit")
-        version = "bluxir v2.1"
+        self._draw_footer(stdscr, height, width)
+        self._draw_player_info(stdscr, player_status, divider_x)
+
+        left_max = divider_x - 1
+        if self.show_cover_art:
+            self._draw_cover_art(stdscr, left_max, bottom_line)
+        else:
+            self._draw_detail_and_track_info(stdscr, player_status, left_max, divider_x, bottom_line)
+
+        right_start = divider_x + 2
+        right_w = width - right_start - 1
+        self._draw_right_panel(stdscr, player_status, right_start, right_w, bottom_line)
+
+    def _draw_footer(self, stdscr, height, width):
+        stdscr.addstr(height - 2, 2, FOOTER_HELP)
+        version = VERSION_STRING
         if width > len(version) + 2:
             stdscr.addstr(height - 2, width - len(version) - 2, version)
-        # Bottom horizontal line
         try:
             stdscr.hline(height - 1, 0, curses.ACS_HLINE, width)
         except curses.error:
             pass
 
-        # === Left side: Player info ===
+    def _draw_player_info(self, stdscr, player_status, divider_x):
         left_max = divider_x - 1
         labels = ["Now Playing", "Album", "Service", "Progress"]
         max_label_width = max(len(label) for label in labels)
@@ -564,119 +629,143 @@ class BlusoundCLI:
         except curses.error:
             pass
 
-        if self.show_cover_art:
-            # === Cover art mode ===
-            art_start_row = 8
-            available_rows = bottom_line - art_start_row
-            available_cols = left_max - 4
-            if self.cover_art_loading:
-                self._left_text(stdscr, left_max, art_start_row, 2, "Loading cover art...", curses.A_DIM)
-            elif self.cover_art and self._cover_art_raw:
-                try:
-                    art_cells = self._init_cover_colors(stdscr, self._cover_art_raw, available_cols, available_rows)
-                    for i, cells in enumerate(art_cells):
-                        row = art_start_row + i
-                        if row >= bottom_line:
-                            break
-                        for col, (ch, attr) in enumerate(cells):
-                            try:
-                                stdscr.addstr(row, 2 + col, ch, attr)
-                            except curses.error:
-                                pass
-                except Exception as e:
-                    logger.error(f"Cover art rendering error: {e}")
-                    self._left_text(stdscr, left_max, art_start_row, 2, "Error rendering cover art.", curses.A_DIM)
-            else:
-                self._left_text(stdscr, left_max, art_start_row, 2, "No cover art available.", curses.A_DIM)
+    def _draw_cover_art(self, stdscr, left_max, bottom_line):
+        art_start_row = 8
+        available_rows = bottom_line - art_start_row
+        available_cols = left_max - 4
+        if self.cover_art_loading:
+            self._left_text(stdscr, left_max, art_start_row, 2, "Loading cover art...", curses.A_DIM)
+        elif self.cover_art and self._cover_art_raw:
+            try:
+                art_cells = self._init_cover_colors(stdscr, self._cover_art_raw, available_cols, available_rows)
+                for i, cells in enumerate(art_cells):
+                    row = art_start_row + i
+                    if row >= bottom_line:
+                        break
+                    for col, (ch, attr) in enumerate(cells):
+                        try:
+                            stdscr.addstr(row, 2 + col, ch, attr)
+                        except curses.error:
+                            pass
+            except Exception as e:
+                logger.error(f"Cover art rendering error: {e}")
+                self._left_text(stdscr, left_max, art_start_row, 2, "Error rendering cover art.", curses.A_DIM)
         else:
-            # === Detail + Track info mode ===
-            # Detail section (two sub-columns within left half)
-            sub_col2_x = 2 + (left_max // 2)
-            _qm = _QUALITY_RE.search(player_status.stream_format) if player_status.stream_format else None
-            detail_left = [
-                ("Format", player_status.stream_format or "-"),
-                ("Quality", self._derive_quality(player_status.stream_format)),
-                ("Sample Rate", f"{_qm.group(2)} kHz" if _qm else "-"),
-                ("Bit Depth", f"{_qm.group(1)} bit" if _qm else "-"),
-                ("dB Level", f"{player_status.db:.1f}" if player_status.db is not None else "-"),
-            ]
-            mb = self.mb_info or {}
-            detail_right = [
-                ("Track-Nr", str(player_status.song + 1)),
-                ("Composer", player_status.composer or "-"),
-                ("Year", mb.get("year", "-")),
-                ("Label", mb.get("label", "-")),
-                ("Genre", mb.get("genre", "-")),
-            ]
-            dl = max(len(k) for k, _ in detail_left)
-            dr = max(len(k) for k, _ in detail_right)
-            max_detail_rows = max(len(detail_left), len(detail_right))
-            for i in range(max_detail_rows):
-                row = 8 + i
+            self._left_text(stdscr, left_max, art_start_row, 2, "No cover art available.", curses.A_DIM)
+
+    def _draw_detail_and_track_info(self, stdscr, player_status, left_max, divider_x, bottom_line):
+        sub_col2_x = 2 + (left_max // 2)
+        _qm = _QUALITY_RE.search(player_status.stream_format) if player_status.stream_format else None
+        detail_left = [
+            ("Format", player_status.stream_format or "-"),
+            ("Quality", self._derive_quality(player_status.stream_format)),
+            ("Sample Rate", f"{_qm.group(2)} kHz" if _qm else "-"),
+            ("Bit Depth", f"{_qm.group(1)} bit" if _qm else "-"),
+            ("dB Level", f"{player_status.db:.1f}" if player_status.db is not None else "-"),
+        ]
+        mb = self.mb_info or {}
+        detail_right = [
+            ("Track-Nr", str(player_status.song + 1)),
+            ("Composer", player_status.composer or "-"),
+            ("Year", mb.get("year", "-")),
+            ("Label", mb.get("label", "-")),
+            ("Genre", mb.get("genre", "-")),
+        ]
+        dl = max(len(k) for k, _ in detail_left)
+        dr = max(len(k) for k, _ in detail_right)
+        max_detail_rows = max(len(detail_left), len(detail_right))
+        for i in range(max_detail_rows):
+            row = 8 + i
+            if row >= bottom_line:
+                break
+            if i < len(detail_left):
+                lk, lv = detail_left[i]
+                stdscr.addstr(row, 2, f"{lk + ':':<{dl + 2}}", curses.A_DIM)
+                stdscr.addstr(row, 2 + dl + 2, lv[:sub_col2_x - dl - 4])
+            if i < len(detail_right):
+                rk, rv = detail_right[i]
+                val_start = sub_col2_x + dr + 2
+                val_max = max(0, left_max - val_start)
+                stdscr.addstr(row, sub_col2_x, f"{rk + ':':<{dr + 2}}"[:left_max - sub_col2_x], curses.A_DIM)
+                if val_max > 0:
+                    stdscr.addstr(row, val_start, rv[:val_max])
+
+        # Horizontal line under detail section (left side only)
+        detail_bottom = 8 + max_detail_rows
+        if detail_bottom < bottom_line:
+            stdscr.hline(detail_bottom, 0, curses.ACS_HLINE, divider_x)
+            try:
+                stdscr.addch(detail_bottom, divider_x, curses.ACS_RTEE)
+            except curses.error:
+                pass
+
+        self._draw_track_info(stdscr, left_max, detail_bottom + 1, bottom_line)
+
+    def _draw_track_info(self, stdscr, left_max, current_row, bottom_line):
+        if current_row >= bottom_line:
+            return
+        if self.wiki_loading:
+            current_row += 1
+            if current_row < bottom_line:
+                self._left_text(stdscr, left_max, current_row, 2, "Loading track info...", curses.A_DIM)
+        elif self.wiki_text:
+            current_row += 1  # blank line
+            if current_row < bottom_line:
+                stdscr.addstr(current_row, 2, "Track Info:", curses.A_BOLD)
+                current_row += 1
+                wrap_width = left_max - 4
+                words = self.wiki_text.split()
+                line = ""
+                for word in words:
+                    if current_row >= bottom_line:
+                        break
+                    if line and len(line) + 1 + len(word) > wrap_width:
+                        stdscr.addstr(current_row, 2, line[:wrap_width])
+                        current_row += 1
+                        line = word
+                    else:
+                        line = f"{line} {word}" if line else word
+                if line and current_row < bottom_line:
+                    stdscr.addstr(current_row, 2, line[:wrap_width])
+                _model_name = get_preference('openai_model') or DEFAULT_OPENAI_MODEL
+                stdscr.addstr(bottom_line - 1, 2, f"(generated by {_model_name})"[:wrap_width], curses.A_DIM)
+
+    def _draw_right_panel(self, stdscr, player_status, right_start, right_w, bottom_line):
+        if self.is_radio:
+            self._draw_radio_panel(stdscr, player_status, right_start, right_w, bottom_line)
+        elif self.show_lyrics:
+            self._draw_lyrics_panel(stdscr, right_start, right_w, bottom_line)
+        else:
+            self._draw_playlist_panel(stdscr, player_status, right_start, right_w, bottom_line)
+
+    def _draw_radio_panel(self, stdscr, player_status, right_start, right_w, bottom_line):
+        stdscr.addstr(3, right_start, "Radio:"[:right_w], curses.A_BOLD)
+        row = 5
+        radio_t3 = player_status.title3 or self.radio_title3
+        if radio_t3 and row < bottom_line:
+            stdscr.addstr(row, right_start, "Now playing:"[:right_w], curses.A_DIM)
+            row += 1
+            words = radio_t3.split()
+            line = ""
+            for word in words:
                 if row >= bottom_line:
                     break
-                if i < len(detail_left):
-                    lk, lv = detail_left[i]
-                    stdscr.addstr(row, 2, f"{lk + ':':<{dl + 2}}", curses.A_DIM)
-                    stdscr.addstr(row, 2 + dl + 2, lv[:sub_col2_x - dl - 4])
-                if i < len(detail_right):
-                    rk, rv = detail_right[i]
-                    val_start = sub_col2_x + dr + 2
-                    val_max = max(0, left_max - val_start)
-                    stdscr.addstr(row, sub_col2_x, f"{rk + ':':<{dr + 2}}"[:left_max - sub_col2_x], curses.A_DIM)
-                    if val_max > 0:
-                        stdscr.addstr(row, val_start, rv[:val_max])
-
-            # Horizontal line under detail section (left side only)
-            detail_bottom = 8 + max_detail_rows
-            if detail_bottom < bottom_line:
-                stdscr.hline(detail_bottom, 0, curses.ACS_HLINE, divider_x)
-                try:
-                    stdscr.addch(detail_bottom, divider_x, curses.ACS_RTEE)
-                except curses.error:
-                    pass
-
-            # Track info below detail section
-            current_row = detail_bottom + 1
-            if current_row < bottom_line:
-                if self.wiki_loading:
-                    current_row += 1
-                    if current_row < bottom_line:
-                        self._left_text(stdscr, left_max, current_row, 2, "Loading track info...", curses.A_DIM)
-                elif self.wiki_text:
-                    current_row += 1  # blank line
-                    if current_row < bottom_line:
-                        stdscr.addstr(current_row, 2, "Track Info:", curses.A_BOLD)
-                        current_row += 1
-                        wrap_width = left_max - 4
-                        words = self.wiki_text.split()
-                        line = ""
-                        for word in words:
-                            if current_row >= bottom_line:
-                                break
-                            if line and len(line) + 1 + len(word) > wrap_width:
-                                stdscr.addstr(current_row, 2, line[:wrap_width])
-                                current_row += 1
-                                line = word
-                            else:
-                                line = f"{line} {word}" if line else word
-                        if line and current_row < bottom_line:
-                            stdscr.addstr(current_row, 2, line[:wrap_width])
-                        _model_name = get_preference('openai_model') or 'gpt-4o-mini'
-                        stdscr.addstr(bottom_line - 1, 2, f"(generated by {_model_name})"[:wrap_width], curses.A_DIM)
-
-        # === Right side: Playlist or Radio Info ===
-        right_start = divider_x + 2
-        right_w = width - right_start - 1
-
-        if self.is_radio:
-            stdscr.addstr(3, right_start, "Radio:"[:right_w], curses.A_BOLD)
-            row = 5
-            radio_t3 = player_status.title3 or self.radio_title3
-            if radio_t3 and row < bottom_line:
-                stdscr.addstr(row, right_start, "Now playing:"[:right_w], curses.A_DIM)
+                if line and len(line) + 1 + len(word) > right_w:
+                    stdscr.addstr(row, right_start, line[:right_w])
+                    row += 1
+                    line = word
+                else:
+                    line = f"{line} {word}" if line else word
+            if line and row < bottom_line:
+                stdscr.addstr(row, right_start, line[:right_w])
                 row += 1
-                words = radio_t3.split()
+        radio_t2 = player_status.title2 or self.radio_title2
+        if radio_t2 and row < bottom_line:
+            row += 1
+            if row < bottom_line:
+                stdscr.addstr(row, right_start, "Next:"[:right_w], curses.A_DIM)
+                row += 1
+                words = radio_t2.split()
                 line = ""
                 for word in words:
                     if row >= bottom_line:
@@ -689,132 +778,91 @@ class BlusoundCLI:
                         line = f"{line} {word}" if line else word
                 if line and row < bottom_line:
                     stdscr.addstr(row, right_start, line[:right_w])
-                    row += 1
-            radio_t2 = player_status.title2 or self.radio_title2
-            if radio_t2 and row < bottom_line:
-                row += 1
-                if row < bottom_line:
-                    stdscr.addstr(row, right_start, "Next:"[:right_w], curses.A_DIM)
-                    row += 1
-                    words = radio_t2.split()
-                    line = ""
-                    for word in words:
-                        if row >= bottom_line:
-                            break
-                        if line and len(line) + 1 + len(word) > right_w:
-                            stdscr.addstr(row, right_start, line[:right_w])
-                            row += 1
-                            line = word
-                        else:
-                            line = f"{line} {word}" if line else word
-                    if line and row < bottom_line:
-                        stdscr.addstr(row, right_start, line[:right_w])
-        elif self.show_lyrics:
-            stdscr.addstr(3, right_start, "Lyrics:"[:right_w], curses.A_BOLD)
-            if self.lyrics_loading:
-                stdscr.addstr(5, right_start, "Loading lyrics..."[:right_w], curses.A_DIM)
-            elif self.lyrics_text:
-                # Pre-render all wrapped lines
-                wrapped = []
-                for lyric_line in self.lyrics_text.splitlines():
-                    if not lyric_line.strip():
-                        wrapped.append("")
-                        continue
-                    while lyric_line:
-                        if len(lyric_line) <= right_w:
-                            wrapped.append(lyric_line)
-                            break
-                        split_at = lyric_line[:right_w].rfind(' ')
-                        if split_at <= 0:
-                            split_at = right_w
-                        wrapped.append(lyric_line[:split_at])
-                        lyric_line = lyric_line[split_at:].lstrip()
 
-                # Clamp scroll
-                max_visible = bottom_line - 5  # rows 4..(bottom_line-2), reserve last for attribution
-                max_scroll = max(0, len(wrapped) - max_visible)
-                if self.lyrics_scroll > max_scroll:
-                    self.lyrics_scroll = max_scroll
-
-                # Display scrolled lyrics
-                visible = wrapped[self.lyrics_scroll:self.lyrics_scroll + max_visible]
-                for i, line in enumerate(visible):
-                    row = 4 + i
-                    if row >= bottom_line - 1:
+    def _draw_lyrics_panel(self, stdscr, right_start, right_w, bottom_line):
+        stdscr.addstr(3, right_start, "Lyrics:"[:right_w], curses.A_BOLD)
+        if self.lyrics_loading:
+            stdscr.addstr(5, right_start, "Loading lyrics..."[:right_w], curses.A_DIM)
+        elif self.lyrics_text:
+            # Pre-render all wrapped lines
+            wrapped = []
+            for lyric_line in self.lyrics_text.splitlines():
+                if not lyric_line.strip():
+                    wrapped.append("")
+                    continue
+                while lyric_line:
+                    if len(lyric_line) <= right_w:
+                        wrapped.append(lyric_line)
                         break
-                    if line:
-                        stdscr.addstr(row, right_start, line[:right_w])
+                    split_at = lyric_line[:right_w].rfind(' ')
+                    if split_at <= 0:
+                        split_at = right_w
+                    wrapped.append(lyric_line[:split_at])
+                    lyric_line = lyric_line[split_at:].lstrip()
 
-                # Attribution + scroll hint
-                attr_text = "(lyrics from lrclib.net)"
-                if max_scroll > 0:
-                    attr_text += "  [PgUp/PgDn to scroll]"
-                stdscr.addstr(bottom_line - 1, right_start, attr_text[:right_w], curses.A_DIM)
-            else:
-                stdscr.addstr(5, right_start, "No lyrics available."[:right_w], curses.A_DIM)
+            # Clamp scroll
+            max_visible = bottom_line - 5
+            max_scroll = max(0, len(wrapped) - max_visible)
+            if self.lyrics_scroll > max_scroll:
+                self.lyrics_scroll = max_scroll
+
+            # Display scrolled lyrics
+            visible = wrapped[self.lyrics_scroll:self.lyrics_scroll + max_visible]
+            for i, line in enumerate(visible):
+                row = 4 + i
+                if row >= bottom_line - 1:
+                    break
+                if line:
+                    stdscr.addstr(row, right_start, line[:right_w])
+
+            # Attribution + scroll hint
+            attr_text = LYRICS_ATTRIBUTION
+            if max_scroll > 0:
+                attr_text += LYRICS_SCROLL_HINT
+            stdscr.addstr(bottom_line - 1, right_start, attr_text[:right_w], curses.A_DIM)
         else:
-            stdscr.addstr(3, right_start, "Playlist:"[:right_w], curses.A_BOLD)
+            stdscr.addstr(5, right_start, "No lyrics available."[:right_w], curses.A_DIM)
 
-            if self.playlist:
-                current_song = player_status.song
-                max_rows = bottom_line - 4
+    def _draw_playlist_panel(self, stdscr, player_status, right_start, right_w, bottom_line):
+        stdscr.addstr(3, right_start, "Playlist:"[:right_w], curses.A_BOLD)
 
-                # Scroll to keep current song visible
-                start_idx = 0
-                if current_song > max_rows // 2:
-                    start_idx = current_song - max_rows // 2
-                if start_idx + max_rows > len(self.playlist):
-                    start_idx = max(0, len(self.playlist) - max_rows)
+        if self.playlist:
+            current_song = player_status.song
+            max_rows = bottom_line - 4
 
-                for i in range(start_idx, min(start_idx + max_rows, len(self.playlist))):
-                    row = 4 + (i - start_idx)
-                    if row >= bottom_line:
-                        break
-                    entry = self.playlist[i]
-                    nr = f"{i + 1:>3}"
-                    text = f"{nr}. {entry['title']} - {entry['artist']}"
-                    text = text[:right_w]
+            # Scroll to keep current song visible
+            start_idx = 0
+            if current_song > max_rows // 2:
+                start_idx = current_song - max_rows // 2
+            if start_idx + max_rows > len(self.playlist):
+                start_idx = max(0, len(self.playlist) - max_rows)
 
-                    if i == current_song:
-                        stdscr.attron(curses.color_pair(2))
-                        stdscr.addstr(row, right_start, text)
-                        stdscr.attroff(curses.color_pair(2))
-                    else:
-                        stdscr.addstr(row, right_start, text)
-            else:
-                stdscr.addstr(4, right_start, "No playlist loaded."[:right_w])
+            for i in range(start_idx, min(start_idx + max_rows, len(self.playlist))):
+                row = 4 + (i - start_idx)
+                if row >= bottom_line:
+                    break
+                entry = self.playlist[i]
+                nr = f"{i + 1:>3}"
+                text = f"{nr}. {entry['title']} - {entry['artist']}"
+                text = text[:right_w]
+
+                if i == current_song:
+                    stdscr.attron(curses.color_pair(2))
+                    stdscr.addstr(row, right_start, text)
+                    stdscr.attroff(curses.color_pair(2))
+                else:
+                    stdscr.addstr(row, right_start, text)
+        else:
+            stdscr.addstr(4, right_start, "No playlist loaded."[:right_w])
 
     def display_shortcuts(self, stdscr: curses.window):
         height, width = stdscr.getmaxyx()
 
-        left_col = [
-            ("UP/DOWN", "Adjust volume"),
-            ("SPACE", "Play/Pause"),
-            ("ENTER", "Play / Add next / Add last"),
-            (">/<", "Skip/Previous track"),
-            ("g", "Go to track number"),
-            ("m", "Toggle mute"),
-            ("r", "Cycle repeat"),
-            ("x", "Toggle shuffle"),
-            ("+/-", "Add/Remove favourite"),
-            ("ESC", "Cancel"),
-        ]
-        right_col = [
-            ("i", "Select input"),
-            ("s", "Search"),
-            ("f", "Qobuz favorites"),
-            ("l", "Load playlist"),
-            ("w", "Save playlist"),
-            ("c", "Toggle cover art"),
-            ("t", "Toggle lyrics"),
-            ("PgUp/PgDn", "Scroll lyrics"),
-            ("p", "Pretty print"),
-            ("b", "Back to player list"),
-            ("q", "Quit"),
-        ]
+        left_col = HELP_LEFT_KEYS
+        right_col = HELP_RIGHT_KEYS
 
-        col_w = 30
-        div_x_offset = col_w + 3  # position of vertical divider within modal
+        col_w = HELP_COL_WIDTH
+        div_x_offset = HELP_DIV_OFFSET
         modal_w = min(width - 4, col_w * 2 + 7)
         num_rows = max(len(left_col), len(right_col))
         # title + title-sep + entries + footer-sep + copyright + repo + borders
@@ -890,17 +938,17 @@ class BlusoundCLI:
             pass
 
         # Footer
-        stdscr.addstr(start_y + modal_h - 3, start_x + 2, "(c) written by xir - under GPL"[:modal_w - 4], curses.A_DIM)
-        stdscr.addstr(start_y + modal_h - 2, start_x + 2, "https://github.com/xernot/bluxir"[:modal_w - 4], curses.A_DIM)
+        stdscr.addstr(start_y + modal_h - 3, start_x + 2, ABOUT_ATTRIBUTION[:modal_w - 4], curses.A_DIM)
+        stdscr.addstr(start_y + modal_h - 2, start_x + 2, PROJECT_URL[:modal_w - 4], curses.A_DIM)
 
     def display_source_selection(self, stdscr: curses.window):
         active_player = self.active_player
         height, width = stdscr.getmaxyx()
-        max_display_items = height - 10
+        max_display_items = height - SOURCE_LIST_HEIGHT_OFFSET
 
-        stdscr.addstr(3, 2, "UP/DOWN: select, ENTER: play, RIGHT: expand, LEFT: back")
-        stdscr.addstr(4, 2, "s: search, /: filter, n/p: next/prev page, +: add fav, -: remove fav, b: back")
-        stdscr.addstr(5, 2, "Sort: (t) title  (a) artist  (o) original")
+        stdscr.addstr(3, 2, BROWSE_INSTRUCTIONS_1)
+        stdscr.addstr(4, 2, BROWSE_INSTRUCTIONS_2)
+        stdscr.addstr(5, 2, BROWSE_SORT_INSTRUCTIONS)
         sort_label = {"original": "Original", "title": "Title", "artist": "Artist"}.get(self.source_sort, "")
         stdscr.addstr(7, 2, f"Select Source:  [sorted by {sort_label}]")
 
@@ -932,6 +980,8 @@ class BlusoundCLI:
             expand_indicator = "+" if source.browse_key else " "
             display_index = i - start_index
             label = f"{source.text} - {source.text2}" if source.text2 else source.text
+            if len(label) > SOURCE_NAME_MAX_LENGTH:
+                label = label[:SOURCE_NAME_MAX_LENGTH - 1] + "…"
             stdscr.addstr(8 + display_index, 4, f"{indent}{prefix} {expand_indicator} {label}")
 
         if total_items > max_display_items:
@@ -972,21 +1022,35 @@ class BlusoundCLI:
     def handle_player_control(self, key: int, stdscr: curses.window) -> Tuple[bool, bool]:
         if key == KEY_B:
             return False, False
-        elif key == KEY_UP and self.active_player:
-            new_volume = min(100, self.player_status.volume + 5) if self.player_status else 5
+        elif key in (KEY_UP, KEY_DOWN, KEY_SPACE, KEY_RIGHT, KEY_LEFT,
+                     ord('m'), ord('r'), ord('x'), ord('g')):
+            self._handle_playback_keys(key, stdscr)
+        elif key in (KEY_I, KEY_S, KEY_F, KEY_W, KEY_L):
+            self._handle_navigation_keys(key, stdscr)
+        elif key in (ord('c'), ord('t'), curses.KEY_PPAGE, curses.KEY_NPAGE,
+                     ord('+'), ord('-'), KEY_QUESTION, KEY_P):
+            self._handle_info_keys(key, stdscr)
+        return True, False
+
+    def _handle_playback_keys(self, key: int, stdscr: curses.window):
+        if key == KEY_UP and self.active_player:
+            new_volume = min(100, self.player_status.volume + VOLUME_INCREMENT) if self.player_status else VOLUME_INCREMENT
             success, message = self.active_player.set_volume(new_volume)
             if success and self.player_status:
                 self.player_status.volume = new_volume
+                self._highlight('volume')
             self.set_message(message)
         elif key == KEY_DOWN and self.active_player:
-            new_volume = max(0, self.player_status.volume - 5) if self.player_status else 0
+            new_volume = max(0, self.player_status.volume - VOLUME_INCREMENT) if self.player_status else 0
             success, message = self.active_player.set_volume(new_volume)
             if success and self.player_status:
                 self.player_status.volume = new_volume
+                self._highlight('volume')
             self.set_message(message)
         elif key == KEY_SPACE and self.active_player:
             success, message = self.active_player.toggle_play_pause()
             if success:
+                self._highlight('state')
                 self.update_player_status()
             self.set_message(message)
         elif key == KEY_RIGHT and self.active_player:
@@ -1003,51 +1067,58 @@ class BlusoundCLI:
             success, message = self.active_player.toggle_mute(self.player_status.mute)
             if success:
                 self.player_status.mute = not self.player_status.mute
+                self._highlight('mute')
             self.set_message(message)
         elif key == ord('r') and self.active_player and self.player_status:
             success, message = self.active_player.cycle_repeat(self.player_status.repeat)
             if success:
                 self.player_status.repeat = {2: 0, 0: 1, 1: 2}[self.player_status.repeat]
+                self._highlight('repeat')
             self.set_message(message)
         elif key == ord('x') and self.active_player and self.player_status:
             success, message = self.active_player.toggle_shuffle(self.player_status.shuffle)
             if success:
                 self.player_status.shuffle = not self.player_status.shuffle
+                self._highlight('shuffle')
             self.set_message(message)
         elif key == ord('g') and self.active_player and self.player_status and self.playlist:
-            height, width = stdscr.getmaxyx()
-            footer_row = height - 2
-            stdscr.move(footer_row, 0)
-            stdscr.clrtoeol()
-            stdscr.addstr(footer_row, 2, f"Go to track (1-{len(self.playlist)}): ", curses.A_BOLD)
-            curses.echo()
-            curses.curs_set(1)
-            stdscr.timeout(-1)
-            try:
-                input_str = stdscr.getstr(footer_row, 2 + len(f"Go to track (1-{len(self.playlist)}): "), 5).decode('utf-8').strip()
-                if input_str.isdigit():
-                    track_num = int(input_str)
-                    if 1 <= track_num <= len(self.playlist):
-                        success, message = self.active_player.play_queue_track(track_num - 1)
-                        if success:
-                            self.update_player_status()
-                        self.set_message(message)
-                    else:
-                        self.set_message(f"Invalid track number: {track_num}")
-                elif input_str:
-                    self.set_message("Cancelled")
-            finally:
-                curses.noecho()
-                curses.curs_set(0)
-                stdscr.timeout(100)
-        elif key == KEY_I:
+            self._goto_track(stdscr)
+
+    def _goto_track(self, stdscr: curses.window):
+        height, width = stdscr.getmaxyx()
+        footer_row = height - 2
+        stdscr.move(footer_row, 0)
+        stdscr.clrtoeol()
+        stdscr.addstr(footer_row, 2, f"Go to track (1-{len(self.playlist)}): ", curses.A_BOLD)
+        curses.echo()
+        curses.curs_set(1)
+        stdscr.timeout(INPUT_BLOCKING)
+        try:
+            input_str = stdscr.getstr(footer_row, 2 + len(f"Go to track (1-{len(self.playlist)}): "), TRACK_INPUT_MAX_DIGITS).decode('utf-8').strip()
+            if input_str.isdigit():
+                track_num = int(input_str)
+                if 1 <= track_num <= len(self.playlist):
+                    success, message = self.active_player.play_queue_track(track_num - 1)
+                    if success:
+                        self.update_player_status()
+                    self.set_message(message)
+                else:
+                    self.set_message(f"Invalid track number: {track_num}")
+            elif input_str:
+                self.set_message("Cancelled")
+        finally:
+            curses.noecho()
+            curses.curs_set(0)
+            stdscr.timeout(CURSES_POLL_MS)
+
+    def _handle_navigation_keys(self, key: int, stdscr: curses.window):
+        if key == KEY_I:
             self.source_selection_mode = True
             self.selected_source_index = [0]
             self.current_sources = self.active_player.sources
         elif key == KEY_S:
-            _search_services = ('Qobuz:', 'TuneIn:')
-            searchable = [s for s in self.active_player.sources if s.browse_key in _search_services]
-            searchable.sort(key=lambda s: _search_services.index(s.browse_key))
+            searchable = [s for s in self.active_player.sources if s.browse_key in SEARCH_SERVICES]
+            searchable.sort(key=lambda s: SEARCH_SERVICES.index(s.browse_key))
             if searchable:
                 self.search_mode = True
                 self.search_phase = 'source_select'
@@ -1093,60 +1164,56 @@ class BlusoundCLI:
                 self.set_message(f"Found {len(playlists)} playlists")
             else:
                 self.set_message("No saved playlists")
-        elif key == ord('c') and self.active_player:
+
+    def _handle_info_keys(self, key: int, stdscr: curses.window):
+        if key == ord('c') and self.active_player:
             self.show_cover_art = not self.show_cover_art
         elif key == ord('t') and self.active_player and not self.is_radio:
             self.show_lyrics = not self.show_lyrics
             self.lyrics_scroll = 0
         elif key == curses.KEY_PPAGE and self.show_lyrics:
-            self.lyrics_scroll = max(0, self.lyrics_scroll - 5)
+            self.lyrics_scroll = max(0, self.lyrics_scroll - LYRICS_SCROLL_STEP)
         elif key == curses.KEY_NPAGE and self.show_lyrics:
-            self.lyrics_scroll += 5
+            self.lyrics_scroll += LYRICS_SCROLL_STEP
         elif key == ord('+') and self.active_player and self.player_status:
-            if not self.player_status.albumid:
-                self.set_message("No album info available")
-            elif self.player_status.is_favourite:
-                self.set_message("Already in favourites")
-            else:
-                album = self.player_status.album or "this album"
-                if self._confirm_prompt(stdscr, f"Add '{album}' to favourites? (y/n)"):
-                    success, message = self.active_player.add_album_favourite(self.player_status)
-                    self.set_message(message)
-                    if success:
-                        self.update_player_status()
-                else:
-                    self.set_message("Cancelled")
+            self._add_favourite(stdscr)
         elif key == ord('-') and self.active_player and self.player_status:
-            if not self.player_status.albumid:
-                self.set_message("No album info available")
-            else:
-                album = self.player_status.album or "this album"
-                if self._confirm_prompt(stdscr, f"Remove '{album}' from favourites? (y/n)"):
-                    success, message = self.active_player.remove_album_favourite(self.player_status)
-                    self.set_message(message)
-                    if success:
-                        self.update_player_status()
-                else:
-                    self.set_message("Cancelled")
+            self._remove_favourite(stdscr)
         elif key == KEY_QUESTION:
             self.shortcuts_open = not self.shortcuts_open
         elif key == KEY_P:
             self.pretty_print_player_state(stdscr)
-        return True, False
+
+    def _add_favourite(self, stdscr: curses.window):
+        if not self.player_status.albumid:
+            self.set_message("No album info available")
+        elif self.player_status.is_favourite:
+            self.set_message("Already in favourites")
+        else:
+            album = self.player_status.album or "this album"
+            if self._confirm_prompt(stdscr, f"Add '{album}' to favourites? (y/n)"):
+                success, message = self.active_player.add_album_favourite(self.player_status)
+                self.set_message(message)
+                if success:
+                    self.update_player_status()
+            else:
+                self.set_message("Cancelled")
+
+    def _remove_favourite(self, stdscr: curses.window):
+        if not self.player_status.albumid:
+            self.set_message("No album info available")
+        else:
+            album = self.player_status.album or "this album"
+            if self._confirm_prompt(stdscr, f"Remove '{album}' from favourites? (y/n)"):
+                success, message = self.active_player.remove_album_favourite(self.player_status)
+                self.set_message(message)
+                if success:
+                    self.update_player_status()
+            else:
+                self.set_message("Cancelled")
 
     def pretty_print_player_state(self, stdscr: curses.window):
         if self.active_player and self.player_status:
-            def serialize_source(source):
-                return {
-                    "text": source.text,
-                    "image": source.image,
-                    "browse_key": source.browse_key,
-                    "play_url": source.play_url,
-                    "input_type": source.input_type,
-                    "type": source.type,
-                    "children": [serialize_source(child) for child in source.children]
-                }
-
             player_state = {
                 "player": {
                     "name": self.active_player.name,
@@ -1180,7 +1247,7 @@ class BlusoundCLI:
 
             popup_win = curses.newwin(popup_height, popup_width, popup_start_y, popup_start_x)
             popup_win.box()
-            popup_win.addstr(0, 2, " Player State (UP/DOWN scroll, 'q' to close) ", curses.A_REVERSE)
+            popup_win.addstr(0, 2, PRETTY_PRINT_TITLE, curses.A_REVERSE)
 
             content_pad = curses.newpad(content_height + 1, content_width + 1)
             for i, line_text in enumerate(lines):
@@ -1216,7 +1283,7 @@ class BlusoundCLI:
 
     def handle_source_selection(self, key: int, stdscr: curses.window) -> Tuple[bool, List[int]]:
         height, _ = stdscr.getmaxyx()
-        max_display_items = height - 10
+        max_display_items = height - SOURCE_LIST_HEIGHT_OFFSET
         logger.info("Key pressed in source selection: %s", key)
 
         if key == KEY_B:
@@ -1264,6 +1331,36 @@ class BlusoundCLI:
             self.selected_source_index[-1] = len(self.current_sources) - 1
         if current_idx_val < 0: self.selected_source_index[-1] = 0
 
+        if key in (KEY_UP, KEY_DOWN, ord('n'), ord('p'), KEY_RIGHT):
+            self._handle_source_navigation(key, max_display_items)
+        elif key == KEY_ENTER:
+            result = self._handle_source_enter()
+            if result is not None:
+                return result, self.selected_source_index
+        elif key == KEY_S:
+            search_key = self.current_sources[0].search_key if self.current_sources else None
+            if search_key:
+                self.search_mode = True
+                self.active_search_key = search_key
+                self.search_source_name = ""
+                self.search_phase = 'input'
+                self.search_results = []
+                self.search_selected_index = 0
+                self.search_history = []
+                return False, self.selected_source_index
+            else:
+                self.set_message("Search not available for this source")
+        elif key in (ord('t'), ord('a'), ord('o')):
+            self._handle_source_sort(key)
+        elif key == ord('+') and self.current_sources:
+            self._handle_source_add_favourite(stdscr)
+        elif key == ord('-') and self.current_sources:
+            self._handle_source_remove_favourite(stdscr)
+        elif key == ord('/') and self.current_sources:
+            self._handle_source_filter(stdscr)
+        return True, self.selected_source_index
+
+    def _handle_source_navigation(self, key: int, max_display_items: int):
         if key == KEY_UP:
             if self.selected_source_index[-1] > 0:
                 self.selected_source_index[-1] -= 1
@@ -1276,7 +1373,7 @@ class BlusoundCLI:
             if next_page_start_index < len(self.current_sources):
                 self.selected_source_index[-1] = next_page_start_index
             else:
-                self.selected_source_index[-1] = len(self.current_sources) -1
+                self.selected_source_index[-1] = len(self.current_sources) - 1
         elif key == ord('p'):
             current_page_items = max_display_items if max_display_items > 0 else len(self.current_sources)
             prev_page_start_index = ((self.selected_source_index[-1] // current_page_items) - 1) * current_page_items
@@ -1295,222 +1392,228 @@ class BlusoundCLI:
                     self.set_message(f"No nested sources found for: {selected_source.text}")
             else:
                 self.set_message(f"Cannot expand: {selected_source.text}")
-        elif key == KEY_ENTER:
-            selected_source = self.current_sources[self.selected_source_index[-1]]
-            if selected_source.play_url:
-                self.set_message(f"Playing: {selected_source.text}")
-                success, message = self.active_player.select_input(selected_source)
-                if success:
-                    self.update_player_status()
-                    return False, self.selected_source_index
-                self.set_message(message)
-            elif selected_source.browse_key:
-                self.active_player.get_nested_sources(selected_source)
-                if selected_source.children:
-                    self.current_sources = selected_source.children
-                    self.selected_source_index.append(0)
-                else:
-                    self.set_message(f"No nested sources found for: {selected_source.text}")
+
+    def _handle_source_enter(self):
+        """Handle ENTER in source selection. Returns False to exit, None to continue."""
+        selected_source = self.current_sources[self.selected_source_index[-1]]
+        if selected_source.play_url:
+            self.set_message(f"Playing: {selected_source.text}")
+            success, message = self.active_player.select_input(selected_source)
+            if success:
+                self.update_player_status()
+                return False
+            self.set_message(message)
+        elif selected_source.browse_key:
+            self.active_player.get_nested_sources(selected_source)
+            if selected_source.children:
+                self.current_sources = selected_source.children
+                self.selected_source_index.append(0)
             else:
-                self.set_message(f"Cannot play or expand: {selected_source.text}")
-        elif key == KEY_S:
-            search_key = self.current_sources[0].search_key if self.current_sources else None
-            if search_key:
-                self.search_mode = True
-                self.active_search_key = search_key
-                self.search_source_name = ""
-                self.search_phase = 'input'
-                self.search_results = []
-                self.search_selected_index = 0
-                self.search_history = []
-                return False, self.selected_source_index
-            else:
-                self.set_message("Search not available for this source")
-        elif key == ord('t'):
+                self.set_message(f"No nested sources found for: {selected_source.text}")
+        else:
+            self.set_message(f"Cannot play or expand: {selected_source.text}")
+        return None
+
+    def _handle_source_sort(self, key: int):
+        if key == ord('t'):
             if not self.unsorted_sources:
                 self.unsorted_sources = list(self.current_sources)
             self.current_sources.sort(key=lambda s: s.text.lower())
             self.source_sort = 'title'
-            self.selected_source_index[-1] = 0
         elif key == ord('a'):
             if not self.unsorted_sources:
                 self.unsorted_sources = list(self.current_sources)
             self.current_sources.sort(key=lambda s: (s.text2 or '').lower())
             self.source_sort = 'artist'
-            self.selected_source_index[-1] = 0
         elif key == ord('o'):
             if self.unsorted_sources:
                 self.current_sources = list(self.unsorted_sources)
             self.source_sort = 'original'
+        self.selected_source_index[-1] = 0
+
+    def _handle_source_add_favourite(self, stdscr: curses.window):
+        selected = self.current_sources[self.selected_source_index[-1]]
+        if not selected.context_menu_key:
+            self.set_message("Cannot add this item to favourites")
+        elif selected.is_favourite:
+            self.set_message("Already in favourites")
+        else:
+            label = f"{selected.text} - {selected.text2}" if selected.text2 else selected.text
+            if self._confirm_prompt(stdscr, f"Add '{label}' to favourites? (y/n)"):
+                success, message = self.active_player.toggle_favourite(selected, add=True)
+                self.set_message(message)
+            else:
+                self.set_message("Cancelled")
+
+    def _handle_source_remove_favourite(self, stdscr: curses.window):
+        selected = self.current_sources[self.selected_source_index[-1]]
+        if not selected.context_menu_key:
+            self.set_message("Cannot remove this item from favourites")
+        else:
+            label = f"{selected.text} - {selected.text2}" if selected.text2 else selected.text
+            if self._confirm_prompt(stdscr, f"Remove '{label}' from favourites? (y/n)"):
+                success, message = self.active_player.toggle_favourite(selected, add=False)
+                self.set_message(message)
+                if success:
+                    self.current_sources.remove(selected)
+                    if self.unsorted_sources and selected in self.unsorted_sources:
+                        self.unsorted_sources.remove(selected)
+                    if self.source_filter_backup and selected in self.source_filter_backup:
+                        self.source_filter_backup.remove(selected)
+                    if self.selected_source_index[-1] >= len(self.current_sources):
+                        self.selected_source_index[-1] = max(0, len(self.current_sources) - 1)
+            else:
+                self.set_message("Cancelled")
+
+    def _handle_source_filter(self, stdscr: curses.window):
+        height, width = stdscr.getmaxyx()
+        footer_row = height - 2
+        stdscr.move(footer_row, 0)
+        stdscr.clrtoeol()
+        filter_term = self.get_input(stdscr, "Filter: ")
+        if filter_term:
+            if not self.source_filter_backup:
+                self.source_filter_backup = list(self.current_sources)
+            term = filter_term.lower()
+            self.current_sources = [
+                s for s in self.source_filter_backup
+                if term in s.text.lower() or term in (s.text2 or '').lower()
+            ]
             self.selected_source_index[-1] = 0
-        elif key == ord('+') and self.current_sources:
-            selected = self.current_sources[self.selected_source_index[-1]]
-            if not selected.context_menu_key:
-                self.set_message("Cannot add this item to favourites")
-            elif selected.is_favourite:
-                self.set_message("Already in favourites")
+            if self.current_sources:
+                self.set_message(f"Filter: '{filter_term}' ({len(self.current_sources)} matches)")
             else:
-                label = f"{selected.text} - {selected.text2}" if selected.text2 else selected.text
-                if self._confirm_prompt(stdscr, f"Add '{label}' to favourites? (y/n)"):
-                    success, message = self.active_player.toggle_favourite(selected, add=True)
-                    self.set_message(message)
-                else:
-                    self.set_message("Cancelled")
-        elif key == ord('-') and self.current_sources:
-            selected = self.current_sources[self.selected_source_index[-1]]
-            if not selected.context_menu_key:
-                self.set_message("Cannot remove this item from favourites")
-            else:
-                label = f"{selected.text} - {selected.text2}" if selected.text2 else selected.text
-                if self._confirm_prompt(stdscr, f"Remove '{label}' from favourites? (y/n)"):
-                    success, message = self.active_player.toggle_favourite(selected, add=False)
-                    self.set_message(message)
-                    if success:
-                        self.current_sources.remove(selected)
-                        if self.unsorted_sources and selected in self.unsorted_sources:
-                            self.unsorted_sources.remove(selected)
-                        if self.source_filter_backup and selected in self.source_filter_backup:
-                            self.source_filter_backup.remove(selected)
-                        if self.selected_source_index[-1] >= len(self.current_sources):
-                            self.selected_source_index[-1] = max(0, len(self.current_sources) - 1)
-                else:
-                    self.set_message("Cancelled")
-        elif key == ord('/') and self.current_sources:
-            height, width = stdscr.getmaxyx()
-            footer_row = height - 2
-            stdscr.move(footer_row, 0)
-            stdscr.clrtoeol()
-            filter_term = self.get_input(stdscr, "Filter: ")
-            if filter_term:
-                if not self.source_filter_backup:
-                    self.source_filter_backup = list(self.current_sources)
-                term = filter_term.lower()
-                self.current_sources = [
-                    s for s in self.source_filter_backup
-                    if term in s.text.lower() or term in (s.text2 or '').lower()
-                ]
-                self.selected_source_index[-1] = 0
-                if self.current_sources:
-                    self.set_message(f"Filter: '{filter_term}' ({len(self.current_sources)} matches)")
-                else:
-                    self.set_message(f"No matches for '{filter_term}'")
-                    self.current_sources = list(self.source_filter_backup)
-            elif self.source_filter_backup:
+                self.set_message(f"No matches for '{filter_term}'")
                 self.current_sources = list(self.source_filter_backup)
-                self.source_filter_backup = []
-                self.selected_source_index[-1] = 0
-                self.set_message("Filter cleared")
-        return True, self.selected_source_index
+        elif self.source_filter_backup:
+            self.current_sources = list(self.source_filter_backup)
+            self.source_filter_backup = []
+            self.selected_source_index[-1] = 0
+            self.set_message("Filter cleared")
 
     def main(self, stdscr: curses.window):
-        sys.stdout.write("\033]0;bluxir\007")
+        sys.stdout.write(TERMINAL_TITLE)
         sys.stdout.flush()
         stdscr.erase()
         curses.curs_set(0)
         curses.start_color()
         curses.use_default_colors()
         curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
+        curses.init_pair(3, curses.COLOR_GREEN, -1)
 
-        player_mode: bool = False
-        discovery_started: bool = False
-
-        player_host = get_preference('player_host')
-        player_name = get_preference('player_name')
-
-        if player_host:
-            try:
-                player = BlusoundPlayer(host_name=player_host, name=player_name or player_host)
-                success, status = player.get_status()
-                if success:
-                    self.active_player = player
-                    self.player_status = status
-                    self.playlist = player.get_playlist()
-                    self._check_mb_update()
-                    self.players = [player]
-                    player_mode = True
-            except Exception as e:
-                logger.error(f"Failed to connect to stored player: {e}")
+        player_mode = self._try_stored_player()
+        discovery_started = False
 
         if not player_mode:
             self.players = threaded_discover()
             discovery_started = True
-            stdscr.addstr(3, 2, "Discovering Blusound players...")
+            stdscr.addstr(3, 2, DISCOVERY_HINT)
             stdscr.refresh()
 
         while True:
-            # Handle terminal resize
             if curses.is_term_resized(stdscr.getmaxyx()[0], stdscr.getmaxyx()[1]):
                 new_h, new_w = stdscr.getmaxyx()
                 curses.resizeterm(new_h, new_w)
                 stdscr.clear()
 
             stdscr.erase()
-
-            if not player_mode:
-                view = "Player Selection"
-            elif self.search_mode:
-                view = "Search"
-            elif self.source_selection_mode:
-                view = "Source Selection"
-            else:
-                view = "BluOS Player Control"
-
-            self.draw_header(stdscr, view)
-
-            if not player_mode:
-                if not discovery_started:
-                    self.players = threaded_discover()
-                    discovery_started = True
-                self.display_player_selection(stdscr)
-            else:
-                if self.search_mode:
-                    if self.search_phase == 'source_select':
-                        self.display_search_source_selection(stdscr)
-                    elif self.search_phase == 'results':
-                        self.display_search_results(stdscr)
-                elif not self.source_selection_mode:
-                    self.display_player_control(stdscr)
-                else:
-                    self.display_source_selection(stdscr)
+            self._draw_current_view(stdscr, player_mode, discovery_started)
+            if not discovery_started and not player_mode:
+                self.players = threaded_discover()
+                discovery_started = True
 
             stdscr.refresh()
-            stdscr.timeout(100)
+            stdscr.timeout(CURSES_POLL_MS)
             key = stdscr.getch()
 
             if key == ord('q'):
                 if self._confirm_prompt(stdscr, "Quit bluxir? (y/n)"):
                     break
                 continue
-            elif not player_mode:
-                if self.selector_shortcuts_open:
-                    if key != -1:
-                        self.selector_shortcuts_open = False
-                else:
-                    player_mode, self.active_player, _ = self.handle_player_selection(key)
-                    if player_mode:
-                        self.update_player_status()
-            else:
-                if self.shortcuts_open:
-                    if key != -1:
-                        self.shortcuts_open = False
-                elif self.search_mode:
-                    self.search_mode = self.handle_search(key, stdscr)
-                elif not self.source_selection_mode:
-                    player_mode, _ = self.handle_player_control(key, stdscr)
-                else:
-                    self.source_selection_mode, _ = self.handle_source_selection(key, stdscr)
 
-            current_time = time.time()
-            if self.player_status and self.player_status.state in ('stream', 'play'):
-                if current_time - self.last_progress_time >= 1:
-                    self.player_status.secs += 1
-                    if self.player_status.totlen > 0:
-                        self.player_status.secs = min(self.player_status.secs, self.player_status.totlen)
-                    self.last_progress_time = current_time
-            if self.active_player and current_time - self.last_update_time >= 3:
-                self.update_player_status()
-                self.last_update_time = current_time
+            player_mode = self._handle_input(key, stdscr, player_mode)
+            self._tick_progress()
+
+    def _try_stored_player(self):
+        """Try connecting to the stored player from config. Returns True if successful."""
+        player_host = get_preference('player_host')
+        player_name = get_preference('player_name')
+        if not player_host:
+            return False
+        try:
+            player = BlusoundPlayer(host_name=player_host, name=player_name or player_host)
+            success, status = player.get_status()
+            if success:
+                self.active_player = player
+                self.player_status = status
+                self.playlist = player.get_playlist()
+                self._check_mb_update()
+                self.players = [player]
+                return True
+        except Exception as e:
+            logger.error(f"Failed to connect to stored player: {e}")
+        return False
+
+    def _draw_current_view(self, stdscr, player_mode, discovery_started):
+        """Draw the appropriate view based on current mode."""
+        if not player_mode:
+            view = "Player Selection"
+        elif self.search_mode:
+            view = "Search"
+        elif self.source_selection_mode:
+            view = "Source Selection"
+        else:
+            view = "BluOS Player Control"
+
+        self.draw_header(stdscr, view)
+
+        if not player_mode:
+            self.display_player_selection(stdscr)
+        elif self.search_mode:
+            if self.search_phase == 'source_select':
+                self.display_search_source_selection(stdscr)
+            elif self.search_phase == 'results':
+                self.display_search_results(stdscr)
+        elif not self.source_selection_mode:
+            self.display_player_control(stdscr)
+        else:
+            self.display_source_selection(stdscr)
+
+    def _handle_input(self, key, stdscr, player_mode):
+        """Dispatch input to the appropriate handler. Returns updated player_mode."""
+        if not player_mode:
+            if self.selector_shortcuts_open:
+                if key != -1:
+                    self.selector_shortcuts_open = False
+            else:
+                player_mode, self.active_player, _ = self.handle_player_selection(key)
+                if player_mode:
+                    self.update_player_status()
+        else:
+            if self.shortcuts_open:
+                if key != -1:
+                    self.shortcuts_open = False
+            elif self.search_mode:
+                self.search_mode = self.handle_search(key, stdscr)
+            elif not self.source_selection_mode:
+                player_mode, _ = self.handle_player_control(key, stdscr)
+            else:
+                self.source_selection_mode, _ = self.handle_source_selection(key, stdscr)
+        return player_mode
+
+    def _tick_progress(self):
+        """Update local progress counter and poll player status periodically."""
+        current_time = time.time()
+        if self.player_status and self.player_status.state in ('stream', 'play'):
+            if current_time - self.last_progress_time >= PROGRESS_INCREMENT_INTERVAL:
+                self.player_status.secs += 1
+                if self.player_status.totlen > 0:
+                    self.player_status.secs = min(self.player_status.secs, self.player_status.totlen)
                 self.last_progress_time = current_time
+        if self.active_player and current_time - self.last_update_time >= STATUS_POLL_INTERVAL:
+            self.update_player_status()
+            self.last_update_time = current_time
+            self.last_progress_time = current_time
 
     def get_input(self, stdscr, prompt):
         curses.noecho()
@@ -1585,68 +1688,75 @@ class BlusoundCLI:
                 return False
 
         elif self.search_phase == 'results':
-            if key == KEY_UP and self.search_selected_index > 0:
-                self.search_selected_index -= 1
-            elif key == KEY_DOWN and self.search_selected_index < len(self.search_results) - 1:
-                self.search_selected_index += 1
-            elif key == KEY_RIGHT and self.search_results:
-                selected = self.search_results[self.search_selected_index]
-                if selected.browse_key:
-                    self.active_player.get_nested_sources(selected)
-                    if selected.children:
-                        self.search_history.append((self.search_results, self.search_selected_index))
-                        self.search_results = selected.children
-                        self.search_selected_index = 0
-                    else:
-                        self.set_message(f"No items in: {selected.text}")
-                else:
-                    self.set_message(f"Cannot expand: {selected.text}")
-            elif key == KEY_ENTER and self.search_results:
-                selected = self.search_results[self.search_selected_index]
-                if selected.play_url or self.search_source_name == 'TuneIn':
-                    success, message = self.active_player.select_input(selected)
-                    self.set_message(message)
-                    if success:
-                        self.update_player_status()
-                        return False
-                elif selected.context_menu_key and selected.type != 'album':
-                    self._execute_queue_action(selected, stdscr)
-                elif selected.browse_key:
-                    self.active_player.get_nested_sources(selected)
-                    if selected.children:
-                        self.search_history.append((self.search_results, self.search_selected_index))
-                        self.search_results = selected.children
-                        self.search_selected_index = 0
-                    else:
-                        self.set_message(f"No items in: {selected.text}")
-                else:
-                    self.set_message(f"Cannot play: {selected.text}")
-            elif key == ord('+') and self.search_results:
-                selected = self.search_results[self.search_selected_index]
-                if selected.context_menu_key and not selected.is_favourite:
-                    label = f"{selected.text} - {selected.text2}" if selected.text2 else selected.text
-                    if self._confirm_prompt(stdscr, f"Add '{label}' to favourites? (y/n)"):
-                        success, message = self.active_player.toggle_favourite(selected, add=True)
-                        self.set_message(message)
-                    else:
-                        self.set_message("Cancelled")
-                else:
-                    self.set_message("Cannot add to favourites" if not selected.context_menu_key else "Already in favourites")
-            elif key in (KEY_B, KEY_LEFT):
-                if self.search_history:
-                    self.search_results, self.search_selected_index = self.search_history.pop()
-                else:
-                    return False
-            return True
+            return self._handle_search_results(key, stdscr)
 
         return False
 
+    def _handle_search_results(self, key: int, stdscr: curses.window) -> bool:
+        if key == KEY_UP and self.search_selected_index > 0:
+            self.search_selected_index -= 1
+        elif key == KEY_DOWN and self.search_selected_index < len(self.search_results) - 1:
+            self.search_selected_index += 1
+        elif key == KEY_RIGHT and self.search_results:
+            selected = self.search_results[self.search_selected_index]
+            if selected.browse_key:
+                self.active_player.get_nested_sources(selected)
+                if selected.children:
+                    self.search_history.append((self.search_results, self.search_selected_index))
+                    self.search_results = selected.children
+                    self.search_selected_index = 0
+                else:
+                    self.set_message(f"No items in: {selected.text}")
+            else:
+                self.set_message(f"Cannot expand: {selected.text}")
+        elif key == KEY_ENTER and self.search_results:
+            return self._handle_search_enter(stdscr)
+        elif key == ord('+') and self.search_results:
+            selected = self.search_results[self.search_selected_index]
+            if selected.context_menu_key and not selected.is_favourite:
+                label = f"{selected.text} - {selected.text2}" if selected.text2 else selected.text
+                if self._confirm_prompt(stdscr, f"Add '{label}' to favourites? (y/n)"):
+                    success, message = self.active_player.toggle_favourite(selected, add=True)
+                    self.set_message(message)
+                else:
+                    self.set_message("Cancelled")
+            else:
+                self.set_message("Cannot add to favourites" if not selected.context_menu_key else "Already in favourites")
+        elif key in (KEY_B, KEY_LEFT):
+            if self.search_history:
+                self.search_results, self.search_selected_index = self.search_history.pop()
+            else:
+                return False
+        return True
+
+    def _handle_search_enter(self, stdscr: curses.window) -> bool:
+        selected = self.search_results[self.search_selected_index]
+        if selected.play_url or self.search_source_name == 'TuneIn':
+            success, message = self.active_player.select_input(selected)
+            self.set_message(message)
+            if success:
+                self.update_player_status()
+                return False
+        elif selected.context_menu_key and selected.type != 'album':
+            self._execute_queue_action(selected, stdscr)
+        elif selected.browse_key:
+            self.active_player.get_nested_sources(selected)
+            if selected.children:
+                self.search_history.append((self.search_results, self.search_selected_index))
+                self.search_results = selected.children
+                self.search_selected_index = 0
+            else:
+                self.set_message(f"No items in: {selected.text}")
+        else:
+            self.set_message(f"Cannot play: {selected.text}")
+        return True
+
     def display_search_source_selection(self, stdscr: curses.window):
         height, width = stdscr.getmaxyx()
-        max_display = height - 8
+        max_display = height - SEARCH_HEIGHT_OFFSET
 
         stdscr.addstr(3, 2, "Select a source to search:")
-        stdscr.addstr(4, 2, "UP/DOWN: navigate, ENTER: select, b: back")
+        stdscr.addstr(4, 2, SEARCH_SOURCE_INSTRUCTIONS)
 
         for i, source in enumerate(self.searchable_sources[:max_display]):
             if i == self.search_source_index:
@@ -1657,10 +1767,10 @@ class BlusoundCLI:
 
     def display_search_results(self, stdscr: curses.window):
         height, width = stdscr.getmaxyx()
-        max_display_items = height - 8
+        max_display_items = height - SEARCH_HEIGHT_OFFSET
 
         stdscr.addstr(3, 2, "Search Results:")
-        stdscr.addstr(4, 2, "UP/DOWN: navigate, ENTER: play, RIGHT: expand, b: back")
+        stdscr.addstr(4, 2, SEARCH_RESULTS_INSTRUCTIONS)
 
         if not self.search_results:
             stdscr.addstr(6, 4, "No results found.")

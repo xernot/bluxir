@@ -23,20 +23,24 @@ import time
 import threading
 import logging
 from logging.handlers import RotatingFileHandler
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from zeroconf import ServiceBrowser, ServiceListener, Zeroconf
 from typing import List, Dict, Tuple, Optional, Union
-from dataclasses import dataclass, field
 import os
+from constants import (
+    LOG_MAX_BYTES, LOG_BACKUP_COUNT, LOG_FORMAT, LOG_DATE_FORMAT,
+    HTTP_TIMEOUT_PLAYER, BLUOS_API_PORT, MDNS_SERVICE_TYPE,
+    SOURCE_INIT_MAX_RETRIES, SOURCE_INIT_RETRY_DELAY,
+    SEARCH_SKIP_CATEGORIES, LIBRARY_CATEGORY_NAME,
+)
 
 # Ensure logs directory exists
 os.makedirs('logs', exist_ok=True)
 
 # Set up logging
 log_file = 'logs/cli.log'
-log_handler = RotatingFileHandler(log_file, maxBytes=1024*1024, backupCount=1)
-log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                                  datefmt='%Y-%m-%d %H:%M:%S')
+log_handler = RotatingFileHandler(log_file, maxBytes=LOG_MAX_BYTES, backupCount=LOG_BACKUP_COUNT)
+log_formatter = logging.Formatter(LOG_FORMAT, datefmt=LOG_DATE_FORMAT)
 log_handler.setFormatter(log_formatter)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -116,7 +120,7 @@ class BlusoundPlayer:
     def __init__(self, host_name, name):
         self.host_name = host_name
         self.name = name
-        self.base_url = f"http://{self.host_name}:11000"
+        self.base_url = f"http://{self.host_name}:{BLUOS_API_PORT}"
         self.sources: List[PlayerSource] = []
         self._browse_path_cache: Dict[str, str] = {}
         logger.info(f"Initialized BlusoundPlayer: {self.name} at {self.host_name}")
@@ -138,7 +142,7 @@ class BlusoundPlayer:
         full_url = f"{self.base_url}{url}"
         logger.debug(f"Sending request to: {full_url}")
         logger.debug(f"Request params: {params}")
-        response = requests.get(full_url, params=params, timeout=5)
+        response = requests.get(full_url, params=params, timeout=HTTP_TIMEOUT_PLAYER)
         logger.debug(f"Response status code: {response.status_code}")
         logger.debug(f"Response content: {response.text[:500]}")
         response.raise_for_status()
@@ -215,16 +219,14 @@ class BlusoundPlayer:
                 logger.warning(f"No nested sources found for {source.text}")
 
     def initialize_sources(self) -> None:
-        max_retries = 3
-        retry_delay = 1  # seconds
-        for attempt in range(max_retries):
+        for attempt in range(SOURCE_INIT_MAX_RETRIES):
             self.sources = self.capture_sources()
             if self.sources:
                 logger.info(f"Initialized {len(self.sources)} sources for {self.name} after {attempt + 1} attempt(s).")
                 return
-            logger.warning(f"No sources found for {self.name}. Attempt {attempt + 1}/{max_retries}. Retrying in {retry_delay}s...")
-            time.sleep(retry_delay)
-        logger.error(f"Failed to initialize sources for {self.name} after {max_retries} attempts.")
+            logger.warning(f"No sources found for {self.name}. Attempt {attempt + 1}/{SOURCE_INIT_MAX_RETRIES}. Retrying in {SOURCE_INIT_RETRY_DELAY}s...")
+            time.sleep(SOURCE_INIT_RETRY_DELAY)
+        logger.error(f"Failed to initialize sources for {self.name} after {SOURCE_INIT_MAX_RETRIES} attempts.")
         # self.sources will remain empty if all retries fail
 
     def get_status(self, timeout: Optional[int] = None, etag: Optional[str] = None) -> Tuple[bool, Union[PlayerStatus, str]]:
@@ -578,14 +580,13 @@ class BlusoundPlayer:
         try:
             response = self.request(url, params)
             root = ET.fromstring(response.text)
-            _skip = {'Artists', 'Playlists'}
             sources = []
             for item in root.iter('item'):
                 text = item.get('text', '').strip()
                 browse_key = item.get('browseKey')
-                if text in _skip:
+                if text in SEARCH_SKIP_CATEGORIES:
                     continue
-                if text == "Library" and browse_key:
+                if text == LIBRARY_CATEGORY_NAME and browse_key:
                     library_response = self.request(url, {'key': browse_key})
                     library_root = ET.fromstring(library_response.text)
                     for library_item in library_root.iter('item'):
@@ -620,7 +621,7 @@ def discover(players):
     logger.info("Starting discovery process")
     zeroconf = Zeroconf()
     listener = MyListener()
-    ServiceBrowser(zeroconf, "_musc._tcp.local.", listener)
+    ServiceBrowser(zeroconf, MDNS_SERVICE_TYPE, listener)
     try:
         while True:
             time.sleep(1)

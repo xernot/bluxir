@@ -53,6 +53,8 @@ from constants import (
     HELP_LEFT_KEYS, HELP_RIGHT_KEYS, SELECTOR_SHORTCUTS,
     STATUS_POLL_INTERVAL, PROGRESS_INCREMENT_INTERVAL,
     HIGHLIGHT_DURATION,
+    HEALTH_CHECK_TITLE, HEALTH_CHECK_TITLE_OK, HEALTH_WIDTH_FACTOR,
+    HEALTH_STATUS_OK, HEALTH_NO_UPDATE,
 )
 
 _QUALITY_RE = re.compile(r'(\d+)/(\d+\.?\d*)')
@@ -81,6 +83,7 @@ KEY_S = ord('s')
 KEY_F = ord('f')
 KEY_W = ord('w')
 KEY_L = ord('l')
+KEY_H = ord('h')
 
 def create_volume_bar(volume, width=VOLUME_BAR_WIDTH):
     filled = int(volume / 100 * width)
@@ -941,6 +944,103 @@ class BlusoundCLI:
         stdscr.addstr(start_y + modal_h - 3, start_x + 2, ABOUT_ATTRIBUTION[:modal_w - 4], curses.A_DIM)
         stdscr.addstr(start_y + modal_h - 2, start_x + 2, PROJECT_URL[:modal_w - 4], curses.A_DIM)
 
+    def _show_health_check(self, stdscr: curses.window):
+        """Show a blocking health check overlay on top of the current view."""
+        if not self.active_player:
+            return
+        entries, update_available = self._fetch_health_entries()
+        if not entries:
+            return
+        if not update_available:
+            self.set_message(HEALTH_STATUS_OK)
+            self._highlight('health')
+        self._draw_health_overlay(stdscr, entries, update_available)
+        self._health_input_loop(stdscr)
+
+    def _fetch_health_entries(self) -> tuple:
+        """Fetch player info, diagnostics and upgrade status as key-value pairs.
+        Returns (entries, update_available) tuple."""
+        sync = self.active_player.get_sync_info()
+        diag = self.active_player.get_diagnostics()
+        upgrade = self.active_player.get_upgrade_status()
+        web_url = self.active_player.get_web_url()
+        is_valid_response = not upgrade.lower().startswith("error")
+        update_available = is_valid_response and HEALTH_NO_UPDATE not in upgrade.lower()
+        entries = list(sync.items())
+        entries.extend(diag.items())
+        entries.append(("Update Status", upgrade))
+        if update_available:
+            upgrade_url = f"{web_url}/upgrade"
+            entries.append(("Upgrade URL", upgrade_url))
+        entries.append(("Web Interface", web_url))
+        return entries, update_available
+
+    def _draw_health_overlay(self, stdscr, entries, update_available):
+        """Draw the health check modal centered over the current view."""
+        height, width = stdscr.getmaxyx()
+        title = HEALTH_CHECK_TITLE
+        key_width = max(len(k) for k, _ in entries)
+        content_width = max(key_width + len(v) + 5 for k, v in entries)
+        title_len = len(HEALTH_CHECK_TITLE_OK)
+        content_width = max(content_width, title_len + 4)
+        padded_width = int(content_width * HEALTH_WIDTH_FACTOR)
+        modal_w = min(width - 2, padded_width)
+        # title + separator + entries + footer hint + border
+        modal_h = min(height - 2, len(entries) + 5)
+        start_y = max(0, (height - modal_h) // 2)
+        start_x = max(0, (width - modal_w) // 2)
+
+        popup = curses.newwin(modal_h, modal_w, start_y, start_x)
+        popup.box()
+        green = curses.color_pair(3)
+        if update_available:
+            popup.addstr(1, 2, title[:modal_w - 4], curses.A_BOLD)
+        else:
+            title_ok = HEALTH_CHECK_TITLE_OK
+            popup.addstr(1, 2, title_ok[:modal_w - 4], green | curses.A_BOLD)
+        popup.hline(2, 1, curses.ACS_HLINE, modal_w - 2)
+        popup.addch(2, 0, curses.ACS_LTEE)
+        try:
+            popup.addch(2, modal_w - 1, curses.ACS_RTEE)
+        except curses.error:
+            pass
+
+        self._draw_health_entries(popup, entries, key_width, modal_w, modal_h)
+        popup.refresh()
+
+    def _draw_health_entries(self, popup, entries, key_width, modal_w, modal_h):
+        """Draw entry rows and footer hint into the health check popup."""
+        red = curses.color_pair(4)
+        max_rows = modal_h - 5
+        for i, (key, value) in enumerate(entries):
+            if i >= max_rows:
+                break
+            label = f" {key:<{key_width}}  {value}"
+            is_warning = (key == "Update Status" and HEALTH_NO_UPDATE not in value.lower()) or key == "Upgrade URL"
+            attr = red | curses.A_BOLD if is_warning else 0
+            try:
+                popup.addstr(3 + i, 1, label[:modal_w - 2], attr)
+            except curses.error:
+                pass
+
+        hint = "Press 'q' to close"
+        hint_x = max(1, modal_w - len(hint) - 2)
+        try:
+            popup.addstr(modal_h - 2, hint_x, hint, curses.A_DIM)
+        except curses.error:
+            pass
+
+    def _health_input_loop(self, stdscr):
+        """Block until 'q' is pressed, then restore the main view."""
+        stdscr.timeout(INPUT_BLOCKING)
+        while True:
+            key = stdscr.getch()
+            if key == ord('q'):
+                break
+        stdscr.timeout(CURSES_POLL_MS)
+        stdscr.touchwin()
+        stdscr.refresh()
+
     def display_source_selection(self, stdscr: curses.window):
         active_player = self.active_player
         height, width = stdscr.getmaxyx()
@@ -1028,7 +1128,7 @@ class BlusoundCLI:
         elif key in (KEY_I, KEY_S, KEY_F, KEY_W, KEY_L):
             self._handle_navigation_keys(key, stdscr)
         elif key in (ord('c'), ord('t'), curses.KEY_PPAGE, curses.KEY_NPAGE,
-                     ord('+'), ord('-'), KEY_QUESTION, KEY_P):
+                     ord('+'), ord('-'), KEY_QUESTION, KEY_P, KEY_H):
             self._handle_info_keys(key, stdscr)
         return True, False
 
@@ -1181,6 +1281,8 @@ class BlusoundCLI:
             self._remove_favourite(stdscr)
         elif key == KEY_QUESTION:
             self.shortcuts_open = not self.shortcuts_open
+        elif key == KEY_H and self.active_player:
+            self._show_health_check(stdscr)
         elif key == KEY_P:
             self.pretty_print_player_state(stdscr)
 
@@ -1500,6 +1602,7 @@ class BlusoundCLI:
         curses.use_default_colors()
         curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_WHITE)
         curses.init_pair(3, curses.COLOR_GREEN, -1)
+        curses.init_pair(4, curses.COLOR_RED, -1)
 
         player_mode = self._try_stored_player()
         discovery_started = False

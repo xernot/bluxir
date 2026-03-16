@@ -32,6 +32,7 @@ A comprehensive CLI interface to control Blusound streamers.
 * Radio Integration with Tunein & Radio Paradise
 * Lyrics from lrclib.net integrated
 * Visual feedback: controls highlight green for 5 seconds after changes
+* Player health check: diagnostics, firmware version, update status, web interface link
 
 ## Known Limitations
 * It mainly works well for qobuz support
@@ -128,6 +129,7 @@ The main view is split into two halves:
 | x       | Toggle shuffle |
 | +       | Add current album to favourites |
 | -       | Remove current album from favourites |
+| h       | Player health check |
 | p       | Pretty print (JSON debug view of player status) |
 | ?       | Show keyboard shortcuts |
 | b       | Back to player selection |
@@ -178,6 +180,20 @@ Press `t` to toggle the lyrics view in the right panel (replaces the playlist).
 Lyrics are fetched from [lrclib.net](https://lrclib.net) — a free lyrics database with no API key required.
 Use `PgUp`/`PgDn` to scroll when lyrics don't fit on screen.
 Lyrics update automatically when the track changes.
+
+### Health Check
+
+Press `h` to open a health check overlay on top of the current view. This fetches player diagnostics from the BluOS web interface and the SyncStatus API, showing:
+
+- Player name, brand, model
+- Network connection and signal strength
+- IP and MAC address
+- BluOS and MCU firmware versions
+- Uptime
+- Firmware update availability with upgrade link
+- Link to the player's web interface
+
+The title bar shows "Status OK" in green when everything is fine. When a firmware update is available, the update status and upgrade URL are highlighted in red. Press `q` to close the overlay.
 
 ### OpenAI Integration
 

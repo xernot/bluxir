@@ -66,6 +66,9 @@ HTTP_TIMEOUT_OPENAI_STATION = 15
 # HTTP timeout for LRCLIB lyrics requests (seconds)
 HTTP_TIMEOUT_LYRICS = 10
 
+# HTTP timeout for health check web interface requests (seconds)
+HTTP_TIMEOUT_HEALTH = 10
+
 # Delay between retries when initializing sources (seconds)
 SOURCE_INIT_RETRY_DELAY = 1
 
@@ -232,7 +235,7 @@ HIGHLIGHT_DURATION = 5
 # ── UI Strings ───────────────────────────────────────────────────────────────
 
 # Footer help text shown on the main player screen
-FOOTER_HELP = "(s) search  (f) fav  (l) playlists  (w) save  (c) cover  (t) lyrics  (+/-) fav  (i) source  (?) help  (q) quit"
+FOOTER_HELP = "(s) search  (f) fav  (l) playlists  (w) save  (c) cover  (t) lyrics  (+/-) fav  (i) source  (h) health  (?) help  (q) quit"
 
 # Version string shown in the footer
 VERSION_STRING = "bluxir v2.2"
@@ -272,6 +275,22 @@ TERMINAL_TITLE = "\033]0;bluxir\007"
 
 # Pretty print popup title bar text
 PRETTY_PRINT_TITLE = " Player State (UP/DOWN scroll, 'q' to close) "
+
+# Health check overlay title (base and status-ok variant)
+HEALTH_CHECK_TITLE = "Player Health Check"
+HEALTH_CHECK_TITLE_OK = "Player Health Check - Status OK"
+
+# Extra width factor for the health check modal (1.2 = 20% wider than content)
+HEALTH_WIDTH_FACTOR = 1.2
+
+# Diagnostics keys to skip in the health check overlay
+HEALTH_SKIP_KEYS = {'Total Songs', 'Other Players'}
+
+# Header message shown after a successful health check
+HEALTH_STATUS_OK = "Status OK"
+
+# Exact status text when no firmware update is available
+HEALTH_NO_UPDATE = "no update available"
 
 # Queue action dialog prompt
 QUEUE_ACTION_PROMPT = "(1) Play now  (2) Add next  (3) Add last  (ESC) Cancel"
@@ -313,6 +332,7 @@ HELP_RIGHT_KEYS = [
     ("c", "Toggle cover art"),
     ("t", "Toggle lyrics"),
     ("PgUp/PgDn", "Scroll lyrics"),
+    ("h", "Health check"),
     ("p", "Pretty print"),
     ("b", "Back to player list"),
     ("q", "Quit"),

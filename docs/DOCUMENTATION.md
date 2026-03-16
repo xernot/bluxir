@@ -104,7 +104,7 @@ All communication with the Blusound player happens over HTTP on port 11000. The 
 | Endpoint | Purpose |
 |---|---|
 | `GET /Status` | Current player state (track, artist, album, volume, playback state, etc.) |
-| `GET /SyncStatus` | Player identity (friendly name) |
+| `GET /SyncStatus` | Player identity (name, brand, model, firmware version) |
 | `GET /Playlist` | Current play queue |
 | `GET /Browse` | Browse available sources, navigate hierarchies, search |
 | `GET /Volume?level=N` | Set volume (0-100) |
@@ -113,6 +113,17 @@ All communication with the Blusound player happens over HTTP on port 11000. The 
 | `GET /Back` | Go to previous track |
 
 The Browse API supports pagination via a `nextKey` attribute on the XML root element. The `capture_all_sources()` method follows all pages to retrieve complete listings (important for large collections like Qobuz favorites).
+
+### BluOS Web Interface (Port 80)
+
+The player also exposes a web interface on port 80 used for configuration and diagnostics. The health check feature scrapes two pages:
+
+| Page | Data Extracted |
+|---|---|
+| `/diagnostics` | Network name, signal strength, IP, MAC, BluOS version, MCU version, uptime |
+| `/upgrade` | Firmware update availability (shown in red if update pending, with upgrade link) |
+
+These pages return simple HTML that is parsed with regex — no JavaScript rendering required.
 
 ### Player Discovery
 
@@ -187,6 +198,7 @@ When you change a control (volume, mute, repeat, shuffle, play/pause), the corre
 | `r` | Cycle repeat (off / queue / track) |
 | `x` | Toggle shuffle |
 | `+` / `-` | Add / remove current album from favourites |
+| `h` | Player health check overlay |
 | `p` | Pretty print player state (JSON debug view) |
 | `?` | Show keyboard shortcuts |
 | `b` | Back to player list |
@@ -198,6 +210,7 @@ When you change a control (volume, mute, repeat, shuffle, play/pause), the corre
 2. **Player Control** - Main view with split-screen layout showing now playing, details, track info, and playlist.
 3. **Source Selection** - Hierarchical browser for player sources (streaming services, inputs, etc.). Supports pagination with `n`/`p` keys, sorting by title/artist, and text filtering.
 4. **Search** - Two-phase search: first select a source to search within, then enter a search term. Results are browsable and playable.
+5. **Health Check** - Overlay modal (`h`) showing player diagnostics: name, brand, model, network info, firmware versions, uptime, update status, and a link to the web interface. Title shows "Status OK" in green when everything is fine; firmware update lines are highlighted in red when an update is available. Press `q` to close.
 
 ## Metadata Integration
 

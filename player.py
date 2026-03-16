@@ -22,6 +22,7 @@ import xml.etree.ElementTree as ET
 import time
 import threading
 import logging
+import re
 from logging.handlers import RotatingFileHandler
 from dataclasses import dataclass, field
 from zeroconf import ServiceBrowser, ServiceListener, Zeroconf
@@ -32,6 +33,7 @@ from constants import (
     HTTP_TIMEOUT_PLAYER, BLUOS_API_PORT, MDNS_SERVICE_TYPE,
     SOURCE_INIT_MAX_RETRIES, SOURCE_INIT_RETRY_DELAY,
     SEARCH_SKIP_CATEGORIES, LIBRARY_CATEGORY_NAME,
+    HTTP_TIMEOUT_HEALTH, HEALTH_SKIP_KEYS,
 )
 
 # Ensure logs directory exists
@@ -114,6 +116,36 @@ def _safe_int(value, default=0):
         return int(value)
     except (ValueError, TypeError):
         return default
+
+
+_DIAG_PAIR_RE = re.compile(
+    r'<div class="ui-block-a">\s*(.*?)\s*</div>\s*<div class="ui-block-b">\s*(.*?)\s*</div>',
+    re.DOTALL,
+)
+
+
+def _parse_diagnostics(html: str) -> Dict[str, str]:
+    """Extract key-value pairs from the diagnostics HTML page."""
+    info = {}
+    for match in _DIAG_PAIR_RE.finditer(html):
+        key = match.group(1).strip().rstrip(':')
+        value = re.sub(r'<[^>]+>', '', match.group(2)).strip()
+        if key and value and key not in HEALTH_SKIP_KEYS:
+            info[key] = value
+    return info
+
+
+def _parse_upgrade_status(html: str) -> str:
+    """Extract update status text from the upgrade HTML page."""
+    content_match = re.search(r'data-role="content"[^>]*>(.*?)</div>', html, re.DOTALL)
+    if not content_match:
+        return "Unknown"
+    content = content_match.group(1)
+    text = re.sub(r'<[^>]+>', '', content).strip()
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    if lines:
+        return lines[0]
+    return "Unknown"
 
 
 class BlusoundPlayer:
@@ -288,6 +320,45 @@ class BlusoundPlayer:
         except requests.RequestException as e:
             logger.error(f"Error getting status for {self.name}: {str(e)}")
             return False, str(e)
+
+    def get_sync_info(self) -> Dict[str, str]:
+        """Fetch player identity info from the SyncStatus API endpoint."""
+        try:
+            response = self.request("/SyncStatus")
+            root = ET.fromstring(response.text)
+            return {
+                "Player Name": root.get('name', ''),
+                "Brand": root.get('brand', ''),
+                "Model": root.get('modelName', ''),
+                "Model ID": root.get('model', ''),
+            }
+        except requests.RequestException as e:
+            logger.error(f"Error fetching sync info: {e}")
+            return {}
+
+    def get_diagnostics(self) -> Dict[str, str]:
+        """Scrape diagnostics info from the player's web interface."""
+        url = f"http://{self.host_name}/diagnostics"
+        try:
+            response = requests.get(url, timeout=HTTP_TIMEOUT_HEALTH)
+            return _parse_diagnostics(response.text)
+        except requests.RequestException as e:
+            logger.error(f"Error fetching diagnostics: {e}")
+            return {"error": str(e)}
+
+    def get_upgrade_status(self) -> str:
+        """Check whether a firmware update is available via the web interface."""
+        url = f"http://{self.host_name}/upgrade"
+        try:
+            response = requests.get(url, timeout=HTTP_TIMEOUT_HEALTH)
+            return _parse_upgrade_status(response.text)
+        except requests.RequestException as e:
+            logger.error(f"Error checking upgrade status: {e}")
+            return f"Error: {e}"
+
+    def get_web_url(self) -> str:
+        """Return the URL for the player's web interface."""
+        return f"http://{self.host_name}"
 
     def set_volume(self, volume: int) -> Tuple[bool, str]:
         url = "/Volume"

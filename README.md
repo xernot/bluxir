@@ -1,8 +1,8 @@
-# bluxir-c
+# bluxir
 
 A BluOS terminal controller for Blusound network music streamers, written in C.
 
-This is a full rewrite of the [Python bluxir](../docs/README.md) in C, preserving every feature: player discovery, playback control, source browsing, search, favorites, playlists, metadata (MusicBrainz/OpenAI/LRCLIB/Wikipedia), cover art rendering, lyrics, health check, and the full curses TUI.
+Features: player discovery, playback control, source browsing, search, favorites, playlists, metadata (MusicBrainz/OpenAI/LRCLIB), cover art rendering, lyrics, health check, and a full curses TUI.
 
 Originally based on [blucli](https://github.com/irrelative/blucli) by @irrelative. This project has since diverged significantly.
 
@@ -51,21 +51,19 @@ sudo apt install build-essential cmake libcurl4-openssl-dev libncursesw5-dev lib
 ## Building
 
 ```bash
-cd bluxir-c
 mkdir -p build && cd build
 cmake ..
 make
 ```
 
-The binary is built at `bluxir-c/build/bluxir`.
+The binary is built at `build/bluxir`.
 
 ## Running
 
 Run from the project root directory (where `config.json` is located):
 
 ```bash
-cd /path/to/bluxir
-bluxir-c/build/bluxir
+./build/bluxir
 ```
 
 On first run without a stored player, bluxir discovers Blusound players on the local network via Avahi mDNS. Select a player with UP/DOWN and press ENTER. The player's address is saved to `config.json` for future sessions.
@@ -134,7 +132,7 @@ Without an OpenAI API key, bluxir falls back to MusicBrainz for album metadata.
 ## Project Structure
 
 ```
-bluxir-c/
+bluxir/
   CMakeLists.txt          Build configuration
   src/
     main.c                Entry point, curses init, main loop, input handling
@@ -156,17 +154,6 @@ bluxir-c/
     stb_image.h           Vendored header-only image decoder
     cJSON.c / cJSON.h     Vendored JSON library
 ```
-
-## Module Mapping from Python
-
-| Python | C |
-|--------|---|
-| constants.py | constants.h |
-| config.py | config.c/h |
-| player.py | player.c/h + discover.c/h |
-| musicbrainz.py | metadata.c/h + cache.c/h |
-| bluxir.py | main.c + ui.c/h + ui_player.c + ui_browse.c + ui_search.c + cover_art.c/h |
-| (new) | logger.c/h, util.c/h, types.h |
 
 ## Known Limitations
 

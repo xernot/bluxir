@@ -1,0 +1,3 @@
+/home/xir/code/bluxir-c/build/CMakeFiles/bluxir.dir
+/home/xir/code/bluxir-c/build/CMakeFiles/edit_cache.dir
+/home/xir/code/bluxir-c/build/CMakeFiles/rebuild_cache.dir

@@ -1,6 +1,6 @@
 CMakeFiles/bluxir.dir/src/cover_art.c.o: \
- /home/xir/code/bluxir-c/src/cover_art.c /usr/include/stdc-predef.h \
- /home/xir/code/bluxir-c/src/../lib/stb_image.h /usr/include/stdlib.h \
+ /home/xir/code/bluxir/src/cover_art.c /usr/include/stdc-predef.h \
+ /home/xir/code/bluxir/src/../lib/stb_image.h /usr/include/stdlib.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/features-time64.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
@@ -66,7 +66,7 @@ CMakeFiles/bluxir.dir/src/cover_art.c.o: \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/xmmintrin.h \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/mmintrin.h \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/mm_malloc.h \
- /home/xir/code/bluxir-c/src/cover_art.h /usr/include/curses.h \
+ /home/xir/code/bluxir/src/cover_art.h /usr/include/curses.h \
  /usr/include/ncurses_dll.h /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h \
@@ -77,4 +77,4 @@ CMakeFiles/bluxir.dir/src/cover_art.c.o: \
  /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h \
  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/stdbool.h /usr/include/unctrl.h \
- /usr/include/curses.h /home/xir/code/bluxir-c/src/util.h
+ /usr/include/curses.h /home/xir/code/bluxir/src/util.h

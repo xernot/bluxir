@@ -1,4 +1,4 @@
-CMakeFiles/bluxir.dir/lib/cJSON.c.o: /home/xir/code/bluxir-c/lib/cJSON.c \
+CMakeFiles/bluxir.dir/lib/cJSON.c.o: /home/xir/code/bluxir/lib/cJSON.c \
  /usr/include/stdc-predef.h /usr/include/string.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/features-time64.h \
@@ -67,4 +67,4 @@ CMakeFiles/bluxir.dir/lib/cJSON.c.o: /home/xir/code/bluxir-c/lib/cJSON.c \
  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min.h \
  /usr/include/x86_64-linux-gnu/bits/posix2_lim.h /usr/include/ctype.h \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/float.h \
- /home/xir/code/bluxir-c/lib/cJSON.h
+ /home/xir/code/bluxir/lib/cJSON.h

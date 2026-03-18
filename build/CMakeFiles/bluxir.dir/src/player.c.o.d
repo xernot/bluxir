@@ -1,6 +1,6 @@
-CMakeFiles/bluxir.dir/src/player.c.o: \
- /home/xir/code/bluxir-c/src/player.c /usr/include/stdc-predef.h \
- /home/xir/code/bluxir-c/src/player.h /home/xir/code/bluxir-c/src/types.h \
+CMakeFiles/bluxir.dir/src/player.c.o: /home/xir/code/bluxir/src/player.c \
+ /usr/include/stdc-predef.h /home/xir/code/bluxir/src/player.h \
+ /home/xir/code/bluxir/src/types.h \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/stdbool.h \
  /usr/include/pthread.h /usr/include/features.h \
  /usr/include/features-time64.h \
@@ -40,10 +40,9 @@ CMakeFiles/bluxir.dir/src/player.c.o: \
  /usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h \
  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h \
  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min.h \
- /home/xir/code/bluxir-c/src/constants.h \
- /home/xir/code/bluxir-c/src/logger.h \
+ /home/xir/code/bluxir/src/constants.h /home/xir/code/bluxir/src/logger.h \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/stdarg.h \
- /home/xir/code/bluxir-c/src/config.h /home/xir/code/bluxir-c/src/util.h \
+ /home/xir/code/bluxir/src/config.h /home/xir/code/bluxir/src/util.h \
  /usr/include/x86_64-linux-gnu/curl/curl.h \
  /usr/include/x86_64-linux-gnu/curl/curlver.h \
  /usr/include/x86_64-linux-gnu/curl/system.h \

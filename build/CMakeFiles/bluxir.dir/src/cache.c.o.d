@@ -1,5 +1,5 @@
-CMakeFiles/bluxir.dir/src/cache.c.o: /home/xir/code/bluxir-c/src/cache.c \
- /usr/include/stdc-predef.h /home/xir/code/bluxir-c/src/cache.h \
+CMakeFiles/bluxir.dir/src/cache.c.o: /home/xir/code/bluxir/src/cache.c \
+ /usr/include/stdc-predef.h /home/xir/code/bluxir/src/cache.h \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/stdbool.h \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h /usr/include/stdlib.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \

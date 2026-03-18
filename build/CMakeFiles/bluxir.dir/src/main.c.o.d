@@ -1,4 +1,4 @@
-CMakeFiles/bluxir.dir/src/main.c.o: /home/xir/code/bluxir-c/src/main.c \
+CMakeFiles/bluxir.dir/src/main.c.o: /home/xir/code/bluxir/src/main.c \
  /usr/include/stdc-predef.h /usr/include/locale.h /usr/include/features.h \
  /usr/include/features-time64.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
@@ -133,12 +133,9 @@ CMakeFiles/bluxir.dir/src/main.c.o: /home/xir/code/bluxir-c/src/main.c \
  /usr/include/x86_64-linux-gnu/bits/cpu-set.h \
  /usr/include/x86_64-linux-gnu/bits/setjmp.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h \
- /home/xir/code/bluxir-c/src/types.h \
- /home/xir/code/bluxir-c/src/constants.h \
- /home/xir/code/bluxir-c/src/config.h \
- /home/xir/code/bluxir-c/src/player.h \
- /home/xir/code/bluxir-c/src/logger.h \
- /home/xir/code/bluxir-c/src/metadata.h \
- /home/xir/code/bluxir-c/src/discover.h \
- /home/xir/code/bluxir-c/src/cover_art.h /home/xir/code/bluxir-c/src/ui.h \
- /home/xir/code/bluxir-c/src/util.h
+ /home/xir/code/bluxir/src/types.h /home/xir/code/bluxir/src/constants.h \
+ /home/xir/code/bluxir/src/config.h /home/xir/code/bluxir/src/player.h \
+ /home/xir/code/bluxir/src/logger.h /home/xir/code/bluxir/src/metadata.h \
+ /home/xir/code/bluxir/src/discover.h \
+ /home/xir/code/bluxir/src/cover_art.h /home/xir/code/bluxir/src/ui.h \
+ /home/xir/code/bluxir/src/util.h

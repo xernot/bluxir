@@ -211,3 +211,623 @@
 2026-03-18 06:42:49 - INFO - Status: state=play vol=50 song=8
 2026-03-18 06:42:52 - INFO - Status: state=play vol=50 song=8
 2026-03-18 06:42:56 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:42:59 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:02 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:05 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:08 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:11 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:14 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:17 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:20 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:23 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:26 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:29 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:32 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:35 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:38 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:42 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:45 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:48 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:51 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:54 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:43:57 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:44:00 - INFO - Status: state=play vol=50 song=8
+2026-03-18 06:44:03 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:44:06 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:44:09 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:44:12 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:44:15 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:44:18 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:44:21 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:44:25 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:44:28 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:44:31 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:44:34 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:44:37 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:44:40 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:44:43 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:44:46 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:44:49 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:44:52 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:44:55 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:44:58 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:01 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:05 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:08 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:11 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:14 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:17 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:20 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:23 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:26 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:29 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:32 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:35 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:38 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:41 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:45 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:48 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:51 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:54 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:45:57 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:00 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:03 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:06 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:09 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:12 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:15 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:18 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:21 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:24 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:28 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:31 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:34 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:37 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:40 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:43 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:46 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:49 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:52 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:55 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:46:58 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:01 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:04 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:08 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:11 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:14 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:17 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:20 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:23 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:26 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:29 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:32 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:35 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:38 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:41 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:45 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:48 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:51 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:54 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:47:57 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:48:00 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:48:03 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:48:06 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:48:09 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:48:12 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:48:15 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:48:18 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:48:21 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:48:24 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:48:27 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:48:30 - INFO - Status: state=play vol=50 song=9
+2026-03-18 06:48:34 - INFO - Status: state=play vol=50 song=10
+2026-03-18 06:48:37 - INFO - Status: state=play vol=50 song=10
+2026-03-18 06:48:37 - INFO - player_browse key='(null)' params=''
+2026-03-18 06:48:37 - INFO - player_browse response size=1100 data='<?xml version="1.0" encoding="UTF-8"?>
+<browse type="menu">
+  <item browseKey="BluOS:" text="Playlists" image="/images/ci_myplaylists.png" type="link"></item>
+  <item playURL="/Play?url=Capture%3Ahw%3Aimxspdif%2C0%2F1%2F25%2F2%3Fid%3Dxdynamic-Source2" text="Coax In" image="/images/capture/ic_opticalinput.png" type="audio" inputType="coax"></item>
+  <item playURL="/Play?url=Capture%3Ahw%3Aimxspdif%2C0%2F1%2F25%2F2%3Fid%3Dxdynamic-Source3" text="Optical In" image="/images/capture/ic_opticalinput.png" type="audio" inputType="optical"></item>
+  <item browseKey="Airable:" text="Radio" image="/Sources/images/BluOSRadioIcon.png" type="link"></item>
+  <item browseKey="Qobuz:" text="Qobuz" image="/Sources/images/QobuzIcon.png" type="link"></item>
+  <item browseKey="RadioParadise:" text="Radio Paradise" image="/Sources/images/RadioParadiseIcon.png" type="link"></item>
+  <item playURL="/Play?url=Spotify%3Aplay" text="Spotify" image="/Sources/images/SpotifyIcon.png" type="audio"></item>
+  <item browseKey="TuneIn:" text="TuneIn" image="/Sources/images/TuneInIcon.png" type="link"></item>
+</browse>'
+2026-03-18 06:48:37 - INFO - Browsed 8 items for Livingroom 40ST
+2026-03-18 06:48:37 - INFO - browse_path depth=0 item=0 text='Playlists' browseKey='BluOS:'
+2026-03-18 06:48:37 - INFO - browse_path depth=0 item=1 text='Coax In' browseKey=''
+2026-03-18 06:48:37 - INFO - browse_path depth=0 item=2 text='Optical In' browseKey=''
+2026-03-18 06:48:37 - INFO - browse_path depth=0 item=3 text='Radio' browseKey='Airable:'
+2026-03-18 06:48:37 - INFO - browse_path depth=0 item=4 text='Qobuz' browseKey='Qobuz:'
+2026-03-18 06:48:37 - INFO - browse_path matched 'Qobuz' at depth 0
+2026-03-18 06:48:37 - INFO - player_browse key='Qobuz:' params='key=Qobuz:'
+2026-03-18 06:48:37 - INFO - player_browse response size=831 data='<?xml version="1.0" encoding="UTF-8"?>
+<browse serviceIcon="/Sources/images/QobuzIcon.png" serviceName="Qobuz" searchKey="Qobuz:Search" type="menu">
+  <item browseKey="Qobuz:Album/%2FAlbums%3Fcategory=new-releases-full&amp;service=Qobuz" text="New Albums" type="link"></item>
+  <item browseKey="Qobuz:Album/%2FAlbums%3Fcategory=editor-picks&amp;service=Qobuz" text="Recommended Albums" type="link"></item>
+  <item browseKey="Qobuz:Playlist/%2FPlaylists%3Fcategory=featured&amp;service=Qobuz" text="Recommended Playlists" type="link"></item>
+  <item browseKey="Qobuz:Album/%2FAlbums%3Fcategory=most-streamed&amp;service=Qobuz" text="Popular Albums" type="link"></item>
+  <item browseKey="Qobuz:GG/Genres" text="Genres" type="link"></item>
+  <item browseKey="Qobuz:MG/Qobuz-Favourites" text="Favourites" type="link"></item>
+</browse>'
+2026-03-18 06:48:37 - INFO - Browsed 6 items for Livingroom 40ST
+2026-03-18 06:48:37 - INFO - browse_path depth=1 item=0 text='New Albums' browseKey='Qobuz:Album/%2FAlbums%3Fcategory=new-releases-full&service=Qobuz'
+2026-03-18 06:48:37 - INFO - browse_path depth=1 item=1 text='Recommended Albums' browseKey='Qobuz:Album/%2FAlbums%3Fcategory=editor-picks&service=Qobuz'
+2026-03-18 06:48:37 - INFO - browse_path depth=1 item=2 text='Recommended Playlists' browseKey='Qobuz:Playlist/%2FPlaylists%3Fcategory=featured&service=Qobuz'
+2026-03-18 06:48:37 - INFO - browse_path depth=1 item=3 text='Popular Albums' browseKey='Qobuz:Album/%2FAlbums%3Fcategory=most-streamed&service=Qobuz'
+2026-03-18 06:48:37 - INFO - browse_path depth=1 item=4 text='Genres' browseKey='Qobuz:GG/Genres'
+2026-03-18 06:48:37 - INFO - browse_path depth=1 item=5 text='Favourites' browseKey='Qobuz:MG/Qobuz-Favourites'
+2026-03-18 06:48:37 - INFO - browse_path matched 'Fav' at depth 1
+2026-03-18 06:48:37 - INFO - player_browse key='Qobuz:MG/Qobuz-Favourites' params='key=Qobuz:MG/Qobuz-Favourites'
+2026-03-18 06:48:37 - INFO - player_browse response size=858 data='<?xml version="1.0" encoding="UTF-8"?>
+<browse serviceIcon="/Sources/images/QobuzIcon.png" serviceName="Qobuz" searchKey="Qobuz:Search" type="menu">
+  <item browseKey="Qobuz:Playlist/%2FPlaylists%3Fservice=Qobuz" text="My Playlists" type="link"></item>
+  <item browseKey="Qobuz:Album/%2FAlbums%3Fcategory=FAVOURITES&amp;service=Qobuz" text="Albums" type="link"></item>
+  <item browseKey="Qobuz:Song/%2FSongs%3Fcategory=FAVOURITES&amp;service=Qobuz" text="Songs" type="link"></item>
+  <item browseKey="Qobuz:Artist/%2FArtists%3Fcategory=FAVOURITES&amp;service=Qobuz" text="Artists" type="link"></item>
+  <item browseKey="Qobuz:Album/%2FAlbums%3Fcategory=purchased&amp;service=Qobuz" text="Purchased Albums" type="link"></item>
+  <item browseKey="Qobuz:Song/%2FSongs%3Fcategory=purchased&amp;service=Qobuz" text="Purchased Tracks" type="link"></item>
+</browse>'
+2026-03-18 06:48:37 - INFO - Browsed 6 items for Livingroom 40ST
+2026-03-18 06:48:37 - INFO - browse_path depth=2 item=0 text='My Playlists' browseKey='Qobuz:Playlist/%2FPlaylists%3Fservice=Qobuz'
+2026-03-18 06:48:37 - INFO - browse_path depth=2 item=1 text='Albums' browseKey='Qobuz:Album/%2FAlbums%3Fcategory=FAVOURITES&service=Qobuz'
+2026-03-18 06:48:37 - INFO - browse_path matched 'Album' at depth 2
+2026-03-18 06:48:37 - INFO - browse_all params='key=Qobuz:Album/%2FAlbums%3Fcategory=FAVOURITES%26service=Qobuz'
+2026-03-18 06:48:39 - INFO - browse_all response size=15682
+2026-03-18 06:48:39 - INFO - browse_all params='key=Qobuz:Album/%2FAlbums%3Fcategory=FAVOURITES%26end=79%26service=Qobuz%26start=30'
+2026-03-18 06:48:39 - INFO - browse_all response size=25519
+2026-03-18 06:48:39 - INFO - browse_all params='key=Qobuz:Album/%2FAlbums%3Fcategory=FAVOURITES%26end=129%26service=Qobuz%26start=80'
+2026-03-18 06:48:39 - INFO - browse_all response size=21028
+2026-03-18 06:48:40 - INFO - Status: state=play vol=50 song=10
+2026-03-18 06:48:43 - INFO - Status: state=play vol=50 song=10
+2026-03-18 06:48:46 - INFO - Status: state=play vol=50 song=10
+2026-03-18 06:48:47 - INFO - Status: state=play vol=50 song=10
+2026-03-18 06:48:49 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:48:52 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:48:55 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:48:58 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:01 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:04 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:07 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:10 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:13 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:16 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:19 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:23 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:26 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:29 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:32 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:35 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:38 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:41 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:44 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:47 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:50 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:53 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:56 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:49:59 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:02 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:05 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:09 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:12 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:15 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:18 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:21 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:24 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:27 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:30 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:33 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:36 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:39 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:42 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:45 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:48 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:51 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:55 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:50:58 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:01 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:04 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:07 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:10 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:13 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:16 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:19 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:22 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:25 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:28 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:31 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:34 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:37 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:41 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:44 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:47 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:50 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:53 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:56 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:51:59 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:52:02 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:52:05 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:52:08 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:52:11 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:52:14 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:52:17 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:52:20 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:52:23 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:52:26 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:52:30 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:52:33 - INFO - Status: state=play vol=50 song=0
+2026-03-18 06:52:36 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:52:39 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:52:42 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:52:45 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:52:48 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:52:51 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:52:54 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:52:57 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:00 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:03 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:06 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:09 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:12 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:15 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:19 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:22 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:25 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:28 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:31 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:34 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:37 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:40 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:43 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:46 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:49 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:52 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:55 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:53:58 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:02 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:05 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:08 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:11 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:14 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:17 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:20 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:23 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:26 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:29 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:32 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:35 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:38 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:41 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:44 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:48 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:51 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:54 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:54:57 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:00 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:03 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:06 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:09 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:12 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:15 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:18 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:21 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:24 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:27 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:31 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:34 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:37 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:40 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:43 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:46 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:49 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:52 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:55 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:55:58 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:01 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:04 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:07 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:10 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:13 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:17 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:20 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:23 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:26 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:29 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:32 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:35 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:38 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:41 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:44 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:47 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:50 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:53 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:56 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:56:59 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:57:02 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:57:06 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:57:09 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:57:12 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:57:15 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:57:18 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:57:21 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:57:24 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:57:27 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:57:30 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:57:33 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:57:36 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:57:39 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:57:42 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:57:45 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:57:49 - INFO - Status: state=play vol=50 song=1
+2026-03-18 06:57:52 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:57:55 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:57:58 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:01 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:04 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:07 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:10 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:13 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:16 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:19 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:22 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:25 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:28 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:31 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:34 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:38 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:41 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:44 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:47 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:50 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:53 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:56 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:58:59 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:02 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:05 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:08 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:11 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:14 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:17 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:21 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:24 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:27 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:30 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:33 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:36 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:39 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:42 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:45 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:48 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:51 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:54 - INFO - Status: state=play vol=50 song=2
+2026-03-18 06:59:57 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:00 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:04 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:07 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:10 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:13 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:16 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:19 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:22 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:25 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:28 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:31 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:34 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:37 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:40 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:43 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:46 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:50 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:53 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:56 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:00:59 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:01:02 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:01:05 - INFO - Status: state=play vol=50 song=2
+2026-03-18 07:01:08 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:01:11 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:01:14 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:01:17 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:01:20 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:01:23 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:01:26 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:01:29 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:01:32 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:01:36 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:01:39 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:01:42 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:01:45 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:01:48 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:01:51 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:01:54 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:01:57 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:02:00 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:02:03 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:02:06 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:02:09 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:02:12 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:02:15 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:02:18 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:02:22 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:02:25 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:02:28 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:02:31 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:02:34 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:02:37 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:02:40 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:02:43 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:02:57 - INFO - Initialized BlusoundPlayer: Livingroom 40ST at 192.168.68.61
+2026-03-18 07:02:57 - INFO - Player name: Livingroom 40ST
+2026-03-18 07:02:57 - INFO - player_browse key='(null)' params=''
+2026-03-18 07:02:57 - INFO - player_browse response size=1100 data='<?xml version="1.0" encoding="UTF-8"?>
+<browse type="menu">
+  <item browseKey="BluOS:" text="Playlists" image="/images/ci_myplaylists.png" type="link"></item>
+  <item playURL="/Play?url=Capture%3Ahw%3Aimxspdif%2C0%2F1%2F25%2F2%3Fid%3Dxdynamic-Source2" text="Coax In" image="/images/capture/ic_opticalinput.png" type="audio" inputType="coax"></item>
+  <item playURL="/Play?url=Capture%3Ahw%3Aimxspdif%2C0%2F1%2F25%2F2%3Fid%3Dxdynamic-Source3" text="Optical In" image="/images/capture/ic_opticalinput.png" type="audio" inputType="optical"></item>
+  <item browseKey="Airable:" text="Radio" image="/Sources/images/BluOSRadioIcon.png" type="link"></item>
+  <item browseKey="Qobuz:" text="Qobuz" image="/Sources/images/QobuzIcon.png" type="link"></item>
+  <item browseKey="RadioParadise:" text="Radio Paradise" image="/Sources/images/RadioParadiseIcon.png" type="link"></item>
+  <item playURL="/Play?url=Spotify%3Aplay" text="Spotify" image="/Sources/images/SpotifyIcon.png" type="audio"></item>
+  <item browseKey="TuneIn:" text="TuneIn" image="/Sources/images/TuneInIcon.png" type="link"></item>
+</browse>'
+2026-03-18 07:02:57 - INFO - Browsed 8 items for Livingroom 40ST
+2026-03-18 07:02:57 - INFO - Initialized 8 sources for Livingroom 40ST
+2026-03-18 07:02:57 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:02:58 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:01 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:04 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:07 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:10 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:13 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:16 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:19 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:22 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:25 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:28 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:31 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:34 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:37 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:40 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:44 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:47 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:50 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:53 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:56 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:03:59 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:04:02 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:04:05 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:04:08 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:04:11 - INFO - Status: state=play vol=50 song=3
+2026-03-18 07:04:14 - INFO - Status: state=play vol=75 song=3
+2026-03-18 07:04:17 - INFO - Status: state=play vol=70 song=3
+2026-03-18 07:04:20 - INFO - Status: state=play vol=70 song=3
+2026-03-18 07:04:21 - INFO - player_browse key='TuneIn:' params='key=TuneIn:'
+2026-03-18 07:04:22 - INFO - player_browse response size=4826 data='<?xml version="1.0" encoding="UTF-8"?>
+<browse serviceIcon="/Sources/images/TuneInIcon.png" serviceName="TuneIn" searchKey="TuneIn:Search" type="items">
+  <item browseKey="TuneIn:BrowseMenu/%2FRadioBrowse%3Fservice=TuneIn&amp;url=https%253A%252F%252Fapi.radiotime.com%252Fcategories%252Fhome%253Fserial%253D70%25253a3A%25253aCB%25253aAF%25253a98%25253aEC%2526partnerId%253D8OeGua6y%2526version%253D2%2526formats%253Dwma%25252cmp3%25252caac%25252cogg%25252chls%2526viewModel%253DFalse%2526itemToken%253DBggIAAEAAQABAAEAAQEAAQgAAA" text="For You" image="https://cdn-profiles.tunein.com/RootMenu/Logo_754o.png?t=1694533369000" type="link"></item>
+  <item browseKey="TuneIn:BrowseMenu/%2FRadioBrowse%3Fservice=TuneIn&amp;url=presets" text="Favorites" image="https://cdn-profiles.tunein.com/RootMenu/Logo_687o.png?t=1694533372000" type="link"></item>
+  <item browseKey="TuneIn:BrowseMenu/%2FRadioBrowse%3Fservice=TuneIn&amp;url=https%253A%252F%252Fapi.radiotime.com%252Fcategories%252Flocal%253Fserial%253D70%25253a3A%25253aCB%25253aAF%25253a98%25253aEC%2526partnerId%253D8OeGua6y%2526version%253D2%2526formats%253Dwma%25252cmp3%25252caac%25252cogg%25252chls%2526viewModel%253DFalse%2526itemToken%253DBggIAAMAAwABAAEAAQEAAQgAAA" text="Local Radio" image="https://cdn-profiles.tunein.com/RootMenu/Logo_627o.png?t=1694533372000" type="link"></item>
+  <item browseKey="TuneIn:BrowseMenu/%2FRadioBrowse%3Fservice=TuneIn&amp;url=https%253A%252F%252Fapi.radiotime.com%252Fcategories%252Fsports%253Fserial%253D70%25253a3A%25253aCB%25253aAF%25253a98%25253aEC%2526partnerId%253D8OeGua6y%2526version%253D2%2526formats%253Dwma%25252cmp3%25252caac%25252cogg%25252chls%2526viewModel%253DFalse%2526itemToken%253DBggIAAQABAABAAEAAQEAAQgAAA" text="Sports" image="https://cdn-profiles.tunein.com/RootMenu/Logo_628o.png?t=1694533372000" type="link"></item>
+  <item browseKey="TuneIn:BrowseMenu/%2FRadioBrowse%3Fservice=TuneIn&amp;url=https%253A%252F%252Fapi.radiotime.com%252Fcategories%252Fc57922%253Fserial%253D70%25253a3'
+2026-03-18 07:04:22 - INFO - Browsed 10 items for Livingroom 40ST
+2026-03-18 07:04:24 - INFO - Searching 'orf oe1' with key 'TuneIn:Search'
+2026-03-18 07:04:25 - INFO - Found 138 search results
+2026-03-18 07:04:25 - INFO - Status: state=play vol=70 song=3
+2026-03-18 07:04:27 - INFO - Status: state=play vol=70 song=3
+2026-03-18 07:04:28 - INFO - Status: state=stream vol=70 song=0
+2026-03-18 07:04:31 - INFO - Status: state=stream vol=70 song=0
+2026-03-18 07:04:34 - INFO - Status: state=stream vol=70 song=0
+2026-03-18 07:04:37 - INFO - Status: state=stream vol=70 song=0
+2026-03-18 07:04:40 - INFO - Status: state=stream vol=70 song=0
+2026-03-18 07:04:44 - INFO - Status: state=stream vol=70 song=0
+2026-03-18 07:04:47 - INFO - Status: state=stream vol=70 song=0
+2026-03-18 07:04:50 - INFO - Status: state=stream vol=70 song=0
+2026-03-18 07:04:54 - INFO - Initialized BlusoundPlayer: Livingroom 40ST at 192.168.68.61
+2026-03-18 07:04:54 - INFO - Player name: Livingroom 40ST
+2026-03-18 07:04:54 - INFO - player_browse key='(null)' params=''
+2026-03-18 07:04:55 - INFO - player_browse response size=1100 data='<?xml version="1.0" encoding="UTF-8"?>
+<browse type="menu">
+  <item browseKey="BluOS:" text="Playlists" image="/images/ci_myplaylists.png" type="link"></item>
+  <item playURL="/Play?url=Capture%3Ahw%3Aimxspdif%2C0%2F1%2F25%2F2%3Fid%3Dxdynamic-Source2" text="Coax In" image="/images/capture/ic_opticalinput.png" type="audio" inputType="coax"></item>
+  <item playURL="/Play?url=Capture%3Ahw%3Aimxspdif%2C0%2F1%2F25%2F2%3Fid%3Dxdynamic-Source3" text="Optical In" image="/images/capture/ic_opticalinput.png" type="audio" inputType="optical"></item>
+  <item browseKey="Airable:" text="Radio" image="/Sources/images/BluOSRadioIcon.png" type="link"></item>
+  <item browseKey="Qobuz:" text="Qobuz" image="/Sources/images/QobuzIcon.png" type="link"></item>
+  <item browseKey="RadioParadise:" text="Radio Paradise" image="/Sources/images/RadioParadiseIcon.png" type="link"></item>
+  <item playURL="/Play?url=Spotify%3Aplay" text="Spotify" image="/Sources/images/SpotifyIcon.png" type="audio"></item>
+  <item browseKey="TuneIn:" text="TuneIn" image="/Sources/images/TuneInIcon.png" type="link"></item>
+</browse>'
+2026-03-18 07:04:55 - INFO - Browsed 8 items for Livingroom 40ST
+2026-03-18 07:04:55 - INFO - Initialized 8 sources for Livingroom 40ST
+2026-03-18 07:04:55 - INFO - Status: state=stream vol=70 song=0
+2026-03-18 07:04:55 - INFO - Status: state=stream vol=70 song=0
+2026-03-18 07:04:58 - INFO - Status: state=stream vol=70 song=0
+2026-03-18 07:04:58 - INFO - Status: state=stream vol=70 song=0
+2026-03-18 07:05:01 - INFO - Status: state=pause vol=70 song=0
+2026-03-18 07:05:03 - INFO - Status: state=pause vol=70 song=0
+2026-03-18 07:05:04 - INFO - Status: state=stream vol=70 song=0
+2026-03-18 07:05:07 - INFO - Status: state=stream vol=75 song=0
+2026-03-18 07:05:10 - INFO - Status: state=stream vol=70 song=0
+2026-03-18 07:05:13 - INFO - Status: state=stream vol=70 song=0
+2026-03-18 07:05:16 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:05:19 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:05:22 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:05:25 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:05:28 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:05:31 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:05:34 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:05:37 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:05:40 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:05:43 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:05:46 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:05:49 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:05:53 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:05:56 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:05:59 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:06:02 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:06:05 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:06:08 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:06:11 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:06:14 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:06:17 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:06:20 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:06:23 - INFO - Status: state=stream vol=70 song=9
+2026-03-18 07:06:26 - INFO - Status: state=stream vol=75 song=9
+2026-03-18 07:06:29 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:06:32 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:06:35 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:06:38 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:06:41 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:06:44 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:06:47 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:06:50 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:06:53 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:06:56 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:06:59 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:02 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:06 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:09 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:12 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:15 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:18 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:21 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:24 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:27 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:30 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:33 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:36 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:39 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:42 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:45 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:48 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:51 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:54 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:07:57 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:08:00 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:08:03 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:08:06 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:08:09 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:08:13 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:08:16 - INFO - Initialized BlusoundPlayer: Livingroom 40ST at 192.168.68.61
+2026-03-18 07:08:16 - INFO - Player name: Livingroom 40ST
+2026-03-18 07:08:16 - INFO - player_browse key='(null)' params=''
+2026-03-18 07:08:16 - INFO - player_browse response size=1100 data='<?xml version="1.0" encoding="UTF-8"?>
+<browse type="menu">
+  <item browseKey="BluOS:" text="Playlists" image="/images/ci_myplaylists.png" type="link"></item>
+  <item playURL="/Play?url=Capture%3Ahw%3Aimxspdif%2C0%2F1%2F25%2F2%3Fid%3Dxdynamic-Source2" text="Coax In" image="/images/capture/ic_opticalinput.png" type="audio" inputType="coax"></item>
+  <item playURL="/Play?url=Capture%3Ahw%3Aimxspdif%2C0%2F1%2F25%2F2%3Fid%3Dxdynamic-Source3" text="Optical In" image="/images/capture/ic_opticalinput.png" type="audio" inputType="optical"></item>
+  <item browseKey="Airable:" text="Radio" image="/Sources/images/BluOSRadioIcon.png" type="link"></item>
+  <item browseKey="Qobuz:" text="Qobuz" image="/Sources/images/QobuzIcon.png" type="link"></item>
+  <item browseKey="RadioParadise:" text="Radio Paradise" image="/Sources/images/RadioParadiseIcon.png" type="link"></item>
+  <item playURL="/Play?url=Spotify%3Aplay" text="Spotify" image="/Sources/images/SpotifyIcon.png" type="audio"></item>
+  <item browseKey="TuneIn:" text="TuneIn" image="/Sources/images/TuneInIcon.png" type="link"></item>
+</browse>'
+2026-03-18 07:08:16 - INFO - Browsed 8 items for Livingroom 40ST
+2026-03-18 07:08:16 - INFO - Initialized 8 sources for Livingroom 40ST
+2026-03-18 07:08:16 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:08:16 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:08:19 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:08:22 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:08:25 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:08:28 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:08:31 - INFO - Status: state=stream vol=80 song=9
+2026-03-18 07:08:34 - INFO - Status: state=stream vol=80 song=9

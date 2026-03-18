@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/xir/code/bluxir-c
+CMAKE_SOURCE_DIR = /home/xir/code/bluxir
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/xir/code/bluxir-c/build
+CMAKE_BINARY_DIR = /home/xir/code/bluxir/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/bluxir.dir/depend.make
@@ -70,200 +70,200 @@ include CMakeFiles/bluxir.dir/progress.make
 include CMakeFiles/bluxir.dir/flags.make
 
 CMakeFiles/bluxir.dir/src/main.c.o: CMakeFiles/bluxir.dir/flags.make
-CMakeFiles/bluxir.dir/src/main.c.o: /home/xir/code/bluxir-c/src/main.c
+CMakeFiles/bluxir.dir/src/main.c.o: /home/xir/code/bluxir/src/main.c
 CMakeFiles/bluxir.dir/src/main.c.o: CMakeFiles/bluxir.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir-c/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/bluxir.dir/src/main.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/main.c.o -MF CMakeFiles/bluxir.dir/src/main.c.o.d -o CMakeFiles/bluxir.dir/src/main.c.o -c /home/xir/code/bluxir-c/src/main.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/bluxir.dir/src/main.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/main.c.o -MF CMakeFiles/bluxir.dir/src/main.c.o.d -o CMakeFiles/bluxir.dir/src/main.c.o -c /home/xir/code/bluxir/src/main.c
 
 CMakeFiles/bluxir.dir/src/main.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/bluxir.dir/src/main.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir-c/src/main.c > CMakeFiles/bluxir.dir/src/main.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir/src/main.c > CMakeFiles/bluxir.dir/src/main.c.i
 
 CMakeFiles/bluxir.dir/src/main.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/bluxir.dir/src/main.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir-c/src/main.c -o CMakeFiles/bluxir.dir/src/main.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir/src/main.c -o CMakeFiles/bluxir.dir/src/main.c.s
 
 CMakeFiles/bluxir.dir/src/config.c.o: CMakeFiles/bluxir.dir/flags.make
-CMakeFiles/bluxir.dir/src/config.c.o: /home/xir/code/bluxir-c/src/config.c
+CMakeFiles/bluxir.dir/src/config.c.o: /home/xir/code/bluxir/src/config.c
 CMakeFiles/bluxir.dir/src/config.c.o: CMakeFiles/bluxir.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir-c/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/bluxir.dir/src/config.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/config.c.o -MF CMakeFiles/bluxir.dir/src/config.c.o.d -o CMakeFiles/bluxir.dir/src/config.c.o -c /home/xir/code/bluxir-c/src/config.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/bluxir.dir/src/config.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/config.c.o -MF CMakeFiles/bluxir.dir/src/config.c.o.d -o CMakeFiles/bluxir.dir/src/config.c.o -c /home/xir/code/bluxir/src/config.c
 
 CMakeFiles/bluxir.dir/src/config.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/bluxir.dir/src/config.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir-c/src/config.c > CMakeFiles/bluxir.dir/src/config.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir/src/config.c > CMakeFiles/bluxir.dir/src/config.c.i
 
 CMakeFiles/bluxir.dir/src/config.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/bluxir.dir/src/config.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir-c/src/config.c -o CMakeFiles/bluxir.dir/src/config.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir/src/config.c -o CMakeFiles/bluxir.dir/src/config.c.s
 
 CMakeFiles/bluxir.dir/src/player.c.o: CMakeFiles/bluxir.dir/flags.make
-CMakeFiles/bluxir.dir/src/player.c.o: /home/xir/code/bluxir-c/src/player.c
+CMakeFiles/bluxir.dir/src/player.c.o: /home/xir/code/bluxir/src/player.c
 CMakeFiles/bluxir.dir/src/player.c.o: CMakeFiles/bluxir.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir-c/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/bluxir.dir/src/player.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/player.c.o -MF CMakeFiles/bluxir.dir/src/player.c.o.d -o CMakeFiles/bluxir.dir/src/player.c.o -c /home/xir/code/bluxir-c/src/player.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/bluxir.dir/src/player.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/player.c.o -MF CMakeFiles/bluxir.dir/src/player.c.o.d -o CMakeFiles/bluxir.dir/src/player.c.o -c /home/xir/code/bluxir/src/player.c
 
 CMakeFiles/bluxir.dir/src/player.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/bluxir.dir/src/player.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir-c/src/player.c > CMakeFiles/bluxir.dir/src/player.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir/src/player.c > CMakeFiles/bluxir.dir/src/player.c.i
 
 CMakeFiles/bluxir.dir/src/player.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/bluxir.dir/src/player.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir-c/src/player.c -o CMakeFiles/bluxir.dir/src/player.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir/src/player.c -o CMakeFiles/bluxir.dir/src/player.c.s
 
 CMakeFiles/bluxir.dir/src/metadata.c.o: CMakeFiles/bluxir.dir/flags.make
-CMakeFiles/bluxir.dir/src/metadata.c.o: /home/xir/code/bluxir-c/src/metadata.c
+CMakeFiles/bluxir.dir/src/metadata.c.o: /home/xir/code/bluxir/src/metadata.c
 CMakeFiles/bluxir.dir/src/metadata.c.o: CMakeFiles/bluxir.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir-c/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/bluxir.dir/src/metadata.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/metadata.c.o -MF CMakeFiles/bluxir.dir/src/metadata.c.o.d -o CMakeFiles/bluxir.dir/src/metadata.c.o -c /home/xir/code/bluxir-c/src/metadata.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/bluxir.dir/src/metadata.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/metadata.c.o -MF CMakeFiles/bluxir.dir/src/metadata.c.o.d -o CMakeFiles/bluxir.dir/src/metadata.c.o -c /home/xir/code/bluxir/src/metadata.c
 
 CMakeFiles/bluxir.dir/src/metadata.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/bluxir.dir/src/metadata.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir-c/src/metadata.c > CMakeFiles/bluxir.dir/src/metadata.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir/src/metadata.c > CMakeFiles/bluxir.dir/src/metadata.c.i
 
 CMakeFiles/bluxir.dir/src/metadata.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/bluxir.dir/src/metadata.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir-c/src/metadata.c -o CMakeFiles/bluxir.dir/src/metadata.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir/src/metadata.c -o CMakeFiles/bluxir.dir/src/metadata.c.s
 
 CMakeFiles/bluxir.dir/src/cache.c.o: CMakeFiles/bluxir.dir/flags.make
-CMakeFiles/bluxir.dir/src/cache.c.o: /home/xir/code/bluxir-c/src/cache.c
+CMakeFiles/bluxir.dir/src/cache.c.o: /home/xir/code/bluxir/src/cache.c
 CMakeFiles/bluxir.dir/src/cache.c.o: CMakeFiles/bluxir.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir-c/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/bluxir.dir/src/cache.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/cache.c.o -MF CMakeFiles/bluxir.dir/src/cache.c.o.d -o CMakeFiles/bluxir.dir/src/cache.c.o -c /home/xir/code/bluxir-c/src/cache.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/bluxir.dir/src/cache.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/cache.c.o -MF CMakeFiles/bluxir.dir/src/cache.c.o.d -o CMakeFiles/bluxir.dir/src/cache.c.o -c /home/xir/code/bluxir/src/cache.c
 
 CMakeFiles/bluxir.dir/src/cache.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/bluxir.dir/src/cache.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir-c/src/cache.c > CMakeFiles/bluxir.dir/src/cache.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir/src/cache.c > CMakeFiles/bluxir.dir/src/cache.c.i
 
 CMakeFiles/bluxir.dir/src/cache.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/bluxir.dir/src/cache.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir-c/src/cache.c -o CMakeFiles/bluxir.dir/src/cache.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir/src/cache.c -o CMakeFiles/bluxir.dir/src/cache.c.s
 
 CMakeFiles/bluxir.dir/src/discover.c.o: CMakeFiles/bluxir.dir/flags.make
-CMakeFiles/bluxir.dir/src/discover.c.o: /home/xir/code/bluxir-c/src/discover.c
+CMakeFiles/bluxir.dir/src/discover.c.o: /home/xir/code/bluxir/src/discover.c
 CMakeFiles/bluxir.dir/src/discover.c.o: CMakeFiles/bluxir.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir-c/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/bluxir.dir/src/discover.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/discover.c.o -MF CMakeFiles/bluxir.dir/src/discover.c.o.d -o CMakeFiles/bluxir.dir/src/discover.c.o -c /home/xir/code/bluxir-c/src/discover.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/bluxir.dir/src/discover.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/discover.c.o -MF CMakeFiles/bluxir.dir/src/discover.c.o.d -o CMakeFiles/bluxir.dir/src/discover.c.o -c /home/xir/code/bluxir/src/discover.c
 
 CMakeFiles/bluxir.dir/src/discover.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/bluxir.dir/src/discover.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir-c/src/discover.c > CMakeFiles/bluxir.dir/src/discover.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir/src/discover.c > CMakeFiles/bluxir.dir/src/discover.c.i
 
 CMakeFiles/bluxir.dir/src/discover.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/bluxir.dir/src/discover.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir-c/src/discover.c -o CMakeFiles/bluxir.dir/src/discover.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir/src/discover.c -o CMakeFiles/bluxir.dir/src/discover.c.s
 
 CMakeFiles/bluxir.dir/src/cover_art.c.o: CMakeFiles/bluxir.dir/flags.make
-CMakeFiles/bluxir.dir/src/cover_art.c.o: /home/xir/code/bluxir-c/src/cover_art.c
+CMakeFiles/bluxir.dir/src/cover_art.c.o: /home/xir/code/bluxir/src/cover_art.c
 CMakeFiles/bluxir.dir/src/cover_art.c.o: CMakeFiles/bluxir.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir-c/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object CMakeFiles/bluxir.dir/src/cover_art.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/cover_art.c.o -MF CMakeFiles/bluxir.dir/src/cover_art.c.o.d -o CMakeFiles/bluxir.dir/src/cover_art.c.o -c /home/xir/code/bluxir-c/src/cover_art.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object CMakeFiles/bluxir.dir/src/cover_art.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/cover_art.c.o -MF CMakeFiles/bluxir.dir/src/cover_art.c.o.d -o CMakeFiles/bluxir.dir/src/cover_art.c.o -c /home/xir/code/bluxir/src/cover_art.c
 
 CMakeFiles/bluxir.dir/src/cover_art.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/bluxir.dir/src/cover_art.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir-c/src/cover_art.c > CMakeFiles/bluxir.dir/src/cover_art.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir/src/cover_art.c > CMakeFiles/bluxir.dir/src/cover_art.c.i
 
 CMakeFiles/bluxir.dir/src/cover_art.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/bluxir.dir/src/cover_art.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir-c/src/cover_art.c -o CMakeFiles/bluxir.dir/src/cover_art.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir/src/cover_art.c -o CMakeFiles/bluxir.dir/src/cover_art.c.s
 
 CMakeFiles/bluxir.dir/src/ui.c.o: CMakeFiles/bluxir.dir/flags.make
-CMakeFiles/bluxir.dir/src/ui.c.o: /home/xir/code/bluxir-c/src/ui.c
+CMakeFiles/bluxir.dir/src/ui.c.o: /home/xir/code/bluxir/src/ui.c
 CMakeFiles/bluxir.dir/src/ui.c.o: CMakeFiles/bluxir.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir-c/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object CMakeFiles/bluxir.dir/src/ui.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/ui.c.o -MF CMakeFiles/bluxir.dir/src/ui.c.o.d -o CMakeFiles/bluxir.dir/src/ui.c.o -c /home/xir/code/bluxir-c/src/ui.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object CMakeFiles/bluxir.dir/src/ui.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/ui.c.o -MF CMakeFiles/bluxir.dir/src/ui.c.o.d -o CMakeFiles/bluxir.dir/src/ui.c.o -c /home/xir/code/bluxir/src/ui.c
 
 CMakeFiles/bluxir.dir/src/ui.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/bluxir.dir/src/ui.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir-c/src/ui.c > CMakeFiles/bluxir.dir/src/ui.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir/src/ui.c > CMakeFiles/bluxir.dir/src/ui.c.i
 
 CMakeFiles/bluxir.dir/src/ui.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/bluxir.dir/src/ui.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir-c/src/ui.c -o CMakeFiles/bluxir.dir/src/ui.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir/src/ui.c -o CMakeFiles/bluxir.dir/src/ui.c.s
 
 CMakeFiles/bluxir.dir/src/ui_player.c.o: CMakeFiles/bluxir.dir/flags.make
-CMakeFiles/bluxir.dir/src/ui_player.c.o: /home/xir/code/bluxir-c/src/ui_player.c
+CMakeFiles/bluxir.dir/src/ui_player.c.o: /home/xir/code/bluxir/src/ui_player.c
 CMakeFiles/bluxir.dir/src/ui_player.c.o: CMakeFiles/bluxir.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir-c/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building C object CMakeFiles/bluxir.dir/src/ui_player.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/ui_player.c.o -MF CMakeFiles/bluxir.dir/src/ui_player.c.o.d -o CMakeFiles/bluxir.dir/src/ui_player.c.o -c /home/xir/code/bluxir-c/src/ui_player.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building C object CMakeFiles/bluxir.dir/src/ui_player.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/ui_player.c.o -MF CMakeFiles/bluxir.dir/src/ui_player.c.o.d -o CMakeFiles/bluxir.dir/src/ui_player.c.o -c /home/xir/code/bluxir/src/ui_player.c
 
 CMakeFiles/bluxir.dir/src/ui_player.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/bluxir.dir/src/ui_player.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir-c/src/ui_player.c > CMakeFiles/bluxir.dir/src/ui_player.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir/src/ui_player.c > CMakeFiles/bluxir.dir/src/ui_player.c.i
 
 CMakeFiles/bluxir.dir/src/ui_player.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/bluxir.dir/src/ui_player.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir-c/src/ui_player.c -o CMakeFiles/bluxir.dir/src/ui_player.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir/src/ui_player.c -o CMakeFiles/bluxir.dir/src/ui_player.c.s
 
 CMakeFiles/bluxir.dir/src/ui_browse.c.o: CMakeFiles/bluxir.dir/flags.make
-CMakeFiles/bluxir.dir/src/ui_browse.c.o: /home/xir/code/bluxir-c/src/ui_browse.c
+CMakeFiles/bluxir.dir/src/ui_browse.c.o: /home/xir/code/bluxir/src/ui_browse.c
 CMakeFiles/bluxir.dir/src/ui_browse.c.o: CMakeFiles/bluxir.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir-c/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building C object CMakeFiles/bluxir.dir/src/ui_browse.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/ui_browse.c.o -MF CMakeFiles/bluxir.dir/src/ui_browse.c.o.d -o CMakeFiles/bluxir.dir/src/ui_browse.c.o -c /home/xir/code/bluxir-c/src/ui_browse.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building C object CMakeFiles/bluxir.dir/src/ui_browse.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/ui_browse.c.o -MF CMakeFiles/bluxir.dir/src/ui_browse.c.o.d -o CMakeFiles/bluxir.dir/src/ui_browse.c.o -c /home/xir/code/bluxir/src/ui_browse.c
 
 CMakeFiles/bluxir.dir/src/ui_browse.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/bluxir.dir/src/ui_browse.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir-c/src/ui_browse.c > CMakeFiles/bluxir.dir/src/ui_browse.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir/src/ui_browse.c > CMakeFiles/bluxir.dir/src/ui_browse.c.i
 
 CMakeFiles/bluxir.dir/src/ui_browse.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/bluxir.dir/src/ui_browse.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir-c/src/ui_browse.c -o CMakeFiles/bluxir.dir/src/ui_browse.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir/src/ui_browse.c -o CMakeFiles/bluxir.dir/src/ui_browse.c.s
 
 CMakeFiles/bluxir.dir/src/ui_search.c.o: CMakeFiles/bluxir.dir/flags.make
-CMakeFiles/bluxir.dir/src/ui_search.c.o: /home/xir/code/bluxir-c/src/ui_search.c
+CMakeFiles/bluxir.dir/src/ui_search.c.o: /home/xir/code/bluxir/src/ui_search.c
 CMakeFiles/bluxir.dir/src/ui_search.c.o: CMakeFiles/bluxir.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir-c/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building C object CMakeFiles/bluxir.dir/src/ui_search.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/ui_search.c.o -MF CMakeFiles/bluxir.dir/src/ui_search.c.o.d -o CMakeFiles/bluxir.dir/src/ui_search.c.o -c /home/xir/code/bluxir-c/src/ui_search.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building C object CMakeFiles/bluxir.dir/src/ui_search.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/ui_search.c.o -MF CMakeFiles/bluxir.dir/src/ui_search.c.o.d -o CMakeFiles/bluxir.dir/src/ui_search.c.o -c /home/xir/code/bluxir/src/ui_search.c
 
 CMakeFiles/bluxir.dir/src/ui_search.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/bluxir.dir/src/ui_search.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir-c/src/ui_search.c > CMakeFiles/bluxir.dir/src/ui_search.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir/src/ui_search.c > CMakeFiles/bluxir.dir/src/ui_search.c.i
 
 CMakeFiles/bluxir.dir/src/ui_search.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/bluxir.dir/src/ui_search.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir-c/src/ui_search.c -o CMakeFiles/bluxir.dir/src/ui_search.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir/src/ui_search.c -o CMakeFiles/bluxir.dir/src/ui_search.c.s
 
 CMakeFiles/bluxir.dir/src/logger.c.o: CMakeFiles/bluxir.dir/flags.make
-CMakeFiles/bluxir.dir/src/logger.c.o: /home/xir/code/bluxir-c/src/logger.c
+CMakeFiles/bluxir.dir/src/logger.c.o: /home/xir/code/bluxir/src/logger.c
 CMakeFiles/bluxir.dir/src/logger.c.o: CMakeFiles/bluxir.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir-c/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building C object CMakeFiles/bluxir.dir/src/logger.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/logger.c.o -MF CMakeFiles/bluxir.dir/src/logger.c.o.d -o CMakeFiles/bluxir.dir/src/logger.c.o -c /home/xir/code/bluxir-c/src/logger.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building C object CMakeFiles/bluxir.dir/src/logger.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/logger.c.o -MF CMakeFiles/bluxir.dir/src/logger.c.o.d -o CMakeFiles/bluxir.dir/src/logger.c.o -c /home/xir/code/bluxir/src/logger.c
 
 CMakeFiles/bluxir.dir/src/logger.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/bluxir.dir/src/logger.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir-c/src/logger.c > CMakeFiles/bluxir.dir/src/logger.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir/src/logger.c > CMakeFiles/bluxir.dir/src/logger.c.i
 
 CMakeFiles/bluxir.dir/src/logger.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/bluxir.dir/src/logger.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir-c/src/logger.c -o CMakeFiles/bluxir.dir/src/logger.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir/src/logger.c -o CMakeFiles/bluxir.dir/src/logger.c.s
 
 CMakeFiles/bluxir.dir/src/util.c.o: CMakeFiles/bluxir.dir/flags.make
-CMakeFiles/bluxir.dir/src/util.c.o: /home/xir/code/bluxir-c/src/util.c
+CMakeFiles/bluxir.dir/src/util.c.o: /home/xir/code/bluxir/src/util.c
 CMakeFiles/bluxir.dir/src/util.c.o: CMakeFiles/bluxir.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir-c/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building C object CMakeFiles/bluxir.dir/src/util.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/util.c.o -MF CMakeFiles/bluxir.dir/src/util.c.o.d -o CMakeFiles/bluxir.dir/src/util.c.o -c /home/xir/code/bluxir-c/src/util.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building C object CMakeFiles/bluxir.dir/src/util.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/src/util.c.o -MF CMakeFiles/bluxir.dir/src/util.c.o.d -o CMakeFiles/bluxir.dir/src/util.c.o -c /home/xir/code/bluxir/src/util.c
 
 CMakeFiles/bluxir.dir/src/util.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/bluxir.dir/src/util.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir-c/src/util.c > CMakeFiles/bluxir.dir/src/util.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir/src/util.c > CMakeFiles/bluxir.dir/src/util.c.i
 
 CMakeFiles/bluxir.dir/src/util.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/bluxir.dir/src/util.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir-c/src/util.c -o CMakeFiles/bluxir.dir/src/util.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir/src/util.c -o CMakeFiles/bluxir.dir/src/util.c.s
 
 CMakeFiles/bluxir.dir/lib/cJSON.c.o: CMakeFiles/bluxir.dir/flags.make
-CMakeFiles/bluxir.dir/lib/cJSON.c.o: /home/xir/code/bluxir-c/lib/cJSON.c
+CMakeFiles/bluxir.dir/lib/cJSON.c.o: /home/xir/code/bluxir/lib/cJSON.c
 CMakeFiles/bluxir.dir/lib/cJSON.c.o: CMakeFiles/bluxir.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir-c/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building C object CMakeFiles/bluxir.dir/lib/cJSON.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/lib/cJSON.c.o -MF CMakeFiles/bluxir.dir/lib/cJSON.c.o.d -o CMakeFiles/bluxir.dir/lib/cJSON.c.o -c /home/xir/code/bluxir-c/lib/cJSON.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/xir/code/bluxir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building C object CMakeFiles/bluxir.dir/lib/cJSON.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/bluxir.dir/lib/cJSON.c.o -MF CMakeFiles/bluxir.dir/lib/cJSON.c.o.d -o CMakeFiles/bluxir.dir/lib/cJSON.c.o -c /home/xir/code/bluxir/lib/cJSON.c
 
 CMakeFiles/bluxir.dir/lib/cJSON.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/bluxir.dir/lib/cJSON.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir-c/lib/cJSON.c > CMakeFiles/bluxir.dir/lib/cJSON.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/xir/code/bluxir/lib/cJSON.c > CMakeFiles/bluxir.dir/lib/cJSON.c.i
 
 CMakeFiles/bluxir.dir/lib/cJSON.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/bluxir.dir/lib/cJSON.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir-c/lib/cJSON.c -o CMakeFiles/bluxir.dir/lib/cJSON.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/xir/code/bluxir/lib/cJSON.c -o CMakeFiles/bluxir.dir/lib/cJSON.c.s
 
 # Object files for target bluxir
 bluxir_OBJECTS = \
@@ -302,7 +302,7 @@ bluxir: CMakeFiles/bluxir.dir/lib/cJSON.c.o
 bluxir: CMakeFiles/bluxir.dir/build.make
 bluxir: /usr/lib/x86_64-linux-gnu/libcurl.so
 bluxir: CMakeFiles/bluxir.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/xir/code/bluxir-c/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Linking C executable bluxir"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/xir/code/bluxir/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Linking C executable bluxir"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/bluxir.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -314,6 +314,6 @@ CMakeFiles/bluxir.dir/clean:
 .PHONY : CMakeFiles/bluxir.dir/clean
 
 CMakeFiles/bluxir.dir/depend:
-	cd /home/xir/code/bluxir-c/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/xir/code/bluxir-c /home/xir/code/bluxir-c /home/xir/code/bluxir-c/build /home/xir/code/bluxir-c/build /home/xir/code/bluxir-c/build/CMakeFiles/bluxir.dir/DependInfo.cmake "--color=$(COLOR)"
+	cd /home/xir/code/bluxir/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/xir/code/bluxir /home/xir/code/bluxir /home/xir/code/bluxir/build /home/xir/code/bluxir/build /home/xir/code/bluxir/build/CMakeFiles/bluxir.dir/DependInfo.cmake "--color=$(COLOR)"
 .PHONY : CMakeFiles/bluxir.dir/depend
 

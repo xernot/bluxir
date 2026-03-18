@@ -1,6 +1,5 @@
-CMakeFiles/bluxir.dir/src/logger.c.o: \
- /home/xir/code/bluxir-c/src/logger.c /usr/include/stdc-predef.h \
- /home/xir/code/bluxir-c/src/logger.h \
+CMakeFiles/bluxir.dir/src/logger.c.o: /home/xir/code/bluxir/src/logger.c \
+ /usr/include/stdc-predef.h /home/xir/code/bluxir/src/logger.h \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/stdarg.h /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/features-time64.h \

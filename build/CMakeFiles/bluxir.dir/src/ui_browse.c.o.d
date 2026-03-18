@@ -1,6 +1,6 @@
 CMakeFiles/bluxir.dir/src/ui_browse.c.o: \
- /home/xir/code/bluxir-c/src/ui_browse.c /usr/include/stdc-predef.h \
- /home/xir/code/bluxir-c/src/ui.h /home/xir/code/bluxir-c/src/types.h \
+ /home/xir/code/bluxir/src/ui_browse.c /usr/include/stdc-predef.h \
+ /home/xir/code/bluxir/src/ui.h /home/xir/code/bluxir/src/types.h \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/stdbool.h \
  /usr/include/pthread.h /usr/include/features.h \
  /usr/include/features-time64.h \
@@ -40,7 +40,7 @@ CMakeFiles/bluxir.dir/src/ui_browse.c.o: \
  /usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h \
  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h \
  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min.h \
- /home/xir/code/bluxir-c/src/constants.h /usr/include/curses.h \
+ /home/xir/code/bluxir/src/constants.h /usr/include/curses.h \
  /usr/include/ncurses_dll.h \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h /usr/include/stdint.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
@@ -59,5 +59,5 @@ CMakeFiles/bluxir.dir/src/ui_browse.c.o: \
  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
  /usr/include/x86_64-linux-gnu/bits/floatn.h \
  /usr/include/x86_64-linux-gnu/bits/floatn-common.h /usr/include/unctrl.h \
- /usr/include/curses.h /home/xir/code/bluxir-c/src/util.h \
+ /usr/include/curses.h /home/xir/code/bluxir/src/util.h \
  /usr/include/string.h /usr/include/strings.h

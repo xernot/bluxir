@@ -6,5 +6,5 @@ C_DEFINES =
 
 C_INCLUDES = 
 
-C_FLAGS =  -Wall -Wextra -Wno-unused-parameter -std=gnu11
+C_FLAGS =  -Wall -Wextra -Wno-unused-parameter -g -std=gnu11
 

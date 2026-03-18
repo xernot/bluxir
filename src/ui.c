@@ -59,6 +59,7 @@ static bool any_highlighted(AppState *app)
 typedef struct {
     char text[STR_MEDIUM];
     bool highlighted;
+    int color;  /* 0 = default (green when highlighted), nonzero = forced color pair */
 } HeaderSegment;
 
 static int build_header_segments(AppState *app, HeaderSegment *segs)
@@ -78,6 +79,10 @@ static int build_header_segments(AppState *app, HeaderSegment *segs)
     if (!state[0]) safe_strcpy(state, "-", sizeof(state));
     safe_strcpy(segs[2].text, state, STR_MEDIUM);
     segs[2].highlighted = ui_is_highlighted(app, "state");
+    if (strcmp(ps->state, "play") == 0 || strcmp(ps->state, "stream") == 0)
+        segs[2].color = COLOR_PAIR(3);  /* Green for playing */
+    else if (strcmp(ps->state, "pause") == 0)
+        segs[2].color = COLOR_PAIR(4);  /* Red for paused */
 
     char vol_bar[VOLUME_BAR_WIDTH + 4];
     create_volume_bar(ps->volume, VOLUME_BAR_WIDTH, vol_bar, sizeof(vol_bar));
@@ -114,7 +119,7 @@ void ui_draw_header(WINDOW *win, AppState *app, const char *view)
 
     /* Status segments on the right */
     if (app->has_status) {
-        HeaderSegment segs[4];
+        HeaderSegment segs[4] = {0};
         int seg_count = build_header_segments(app, segs);
         /* Calculate total width */
         int total_w = 0;
@@ -126,7 +131,8 @@ void ui_draw_header(WINDOW *win, AppState *app, const char *view)
         if (info_x > header_len + 4) {
             int x = info_x;
             for (int i = 0; i < seg_count; i++) {
-                int attr = segs[i].highlighted ? green : 0;
+                int attr = segs[i].color ? segs[i].color
+                         : segs[i].highlighted ? green : 0;
                 wattron(win, attr);
                 mvwaddstr(win, 1, x, segs[i].text);
                 wattroff(win, attr);
@@ -160,11 +166,13 @@ void ui_draw_header(WINDOW *win, AppState *app, const char *view)
 void ui_draw_footer(WINDOW *win, AppState *app, int height, int width)
 {
     (void)app;
+    wattron(win, A_DIM);
     mvwaddstr(win, height - 2, 2, FOOTER_HELP);
     int vlen = (int)strlen(VERSION_STRING);
     if (width > vlen + 2) {
         mvwaddstr(win, height - 2, width - vlen - 2, VERSION_STRING);
     }
+    wattroff(win, A_DIM);
     mvwhline(win, height - 1, 0, ACS_HLINE, width);
 }
 

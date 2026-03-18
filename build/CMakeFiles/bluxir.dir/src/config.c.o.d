@@ -1,8 +1,7 @@
-CMakeFiles/bluxir.dir/src/config.c.o: \
- /home/xir/code/bluxir-c/src/config.c /usr/include/stdc-predef.h \
- /home/xir/code/bluxir-c/src/config.h \
+CMakeFiles/bluxir.dir/src/config.c.o: /home/xir/code/bluxir/src/config.c \
+ /usr/include/stdc-predef.h /home/xir/code/bluxir/src/config.h \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/stdbool.h \
- /home/xir/code/bluxir-c/src/../lib/cJSON.h \
+ /home/xir/code/bluxir/src/../lib/cJSON.h \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/stddef.h /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/features.h /usr/include/features-time64.h \

@@ -1,6 +1,8 @@
 CMakeFiles/bluxir.dir/src/metadata.c.o: \
  /home/xir/code/bluxir/src/metadata.c /usr/include/stdc-predef.h \
- /home/xir/code/bluxir/src/metadata.h /home/xir/code/bluxir/src/types.h \
+ /home/xir/code/bluxir/src/metadata.h /home/xir/code/bluxir/src/logger.h \
+ /usr/lib/gcc/x86_64-linux-gnu/13/include/stdarg.h \
+ /home/xir/code/bluxir/src/types.h \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/stdbool.h \
  /usr/include/pthread.h /usr/include/features.h \
  /usr/include/features-time64.h \
@@ -40,11 +42,10 @@ CMakeFiles/bluxir.dir/src/metadata.c.o: \
  /usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h \
  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h \
  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min.h \
- /home/xir/code/bluxir/src/constants.h /home/xir/code/bluxir/src/logger.h \
- /usr/lib/gcc/x86_64-linux-gnu/13/include/stdarg.h \
- /home/xir/code/bluxir/src/cache.h /home/xir/code/bluxir/src/util.h \
+ /home/xir/code/bluxir/src/constants.h \
  /home/xir/code/bluxir/src/../lib/cJSON.h \
- /usr/include/x86_64-linux-gnu/curl/curl.h \
+ /home/xir/code/bluxir/src/cache.h /home/xir/code/bluxir/src/util.h \
+ /usr/include/ctype.h /usr/include/x86_64-linux-gnu/curl/curl.h \
  /usr/include/x86_64-linux-gnu/curl/curlver.h \
  /usr/include/x86_64-linux-gnu/curl/system.h \
  /usr/include/x86_64-linux-gnu/sys/types.h \
@@ -102,7 +103,7 @@ CMakeFiles/bluxir.dir/src/metadata.c.o: \
  /usr/include/x86_64-linux-gnu/bits/waitflags.h \
  /usr/include/x86_64-linux-gnu/bits/waitstatus.h /usr/include/alloca.h \
  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h /usr/include/string.h \
- /usr/include/strings.h /usr/include/ctype.h /usr/include/unistd.h \
+ /usr/include/strings.h /usr/include/unistd.h \
  /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
  /usr/include/x86_64-linux-gnu/bits/environments.h \
  /usr/include/x86_64-linux-gnu/bits/confname.h \

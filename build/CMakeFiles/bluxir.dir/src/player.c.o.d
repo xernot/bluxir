@@ -43,7 +43,7 @@ CMakeFiles/bluxir.dir/src/player.c.o: /home/xir/code/bluxir/src/player.c \
  /home/xir/code/bluxir/src/constants.h /home/xir/code/bluxir/src/logger.h \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/stdarg.h \
  /home/xir/code/bluxir/src/config.h /home/xir/code/bluxir/src/util.h \
- /usr/include/x86_64-linux-gnu/curl/curl.h \
+ /usr/include/ctype.h /usr/include/x86_64-linux-gnu/curl/curl.h \
  /usr/include/x86_64-linux-gnu/curl/curlver.h \
  /usr/include/x86_64-linux-gnu/curl/system.h \
  /usr/include/x86_64-linux-gnu/sys/types.h \
@@ -108,4 +108,4 @@ CMakeFiles/bluxir.dir/src/player.c.o: /home/xir/code/bluxir/src/player.c \
  /usr/include/x86_64-linux-gnu/bits/confname.h \
  /usr/include/x86_64-linux-gnu/bits/getopt_posix.h \
  /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
- /usr/include/x86_64-linux-gnu/bits/unistd_ext.h /usr/include/ctype.h
+ /usr/include/x86_64-linux-gnu/bits/unistd_ext.h

@@ -13,11 +13,34 @@
 
 /* ── Logging ────────────────────────────────────────────────────────────── */
 
+/* Directory for log files */
+#define LOG_DIRECTORY "logs"
+
+/* Permissions for the log directory (owner rwx, group/other rx) */
+#define LOG_DIR_PERMISSIONS 0755
+
+/* Log file for main application events */
+#define LOG_FILE_MAIN "logs/bluxir.log"
+
+/* Log file for player/CLI API communication */
+#define LOG_FILE_PLAYER "logs/cli.log"
+
+/* Log file for MusicBrainz and metadata API requests */
+#define LOG_FILE_METADATA "logs/musicbrainz.log"
+
 /* Maximum size of each log file before rotation (bytes) */
 #define LOG_MAX_BYTES (1024 * 1024)
 
 /* Number of rotated log backups to keep */
 #define LOG_BACKUP_COUNT 1
+
+/* ── Configuration Files ───────────────────────────────────────────────── */
+
+/* Project-level config file (in working directory) */
+#define PROJECT_CONFIG "config.json"
+
+/* Private config file name (stored in user's home directory) */
+#define PRIVATE_CONFIG_NAME ".bluxir.json"
 
 /* ── Timing ─────────────────────────────────────────────────────────────── */
 
@@ -77,7 +100,8 @@
 #define MUSICBRAINZ_USER_AGENT "bluxir/1.2 (https://github.com/xernot/bluxir)"
 
 /* Wikipedia REST API summary endpoint template — %s = lang, %s = title */
-#define WIKIPEDIA_API_TEMPLATE "https://%s.wikipedia.org/api/rest_v1/page/summary/%s"
+#define WIKIPEDIA_API_TEMPLATE                                                 \
+  "https://%s.wikipedia.org/api/rest_v1/page/summary/%s"
 
 /* OpenAI chat completions endpoint */
 #define OPENAI_API_URL "https://api.openai.com/v1/chat/completions"
@@ -190,13 +214,16 @@ static const char *WIKIPEDIA_LANGUAGES[WIKIPEDIA_LANG_COUNT] = {"en", "de"};
 /* Duration to highlight a changed control in green (seconds) */
 #define HIGHLIGHT_DURATION 5
 
-/* Extra width factor for the health check modal (1.2 = 20% wider than content) */
+/* Extra width factor for the health check modal (1.2 = 20% wider than content)
+ */
 #define HEALTH_WIDTH_FACTOR 1.2
 
 /* ── UI Strings ─────────────────────────────────────────────────────────── */
 
 /* Footer help text shown on the main player screen */
-#define FOOTER_HELP "(s) search  (f) fav  (l) playlists  (w) save  (c) cover  (t) lyrics  (+/-) fav  (i) source  (h) health  (?) help  (q) quit"
+#define FOOTER_HELP                                                            \
+  "(s) search  (f) fav  (l) playlists  (w) save  (c) cover  (t) lyrics  "      \
+  "(+/-) fav  (i) source  (h) health  (?) help  (q) quit"
 
 /* Version string shown in the footer */
 #define VERSION_STRING "bluxir v3.0"
@@ -208,10 +235,13 @@ static const char *WIKIPEDIA_LANGUAGES[WIKIPEDIA_LANG_COUNT] = {"en", "de"};
 #define PROJECT_URL "https://github.com/xernot/bluxir"
 
 /* Browse source selection instructions (line 1) */
-#define BROWSE_INSTRUCTIONS_1 "UP/DOWN: select, ENTER: play, RIGHT: expand, LEFT: back"
+#define BROWSE_INSTRUCTIONS_1                                                  \
+  "UP/DOWN: select, ENTER: play, RIGHT: expand, LEFT: back"
 
 /* Browse source selection instructions (line 2) */
-#define BROWSE_INSTRUCTIONS_2 "s: search, /: filter, n/p: next/prev page, +: add fav, -: remove fav, b: back"
+#define BROWSE_INSTRUCTIONS_2                                                  \
+  "s: search, /: filter, n/p: next/prev page, +: add fav, -: remove fav, b: "  \
+  "back"
 
 /* Browse sort instructions */
 #define BROWSE_SORT_INSTRUCTIONS "Sort: (t) title  (a) artist  (o) original"
@@ -220,7 +250,8 @@ static const char *WIKIPEDIA_LANGUAGES[WIKIPEDIA_LANG_COUNT] = {"en", "de"};
 #define SEARCH_SOURCE_INSTRUCTIONS "UP/DOWN: navigate, ENTER: select, b: back"
 
 /* Search results instructions */
-#define SEARCH_RESULTS_INSTRUCTIONS "UP/DOWN: navigate, ENTER: play, RIGHT: expand, b: back"
+#define SEARCH_RESULTS_INSTRUCTIONS                                            \
+  "UP/DOWN: navigate, ENTER: play, RIGHT: expand, b: back"
 
 /* Lyrics attribution text */
 #define LYRICS_ATTRIBUTION "(lyrics from lrclib.net)"
@@ -252,7 +283,8 @@ static const char *WIKIPEDIA_LANGUAGES[WIKIPEDIA_LANG_COUNT] = {"en", "de"};
 #define HEALTH_NO_UPDATE "no update available"
 
 /* Queue action dialog prompt */
-#define QUEUE_ACTION_PROMPT "(1) Play now  (2) Add next  (3) Add last  (ESC) Cancel"
+#define QUEUE_ACTION_PROMPT                                                    \
+  "(1) Play now  (2) Add next  (3) Add last  (ESC) Cancel"
 
 /* ── Search ─────────────────────────────────────────────────────────────── */
 
@@ -267,7 +299,8 @@ static const char *WIKIPEDIA_LANGUAGES[WIKIPEDIA_LANG_COUNT] = {"en", "de"};
 #define SEARCH_SERVICE_QOBUZ "Qobuz:"
 #define SEARCH_SERVICE_TUNEIN "TuneIn:"
 #define SEARCH_SERVICES_COUNT 2
-static const char *SEARCH_SERVICES[SEARCH_SERVICES_COUNT] = {"Qobuz:", "TuneIn:"};
+static const char *SEARCH_SERVICES[SEARCH_SERVICES_COUNT] = {"Qobuz:",
+                                                             "TuneIn:"};
 
 /* ── String Buffer Sizes ────────────────────────────────────────────────── */
 
@@ -285,45 +318,39 @@ static const char *SEARCH_SERVICES[SEARCH_SERVICES_COUNT] = {"Qobuz:", "TuneIn:"
 /* ── Help Screen Keybindings ────────────────────────────────────────────── */
 
 typedef struct {
-    const char *key;
-    const char *description;
+  const char *key;
+  const char *description;
 } KeyBinding;
 
 #define HELP_LEFT_COUNT 10
 static const KeyBinding HELP_LEFT_KEYS[HELP_LEFT_COUNT] = {
-    {"UP/DOWN",  "Adjust volume"},
-    {"SPACE",    "Play/Pause"},
-    {"ENTER",    "Play / Add next / Add last"},
-    {">/<",      "Skip/Previous track"},
-    {"g",        "Go to track number"},
-    {"m",        "Toggle mute"},
-    {"r",        "Cycle repeat"},
-    {"x",        "Toggle shuffle"},
-    {"+/-",      "Add/Remove favourite"},
-    {"ESC",      "Cancel"},
+    {"UP/DOWN", "Adjust volume"},
+    {"SPACE", "Play/Pause"},
+    {"ENTER", "Play / Add next / Add last"},
+    {">/<", "Skip/Previous track"},
+    {"g", "Go to track number"},
+    {"m", "Toggle mute"},
+    {"r", "Cycle repeat"},
+    {"x", "Toggle shuffle"},
+    {"+/-", "Add/Remove favourite"},
+    {"ESC", "Cancel"},
 };
 
 #define HELP_RIGHT_COUNT 12
 static const KeyBinding HELP_RIGHT_KEYS[HELP_RIGHT_COUNT] = {
-    {"i",        "Select input"},
-    {"s",        "Search"},
-    {"f",        "Qobuz favorites"},
-    {"l",        "Load playlist"},
-    {"w",        "Save playlist"},
-    {"c",        "Toggle cover art"},
-    {"t",        "Toggle lyrics"},
-    {"PgUp/PgDn","Scroll lyrics"},
-    {"h",        "Health check"},
-    {"p",        "Pretty print"},
-    {"b",        "Back to player list"},
-    {"q",        "Quit"},
+    {"i", "Select input"},        {"s", "Search"},
+    {"f", "Qobuz favorites"},     {"l", "Load playlist"},
+    {"w", "Save playlist"},       {"c", "Toggle cover art"},
+    {"t", "Toggle lyrics"},       {"PgUp/PgDn", "Scroll lyrics"},
+    {"h", "Health check"},        {"p", "Pretty print"},
+    {"b", "Back to player list"}, {"q", "Quit"},
 };
 
 #define SELECTOR_SHORTCUTS_COUNT 3
 static const KeyBinding SELECTOR_SHORTCUTS[SELECTOR_SHORTCUTS_COUNT] = {
-    {"UP/DOWN",  "Select player"},
-    {"ENTER",    "Activate player"},
-    {"q",        "Quit"},
+    {"UP/DOWN", "Select player"},
+    {"ENTER", "Activate player"},
+    {"q", "Quit"},
 };
 
 /* ── AI Prompt Templates ────────────────────────────────────────────────── */
@@ -332,24 +359,30 @@ static const KeyBinding SELECTOR_SHORTCUTS[SELECTOR_SHORTCUTS_COUNT] = {
 #define TRACK_INFO_PROMPT_FMT "Tell me about the song \"%s\" by %s."
 
 /* Station info prompt — use snprintf with station_name */
-#define STATION_INFO_PROMPT_FMT \
-    "Radio station: \"%s\".\n\n" \
-    "Tell me about this radio station in 3-5 sentences. " \
-    "Include: what kind of station it is, what country/region it serves, " \
-    "what type of music or content it broadcasts, and any notable facts.\n\n" \
-    "IMPORTANT: Only include facts you are certain about. If you don't know " \
-    "this station, respond with just \"-\"."
+#define STATION_INFO_PROMPT_FMT                                                \
+  "Radio station: \"%s\".\n\n"                                                 \
+  "Tell me about this radio station in 3-5 sentences. "                        \
+  "Include: what kind of station it is, what country/region it serves, "       \
+  "what type of music or content it broadcasts, and any notable facts.\n\n"    \
+  "IMPORTANT: Only include facts you are certain about. If you don't know "    \
+  "this station, respond with just \"-\"."
 
-/* Combined info prompt — use snprintf with title, artist, album, track_info_instruction */
-#define COMBINED_INFO_PROMPT_FMT \
-    "Song: \"%s\" by %s, from the album \"%s\".\n\n" \
-    "Return a JSON object with these exact keys:\n" \
-    "- \"year\": the original release year of the album (4-digit string, or \"-\" if unknown)\n" \
-    "- \"label\": the record label that released the album (or \"-\" if unknown)\n" \
-    "- \"genre\": the genre(s) of this album, comma-separated (or \"-\" if unknown)\n" \
-    "- \"track_info\": %s\n\n" \
-    "IMPORTANT: Only include facts you are certain about. If you don't know the artist or song, " \
-    "set \"track_info\" to \"-\" rather than guessing. Never invent musician names, studios, or details.\n\n" \
-    "Respond ONLY with the JSON object, no markdown, no explanation."
+/* Combined info prompt — use snprintf with title, artist, album,
+ * track_info_instruction */
+#define COMBINED_INFO_PROMPT_FMT                                               \
+  "Song: \"%s\" by %s, from the album \"%s\".\n\n"                             \
+  "Return a JSON object with these exact keys:\n"                              \
+  "- \"year\": the original release year of the album (4-digit string, or "    \
+  "\"-\" if unknown)\n"                                                        \
+  "- \"label\": the record label that released the album (or \"-\" if "        \
+  "unknown)\n"                                                                 \
+  "- \"genre\": the genre(s) of this album, comma-separated (or \"-\" if "     \
+  "unknown)\n"                                                                 \
+  "- \"track_info\": %s\n\n"                                                   \
+  "IMPORTANT: Only include facts you are certain about. If you don't know "    \
+  "the artist or song, "                                                       \
+  "set \"track_info\" to \"-\" rather than guessing. Never invent musician "   \
+  "names, studios, or details.\n\n"                                            \
+  "Respond ONLY with the JSON object, no markdown, no explanation."
 
 #endif /* CONSTANTS_H */

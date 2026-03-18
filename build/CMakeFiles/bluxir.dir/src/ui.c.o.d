@@ -59,12 +59,10 @@ CMakeFiles/bluxir.dir/src/ui.c.o: /home/xir/code/bluxir/src/ui.c \
  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
  /usr/include/x86_64-linux-gnu/bits/floatn.h \
  /usr/include/x86_64-linux-gnu/bits/floatn-common.h /usr/include/unctrl.h \
- /usr/include/curses.h /home/xir/code/bluxir/src/util.h \
+ /usr/include/curses.h /home/xir/code/bluxir/src/../lib/cJSON.h \
  /home/xir/code/bluxir/src/config.h /home/xir/code/bluxir/src/player.h \
- /home/xir/code/bluxir/src/logger.h \
- /home/xir/code/bluxir/src/../lib/cJSON.h /usr/include/string.h \
- /usr/include/strings.h /usr/include/stdlib.h \
- /usr/include/x86_64-linux-gnu/bits/waitflags.h \
+ /home/xir/code/bluxir/src/logger.h /home/xir/code/bluxir/src/util.h \
+ /usr/include/stdlib.h /usr/include/x86_64-linux-gnu/bits/waitflags.h \
  /usr/include/x86_64-linux-gnu/bits/waitstatus.h \
  /usr/include/x86_64-linux-gnu/sys/types.h /usr/include/endian.h \
  /usr/include/x86_64-linux-gnu/bits/byteswap.h \
@@ -73,4 +71,5 @@ CMakeFiles/bluxir.dir/src/ui.c.o: /home/xir/code/bluxir/src/ui.c \
  /usr/include/x86_64-linux-gnu/bits/select.h \
  /usr/include/x86_64-linux-gnu/bits/types/sigset_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h \
- /usr/include/alloca.h /usr/include/x86_64-linux-gnu/bits/stdlib-float.h
+ /usr/include/alloca.h /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
+ /usr/include/string.h /usr/include/strings.h

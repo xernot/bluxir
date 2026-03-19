@@ -58,6 +58,12 @@ Represents a browsable/playable item from the Browse API:
 
 Single struct replacing the Python `BlusoundCLI` class. Contains all UI state, player references, metadata, locks, and highlight times. Stack-allocated in `main()`.
 
+Source selection state includes sort/filter support:
+- `source_sort` (`'o'`/`'t'`/`'a'`) — current sort mode
+- `source_filter[256]` — active filter text (empty = no filter)
+- `unsorted_sources` — backup pointer to original data before sort/filter was applied
+- When sort or filter is activated, `source_ensure_backup()` saves the original `current_sources` pointer and creates a working copy. `source_apply_sort_filter()` rebuilds the copy by filtering from backup then sorting with `qsort`. State is cleared on navigate deeper/back/exit.
+
 ### LRUCache
 
 Thread-safe hash table (256 buckets, djb2 hash) with doubly-linked list for LRU ordering. Internal pthread mutex. Entries own copies of keys and values, freed on eviction or destroy.

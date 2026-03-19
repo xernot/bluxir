@@ -1,9 +1,8 @@
 CMakeFiles/bluxir.dir/src/ui_search.c.o: \
  /home/xir/code/bluxir/src/ui_search.c /usr/include/stdc-predef.h \
  /home/xir/code/bluxir/src/ui.h /home/xir/code/bluxir/src/types.h \
- /usr/lib/gcc/x86_64-linux-gnu/13/include/stdbool.h \
- /usr/include/pthread.h /usr/include/features.h \
- /usr/include/features-time64.h \
+ /home/xir/code/bluxir/src/constants.h /usr/include/pthread.h \
+ /usr/include/features.h /usr/include/features-time64.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
  /usr/include/x86_64-linux-gnu/bits/timesize.h \
  /usr/include/x86_64-linux-gnu/sys/cdefs.h \
@@ -40,7 +39,7 @@ CMakeFiles/bluxir.dir/src/ui_search.c.o: \
  /usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h \
  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h \
  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min.h \
- /home/xir/code/bluxir/src/constants.h /usr/include/curses.h \
+ /usr/lib/gcc/x86_64-linux-gnu/13/include/stdbool.h /usr/include/curses.h \
  /usr/include/ncurses_dll.h \
  /usr/lib/gcc/x86_64-linux-gnu/13/include/stdint.h /usr/include/stdint.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \

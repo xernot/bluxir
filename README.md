@@ -12,7 +12,7 @@ Originally based on [blucli](https://github.com/irrelative/blucli) by @irrelativ
 - Interactive player selection and control
 - Volume, mute, play/pause, skip, repeat, shuffle
 - Split-screen curses UI with player info, playlist, and metadata
-- Source browsing with pagination, sorting, and filtering
+- Source browsing with pagination, sorting (title/artist), and filtering (case-insensitive)
 - Search within Qobuz and TuneIn
 - Qobuz favorites quick access
 - Playlist save/load/delete
@@ -115,6 +115,21 @@ Without an OpenAI API key, bluxir falls back to MusicBrainz for album metadata.
 | f | Qobuz favorites |
 | l | Load playlist |
 | w | Save playlist |
+
+### Browse / Favorites
+
+| Key | Action |
+|-----|--------|
+| UP/DOWN | Navigate list |
+| RIGHT/ENTER | Expand / Play |
+| LEFT | Navigate back |
+| n/p | Next/Previous page |
+| t | Sort by title |
+| a | Sort by artist |
+| o | Restore original order |
+| / | Filter (empty input clears filter) |
+| +/- | Add/Remove from favourites |
+| b | Exit browse |
 
 ### Display
 

@@ -41,6 +41,7 @@ void ui_display_search_results(WINDOW *win, AppState *app);
 /* Forward declarations for functions used before definition */
 static void check_metadata_update(AppState *app);
 static void update_player_status(AppState *app);
+static void source_clear_sort_filter(AppState *app);
 
 static Logger *main_logger = NULL;
 
@@ -657,12 +658,14 @@ static bool source_handle_expand(int key, AppState *app, int *sel) {
   if (key == 10 && src->play_url[0]) {
     player_select_input(app->active_player, src);
     update_player_status(app);
+    source_clear_sort_filter(app);
     app->source_selection_mode = false;
     return false;
   }
   if (src->browse_key[0]) {
     player_get_nested(app->active_player, src);
     if (src->children && src->children_count > 0) {
+      source_clear_sort_filter(app);
       app->current_sources = src->children;
       app->current_sources_count = src->children_count;
       app->source_depth++;
@@ -673,6 +676,7 @@ static bool source_handle_expand(int key, AppState *app, int *sel) {
 }
 
 static void source_handle_navigate_back(AppState *app) {
+  source_clear_sort_filter(app);
   app->source_depth--;
   PlayerSource *sources = app->active_player->sources;
   int count = app->active_player->sources_count;
@@ -714,12 +718,72 @@ static void source_handle_favourite(int key, WINDOW *win, AppState *app,
   }
 }
 
+static int compare_by_title(const void *a, const void *b) {
+  return strcasecmp_portable(((const PlayerSource *)a)->text,
+                             ((const PlayerSource *)b)->text);
+}
+
+static int compare_by_artist(const void *a, const void *b) {
+  const PlayerSource *sa = a, *sb = b;
+  int cmp = strcasecmp_portable(sa->text2, sb->text2);
+  return cmp != 0 ? cmp : strcasecmp_portable(sa->text, sb->text);
+}
+
+static void source_apply_sort_filter(AppState *app) {
+  if (!app->unsorted_sources)
+    return;
+  int count = 0;
+  PlayerSource *result =
+      malloc(app->unsorted_sources_count * sizeof(PlayerSource));
+
+  for (int i = 0; i < app->unsorted_sources_count; i++) {
+    PlayerSource *s = &app->unsorted_sources[i];
+    if (app->source_filter[0] &&
+        !str_contains_ci(s->text, app->source_filter) &&
+        !str_contains_ci(s->text2, app->source_filter))
+      continue;
+    result[count++] = *s;
+  }
+
+  if (app->source_sort == 't')
+    qsort(result, count, sizeof(PlayerSource), compare_by_title);
+  else if (app->source_sort == 'a')
+    qsort(result, count, sizeof(PlayerSource), compare_by_artist);
+
+  free(app->current_sources);
+  app->current_sources = result;
+  app->current_sources_count = count;
+  app->selected_source_index[app->source_depth] = 0;
+}
+
+static void source_ensure_backup(AppState *app) {
+  if (app->unsorted_sources)
+    return;
+  app->unsorted_sources = app->current_sources;
+  app->unsorted_sources_count = app->current_sources_count;
+  int n = app->current_sources_count;
+  app->current_sources = malloc(n * sizeof(PlayerSource));
+  memcpy(app->current_sources, app->unsorted_sources, n * sizeof(PlayerSource));
+}
+
+static void source_clear_sort_filter(AppState *app) {
+  if (app->unsorted_sources) {
+    free(app->current_sources);
+    app->current_sources = app->unsorted_sources;
+    app->current_sources_count = app->unsorted_sources_count;
+    app->unsorted_sources = NULL;
+    app->unsorted_sources_count = 0;
+  }
+  app->source_sort = 'o';
+  app->source_filter[0] = '\0';
+}
+
 static void source_exit_selection(AppState *app) {
+  source_clear_sort_filter(app);
   app->source_selection_mode = false;
   app->current_sources = NULL;
   app->current_sources_count = 0;
   app->source_depth = 0;
-  app->source_sort = 'o';
 }
 
 static void source_handle_filter(WINDOW *win, AppState *app) {
@@ -729,8 +793,14 @@ static void source_handle_filter(WINDOW *win, AppState *app) {
   char filter[STR_MEDIUM] = "";
   mvwaddstr(win, height - 2, 2, "");
   int len = ui_get_input(win, "Filter: ", filter, sizeof(filter));
-  if (len > 0)
-    ui_set_message(app, "Filter applied");
+  if (len > 0) {
+    safe_strcpy(app->source_filter, filter, sizeof(app->source_filter));
+    source_ensure_backup(app);
+    source_apply_sort_filter(app);
+  } else if (app->source_filter[0]) {
+    app->source_filter[0] = '\0';
+    source_apply_sort_filter(app);
+  }
 }
 
 static bool handle_source_selection(int key, WINDOW *win, AppState *app) {
@@ -764,6 +834,12 @@ static bool handle_source_selection(int key, WINDOW *win, AppState *app) {
     source_handle_favourite(key, win, app, sel);
   } else if (key == 't' || key == 'a' || key == 'o') {
     app->source_sort = (char)key;
+    if (key == 'o' && !app->source_filter[0]) {
+      source_clear_sort_filter(app);
+    } else {
+      source_ensure_backup(app);
+      source_apply_sort_filter(app);
+    }
     *sel = 0;
   } else if (key == '/') {
     source_handle_filter(win, app);

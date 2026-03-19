@@ -50,8 +50,13 @@ void ui_display_source_selection(WINDOW *win, AppState *app) {
   else if (app->source_sort == 'a')
     sort_label = "Artist";
   char sort_text[STR_MEDIUM];
-  snprintf(sort_text, sizeof(sort_text), "Select Source:  [sorted by %s]",
-           sort_label);
+  if (app->source_filter[0])
+    snprintf(sort_text, sizeof(sort_text),
+             "Select Source:  [sorted by %s]  [filter: %s]", sort_label,
+             app->source_filter);
+  else
+    snprintf(sort_text, sizeof(sort_text), "Select Source:  [sorted by %s]",
+             sort_label);
   mvwaddstr(win, 7, 2, sort_text);
 
   if (!app->current_sources || app->current_sources_count == 0) {

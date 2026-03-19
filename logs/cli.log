@@ -1157,3 +1157,147 @@
 2026-03-18 21:41:04 - INFO - Status: state=pause vol=55 song=6
 2026-03-18 21:41:07 - INFO - Status: state=pause vol=55 song=6
 2026-03-18 21:41:11 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:41:14 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:41:17 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:41:20 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:41:23 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:41:26 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:41:29 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:41:32 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:41:35 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:41:38 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:41:41 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:41:44 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:41:47 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:41:50 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:41:53 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:41:57 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:00 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:03 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:06 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:09 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:12 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:15 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:18 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:21 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:24 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:27 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:30 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:33 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:36 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:39 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:42 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:46 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:49 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:52 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:55 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:42:58 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:43:02 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:43:04 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:43:07 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:43:10 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:43:13 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:43:16 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:43:19 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:43:22 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:43:25 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:43:28 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:43:31 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:43:34 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:43:38 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:43:41 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:43:44 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:43:47 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:43:50 - INFO - Status: state=pause vol=55 song=6
+2026-03-18 21:43:53 - INFO - Status: state=pause vol=55 song=6
+2026-03-19 11:59:53 - INFO - Initialized BlusoundPlayer: Livingroom 40ST at 192.168.68.61
+2026-03-19 11:59:53 - INFO - Player name: Livingroom 40ST
+2026-03-19 11:59:53 - INFO - player_browse key='(null)' params=''
+2026-03-19 11:59:53 - INFO - player_browse response size=1100 data='<?xml version="1.0" encoding="UTF-8"?>
+<browse type="menu">
+  <item browseKey="BluOS:" text="Playlists" image="/images/ci_myplaylists.png" type="link"></item>
+  <item playURL="/Play?url=Capture%3Ahw%3Aimxspdif%2C0%2F1%2F25%2F2%3Fid%3Dxdynamic-Source2" text="Coax In" image="/images/capture/ic_opticalinput.png" type="audio" inputType="coax"></item>
+  <item playURL="/Play?url=Capture%3Ahw%3Aimxspdif%2C0%2F1%2F25%2F2%3Fid%3Dxdynamic-Source3" text="Optical In" image="/images/capture/ic_opticalinput.png" type="audio" inputType="optical"></item>
+  <item browseKey="Airable:" text="Radio" image="/Sources/images/BluOSRadioIcon.png" type="link"></item>
+  <item browseKey="Qobuz:" text="Qobuz" image="/Sources/images/QobuzIcon.png" type="link"></item>
+  <item browseKey="RadioParadise:" text="Radio Paradise" image="/Sources/images/RadioParadiseIcon.png" type="link"></item>
+  <item playURL="/Play?url=Spotify%3Aplay" text="Spotify" image="/Sources/images/SpotifyIcon.png" type="audio"></item>
+  <item browseKey="TuneIn:" text="TuneIn" image="/Sources/images/TuneInIcon.png" type="link"></item>
+</browse>'
+2026-03-19 11:59:53 - INFO - Browsed 8 items for Livingroom 40ST
+2026-03-19 11:59:53 - INFO - Initialized 8 sources for Livingroom 40ST
+2026-03-19 11:59:53 - INFO - Status: state=play vol=80 song=2
+2026-03-19 11:59:53 - INFO - Status: state=play vol=80 song=2
+2026-03-19 11:59:55 - INFO - player_browse key='(null)' params=''
+2026-03-19 11:59:55 - INFO - player_browse response size=1100 data='<?xml version="1.0" encoding="UTF-8"?>
+<browse type="menu">
+  <item browseKey="BluOS:" text="Playlists" image="/images/ci_myplaylists.png" type="link"></item>
+  <item playURL="/Play?url=Capture%3Ahw%3Aimxspdif%2C0%2F1%2F25%2F2%3Fid%3Dxdynamic-Source2" text="Coax In" image="/images/capture/ic_opticalinput.png" type="audio" inputType="coax"></item>
+  <item playURL="/Play?url=Capture%3Ahw%3Aimxspdif%2C0%2F1%2F25%2F2%3Fid%3Dxdynamic-Source3" text="Optical In" image="/images/capture/ic_opticalinput.png" type="audio" inputType="optical"></item>
+  <item browseKey="Airable:" text="Radio" image="/Sources/images/BluOSRadioIcon.png" type="link"></item>
+  <item browseKey="Qobuz:" text="Qobuz" image="/Sources/images/QobuzIcon.png" type="link"></item>
+  <item browseKey="RadioParadise:" text="Radio Paradise" image="/Sources/images/RadioParadiseIcon.png" type="link"></item>
+  <item playURL="/Play?url=Spotify%3Aplay" text="Spotify" image="/Sources/images/SpotifyIcon.png" type="audio"></item>
+  <item browseKey="TuneIn:" text="TuneIn" image="/Sources/images/TuneInIcon.png" type="link"></item>
+</browse>'
+2026-03-19 11:59:55 - INFO - Browsed 8 items for Livingroom 40ST
+2026-03-19 11:59:55 - INFO - browse_path depth=0 item=0 text='Playlists' browseKey='BluOS:'
+2026-03-19 11:59:55 - INFO - browse_path depth=0 item=1 text='Coax In' browseKey=''
+2026-03-19 11:59:55 - INFO - browse_path depth=0 item=2 text='Optical In' browseKey=''
+2026-03-19 11:59:55 - INFO - browse_path depth=0 item=3 text='Radio' browseKey='Airable:'
+2026-03-19 11:59:55 - INFO - browse_path depth=0 item=4 text='Qobuz' browseKey='Qobuz:'
+2026-03-19 11:59:55 - INFO - browse_path matched 'Qobuz' at depth 0
+2026-03-19 11:59:55 - INFO - player_browse key='Qobuz:' params='key=Qobuz:'
+2026-03-19 11:59:55 - INFO - player_browse response size=831 data='<?xml version="1.0" encoding="UTF-8"?>
+<browse serviceIcon="/Sources/images/QobuzIcon.png" serviceName="Qobuz" searchKey="Qobuz:Search" type="menu">
+  <item browseKey="Qobuz:Album/%2FAlbums%3Fcategory=new-releases-full&amp;service=Qobuz" text="New Albums" type="link"></item>
+  <item browseKey="Qobuz:Album/%2FAlbums%3Fcategory=editor-picks&amp;service=Qobuz" text="Recommended Albums" type="link"></item>
+  <item browseKey="Qobuz:Playlist/%2FPlaylists%3Fcategory=featured&amp;service=Qobuz" text="Recommended Playlists" type="link"></item>
+  <item browseKey="Qobuz:Album/%2FAlbums%3Fcategory=most-streamed&amp;service=Qobuz" text="Popular Albums" type="link"></item>
+  <item browseKey="Qobuz:GG/Genres" text="Genres" type="link"></item>
+  <item browseKey="Qobuz:MG/Qobuz-Favourites" text="Favourites" type="link"></item>
+</browse>'
+2026-03-19 11:59:55 - INFO - Browsed 6 items for Livingroom 40ST
+2026-03-19 11:59:55 - INFO - browse_path depth=1 item=0 text='New Albums' browseKey='Qobuz:Album/%2FAlbums%3Fcategory=new-releases-full&service=Qobuz'
+2026-03-19 11:59:55 - INFO - browse_path depth=1 item=1 text='Recommended Albums' browseKey='Qobuz:Album/%2FAlbums%3Fcategory=editor-picks&service=Qobuz'
+2026-03-19 11:59:55 - INFO - browse_path depth=1 item=2 text='Recommended Playlists' browseKey='Qobuz:Playlist/%2FPlaylists%3Fcategory=featured&service=Qobuz'
+2026-03-19 11:59:55 - INFO - browse_path depth=1 item=3 text='Popular Albums' browseKey='Qobuz:Album/%2FAlbums%3Fcategory=most-streamed&service=Qobuz'
+2026-03-19 11:59:55 - INFO - browse_path depth=1 item=4 text='Genres' browseKey='Qobuz:GG/Genres'
+2026-03-19 11:59:55 - INFO - browse_path depth=1 item=5 text='Favourites' browseKey='Qobuz:MG/Qobuz-Favourites'
+2026-03-19 11:59:55 - INFO - browse_path matched 'Fav' at depth 1
+2026-03-19 11:59:55 - INFO - player_browse key='Qobuz:MG/Qobuz-Favourites' params='key=Qobuz:MG/Qobuz-Favourites'
+2026-03-19 11:59:55 - INFO - player_browse response size=858 data='<?xml version="1.0" encoding="UTF-8"?>
+<browse serviceIcon="/Sources/images/QobuzIcon.png" serviceName="Qobuz" searchKey="Qobuz:Search" type="menu">
+  <item browseKey="Qobuz:Playlist/%2FPlaylists%3Fservice=Qobuz" text="My Playlists" type="link"></item>
+  <item browseKey="Qobuz:Album/%2FAlbums%3Fcategory=FAVOURITES&amp;service=Qobuz" text="Albums" type="link"></item>
+  <item browseKey="Qobuz:Song/%2FSongs%3Fcategory=FAVOURITES&amp;service=Qobuz" text="Songs" type="link"></item>
+  <item browseKey="Qobuz:Artist/%2FArtists%3Fcategory=FAVOURITES&amp;service=Qobuz" text="Artists" type="link"></item>
+  <item browseKey="Qobuz:Album/%2FAlbums%3Fcategory=purchased&amp;service=Qobuz" text="Purchased Albums" type="link"></item>
+  <item browseKey="Qobuz:Song/%2FSongs%3Fcategory=purchased&amp;service=Qobuz" text="Purchased Tracks" type="link"></item>
+</browse>'
+2026-03-19 11:59:55 - INFO - Browsed 6 items for Livingroom 40ST
+2026-03-19 11:59:55 - INFO - browse_path depth=2 item=0 text='My Playlists' browseKey='Qobuz:Playlist/%2FPlaylists%3Fservice=Qobuz'
+2026-03-19 11:59:55 - INFO - browse_path depth=2 item=1 text='Albums' browseKey='Qobuz:Album/%2FAlbums%3Fcategory=FAVOURITES&service=Qobuz'
+2026-03-19 11:59:55 - INFO - browse_path matched 'Album' at depth 2
+2026-03-19 11:59:55 - INFO - browse_all params='key=Qobuz:Album/%2FAlbums%3Fcategory=FAVOURITES%26service=Qobuz'
+2026-03-19 11:59:56 - INFO - browse_all response size=15678
+2026-03-19 11:59:56 - INFO - browse_all params='key=Qobuz:Album/%2FAlbums%3Fcategory=FAVOURITES%26end=79%26service=Qobuz%26start=30'
+2026-03-19 11:59:56 - INFO - browse_all response size=25516
+2026-03-19 11:59:56 - INFO - browse_all params='key=Qobuz:Album/%2FAlbums%3Fcategory=FAVOURITES%26end=129%26service=Qobuz%26start=80'
+2026-03-19 11:59:56 - INFO - browse_all response size=21535
+2026-03-19 11:59:56 - INFO - Status: state=play vol=80 song=2
+2026-03-19 12:00:01 - INFO - Status: state=play vol=80 song=2
+2026-03-19 12:00:04 - INFO - Status: state=play vol=80 song=2
+2026-03-19 12:00:07 - INFO - browse_all params='key=Qobuz:Album/%2FAlbums%3Fcategory=FAVOURITES%26service=Qobuz'
+2026-03-19 12:00:07 - INFO - browse_all response size=15678
+2026-03-19 12:00:07 - INFO - browse_all params='key=Qobuz:Album/%2FAlbums%3Fcategory=FAVOURITES%26end=79%26service=Qobuz%26start=30'
+2026-03-19 12:00:08 - INFO - browse_all response size=25516
+2026-03-19 12:00:08 - INFO - browse_all params='key=Qobuz:Album/%2FAlbums%3Fcategory=FAVOURITES%26end=129%26service=Qobuz%26start=80'
+2026-03-19 12:00:08 - INFO - browse_all response size=21535
+2026-03-19 12:00:08 - INFO - Status: state=play vol=80 song=2
+2026-03-19 12:00:11 - INFO - Status: state=play vol=80 song=2
+2026-03-19 12:00:14 - INFO - Status: state=play vol=80 song=2
+2026-03-19 12:00:17 - INFO - Status: state=play vol=80 song=2
+2026-03-19 12:00:20 - INFO - Status: state=play vol=80 song=2
+2026-03-19 12:00:23 - INFO - Status: state=play vol=80 song=2
+2026-03-19 12:00:26 - INFO - Status: state=play vol=80 song=2

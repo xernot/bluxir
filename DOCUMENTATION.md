@@ -1,8 +1,8 @@
-# bluxir-c - Technical Documentation
+# bluxir - Technical Documentation
 
 ## Overview
 
-bluxir-c is a C rewrite of the bluxir BluOS terminal controller. It communicates with Blusound network streamers over HTTP (port 11000), renders a curses-based split-screen TUI, and fetches metadata from external APIs in background threads.
+bluxir is a C terminal controller for Blusound network music streamers. It communicates with BluOS players over HTTP (port 11000), renders a curses-based split-screen TUI, supports multiroom grouping with per-player volume control, and fetches metadata from external APIs in background threads.
 
 ## Architecture
 
@@ -15,6 +15,7 @@ bluxir-c is a C rewrite of the bluxir BluOS terminal controller. It communicates
         |                        +---> discover.c (Avahi mDNS)
         |
         +---> ui.c / ui_player.c / ui_browse.c / ui_search.c
+        |     (group manager, volume overlay)
         |
         +---> metadata.c ------> MusicBrainz API
         |     (libcurl + cJSON)  OpenAI API
@@ -54,15 +55,28 @@ Represents a browsable/playable item from the Browse API:
 - `search_key[1024]` - search capability key
 - `children` / `children_count` - nested items (dynamic array)
 
+### GroupInfo
+
+Holds the current multiroom group state, cached in AppState and refreshed every 15 seconds:
+
+- `master_ip[256]` — IP of the master player (empty if standalone or this player is master)
+- `slave_ips[16][256]` — IPs of grouped slave players
+- `slave_names[16][256]` — display names of grouped slaves (from SyncStatus XML)
+- `slave_count` — number of slaves in the group
+
 ### AppState
 
-Single struct replacing the Python `BlusoundCLI` class. Contains all UI state, player references, metadata, locks, and highlight times. Stack-allocated in `main()`.
+Single struct replacing the Python `BlusoundCLI` class. Contains all UI state, player references, metadata, group info, locks, and highlight times. Stack-allocated in `main()`.
 
 Source selection state includes sort/filter support:
 - `source_sort` (`'o'`/`'t'`/`'a'`) — current sort mode
 - `source_filter[256]` — active filter text (empty = no filter)
 - `unsorted_sources` — backup pointer to original data before sort/filter was applied
 - When sort or filter is activated, `source_ensure_backup()` saves the original `current_sources` pointer and creates a working copy. `source_apply_sort_filter()` rebuilds the copy by filtering from backup then sorting with `qsort`. State is cleared on navigate deeper/back/exit.
+
+Multiroom state:
+- `group_info` (GroupInfo) — cached group info, polled every 15 seconds
+- `last_group_update_time` — timer for group info polling
 
 ### LRUCache
 
@@ -96,7 +110,7 @@ All communication uses HTTP GET on port 11000. Responses are XML parsed with exp
 | Endpoint | Purpose |
 |----------|---------|
 | `/Status` | Current playback state |
-| `/SyncStatus` | Player identity (name, brand, model) |
+| `/SyncStatus` | Player identity, group info (master/slaves) |
 | `/Browse` | Browse sources, search, context menus |
 | `/Browse?key=...` | Navigate into a source/category |
 | `/Browse?key=...&q=...` | Search within a source |
@@ -112,6 +126,8 @@ All communication uses HTTP GET on port 11000. Responses are XML parsed with exp
 | `/Save?name=...` | Save playlist |
 | `/Delete?name=...` | Delete playlist |
 | `/AddFavourite?albumid=...&service=...` | Add album to favourites |
+| `/AddSlave?slave=IP&port=11000` | Add player to group (sent to master) |
+| `/RemoveSlave?slave=IP&port=11000` | Remove player from group (sent to master) |
 
 ### URL Encoding
 
@@ -142,6 +158,31 @@ Python's `requests` library handles this automatically via `urllib.parse.urlenco
 The root element may have different names (`<browse>`, `<items>`, etc.). The parser captures `searchKey` and `nextKey` from any non-`<item>` element. Items can appear nested inside `<category>` elements - the SAX parser handles this automatically since it fires for all `<item>` elements regardless of depth.
 
 Context menu items use `actionURL` (not `playURL`) for actions like add/remove favourite.
+
+### SyncStatus XML Structure
+
+The SyncStatus response uses child elements (not attributes) for group info:
+
+```xml
+<!-- Master player (has slaves) -->
+<SyncStatus name="Livingroom 40ST" group="Livingroom 40ST+office" ...>
+  <slave id="192.168.68.65" port="11000" name="office" model="P130" />
+</SyncStatus>
+
+<!-- Slave player (has master) -->
+<SyncStatus name="office" ...>
+  <master port="11000">192.168.68.61</master>
+</SyncStatus>
+
+<!-- Standalone player (no group) -->
+<SyncStatus name="Livingroom 40ST" ...>
+</SyncStatus>
+```
+
+The parser uses expat SAX callbacks:
+- `sync_start` — captures attributes from `<SyncStatus>` (name, brand, model, group) and `<slave>` (id, name)
+- `sync_chars` — accumulates text content for `<master>` element
+- `sync_end` — extracts master IP from text content
 
 ### BluOS Web Interface (Port 80)
 
@@ -200,9 +241,44 @@ Uses Avahi (the Linux mDNS/DNS-SD implementation) to discover Blusound players:
 1. Background thread creates an Avahi simple poll and client
 2. Service browser listens for `_musc._tcp` services
 3. On discovery, resolves to IPv4 address
-4. Creates `BlusoundPlayer` via `player_create()` (which fetches name and sources)
+4. Creates lightweight `BlusoundPlayer` via `player_create()` (sets host/name/base_url only, no HTTP)
 5. Adds to shared player list (protected by mutex)
 6. Main thread polls the list for UI updates
+7. Sync name fetch and source initialization happen only when a player is activated (selected via ENTER)
+
+Discovery is started on demand (when `X` or `G` is pressed) rather than at startup if a stored player connects successfully.
+
+## Multiroom (player.c, ui.c, main.c)
+
+### Player Switching (X)
+
+Pressing `X` starts mDNS discovery (if not already running) and shows the player selection screen. The active player is marked with `*`. Pressing `b`/`ESC` returns to the current player without switching.
+
+When switching players, `reset_for_player_switch()` clears all cached metadata (wiki, lyrics, cover art, MusicBrainz info) so fresh data loads for the new player.
+
+### Group Management (G)
+
+Pressing `G` opens a blocking modal overlay showing all discovered players (excluding the active one). Players in the current group show `[G]`, others show `[ ]`. ENTER toggles group membership via `/AddSlave` or `/RemoveSlave`.
+
+If the active player is currently a slave of another master, the overlay shows the master IP and ENTER leaves the group (sends `/RemoveSlave` to the master via `player_leave_group()`).
+
+On close, `app->group_info` is updated so the header reflects changes immediately.
+
+### Volume Overlay
+
+When the active player is in a group (has slaves), pressing UP/DOWN for volume opens a blocking overlay showing all group members (master + slaves) with volume bars. The first volume change is applied to the master immediately before the overlay opens.
+
+- LEFT/RIGHT selects a player
+- UP/DOWN adjusts volume for the selected player (5% increments)
+- Selected player is highlighted in green (COLOR_PAIR(3))
+- Master volume updates are synced back to `app->player_status.volume`
+- Slave volumes are fetched via `player_get_status()` when the overlay opens
+
+### Header Group Display
+
+When grouped, the header shows: `BluOS Player Control - Livingroom 40ST (&office)`
+
+Slave names come from the `name` attribute on `<slave>` elements in the SyncStatus XML, stored in `GroupInfo.slave_names[]`. The group info is cached in `app->group_info` and polled every 15 seconds (`GROUP_POLL_INTERVAL`).
 
 ## Log Files
 
@@ -227,6 +303,7 @@ All log files are in the `logs/` directory (relative to CWD), with rotating file
 1. Main loop runs with 100ms curses timeout (`CURSES_POLL_MS`)
 2. Every second, local progress counter increments (client-side interpolation)
 3. Every 3 seconds, full status refresh from `/Status` API
-4. On track/album change, background metadata threads are launched
-5. On skip/back, next refresh is scheduled ~1 second early
-6. On volume/mute/repeat/shuffle, optimistic UI update (set value directly, no refresh)
+4. Every 15 seconds, group info refresh from `/SyncStatus` API
+5. On track/album change, background metadata threads are launched
+6. On skip/back, next refresh is scheduled ~1 second early
+7. On volume/mute/repeat/shuffle, optimistic UI update (set value directly, no refresh)

@@ -116,6 +116,15 @@ typedef struct {
   BrowseCacheEntry *browse_cache;
 } BlusoundPlayer;
 
+/* ── Group Info ──────────────────────────────────────────────────────────── */
+
+typedef struct {
+  char master_ip[STR_MEDIUM];       /* IP of master (empty = standalone) */
+  char slave_ips[16][STR_MEDIUM];   /* IPs of grouped slaves */
+  char slave_names[16][STR_MEDIUM]; /* names of grouped slaves */
+  int slave_count;
+} GroupInfo;
+
 /* ── Combined Info (from AI or MusicBrainz) ─────────────────────────────── */
 
 typedef struct {
@@ -227,6 +236,10 @@ typedef struct {
   /* Timing */
   double last_update_time;
   double last_progress_time;
+
+  /* Group */
+  GroupInfo group_info;
+  double last_group_update_time;
 
   /* Threading */
   pthread_mutex_t data_lock;

@@ -388,10 +388,19 @@ typedef struct {
   char brand[STR_MEDIUM];
   char model_name[STR_MEDIUM];
   char model_id[STR_SHORT];
+  char group[STR_MEDIUM];
+  char master_ip[STR_MEDIUM];
+  char slave_ips[16][STR_MEDIUM];
+  char slave_names[16][STR_MEDIUM];
+  int slave_count;
+  char current_tag[STR_SHORT];
+  char current_text[STR_MEDIUM];
 } SyncInfo;
 
 static void sync_start(void *data, const char *el, const char **attr) {
   SyncInfo *info = data;
+  safe_strcpy(info->current_tag, el, sizeof(info->current_tag));
+  info->current_text[0] = '\0';
   if (strcmp(el, "SyncStatus") == 0) {
     for (int i = 0; attr[i]; i += 2) {
       if (strcmp(attr[i], "name") == 0)
@@ -402,13 +411,38 @@ static void sync_start(void *data, const char *el, const char **attr) {
         safe_strcpy(info->model_name, attr[i + 1], sizeof(info->model_name));
       else if (strcmp(attr[i], "model") == 0)
         safe_strcpy(info->model_id, attr[i + 1], sizeof(info->model_id));
+      else if (strcmp(attr[i], "group") == 0)
+        safe_strcpy(info->group, attr[i + 1], sizeof(info->group));
     }
+  } else if (strcmp(el, "slave") == 0 && info->slave_count < 16) {
+    int idx = info->slave_count;
+    for (int i = 0; attr[i]; i += 2) {
+      if (strcmp(attr[i], "id") == 0)
+        safe_strcpy(info->slave_ips[idx], attr[i + 1],
+                    sizeof(info->slave_ips[0]));
+      else if (strcmp(attr[i], "name") == 0)
+        safe_strcpy(info->slave_names[idx], attr[i + 1],
+                    sizeof(info->slave_names[0]));
+    }
+    if (info->slave_ips[idx][0])
+      info->slave_count++;
   }
 }
 
+static void sync_chars(void *data, const char *s, int len) {
+  SyncInfo *info = data;
+  size_t cur = strlen(info->current_text);
+  size_t avail = sizeof(info->current_text) - cur - 1;
+  size_t copy = (size_t)len < avail ? (size_t)len : avail;
+  memcpy(info->current_text + cur, s, copy);
+  info->current_text[cur + copy] = '\0';
+}
+
 static void sync_end(void *data, const char *el) {
-  (void)data;
-  (void)el;
+  SyncInfo *info = data;
+  if (strcmp(el, "master") == 0)
+    safe_strcpy(info->master_ip, info->current_text, sizeof(info->master_ip));
+  info->current_text[0] = '\0';
 }
 
 /* ── Diagnostics HTML parsing (hand-parse) ──────────────────────────────── */
@@ -532,7 +566,7 @@ void player_init(void) {
       logger_create(LOG_FILE_PLAYER, LOG_MAX_BYTES, LOG_BACKUP_COUNT);
 }
 
-static void player_fetch_sync_name(BlusoundPlayer *p) {
+void player_fetch_sync_name(BlusoundPlayer *p) {
   HttpBuffer buf = {0};
   if (!player_request(p, "/SyncStatus", NULL, &buf) || !buf.data)
     return;
@@ -540,6 +574,7 @@ static void player_fetch_sync_name(BlusoundPlayer *p) {
   XML_Parser parser = XML_ParserCreate(NULL);
   XML_SetUserData(parser, &info);
   XML_SetElementHandler(parser, sync_start, sync_end);
+  XML_SetCharacterDataHandler(parser, sync_chars);
   XML_Parse(parser, buf.data, (int)buf.size, 1);
   XML_ParserFree(parser);
   if (info.name[0]) {
@@ -549,7 +584,7 @@ static void player_fetch_sync_name(BlusoundPlayer *p) {
   free(buf.data);
 }
 
-static void player_init_sources(BlusoundPlayer *p) {
+void player_init_sources(BlusoundPlayer *p) {
   for (int attempt = 0; attempt < SOURCE_INIT_MAX_RETRIES; attempt++) {
     int count = 0;
     PlayerSource *sources = player_browse(p, NULL, &count);
@@ -579,8 +614,6 @@ BlusoundPlayer *player_create(const char *host, const char *name) {
            BLUOS_API_PORT);
   LOG_INFO(player_logger, "Initialized BlusoundPlayer: %s at %s", p->name,
            p->host_name);
-  player_fetch_sync_name(p);
-  player_init_sources(p);
   return p;
 }
 
@@ -640,6 +673,7 @@ bool player_get_sync_info(BlusoundPlayer *p, KVPair *out, int *count, int max) {
   XML_Parser parser = XML_ParserCreate(NULL);
   XML_SetUserData(parser, &info);
   XML_SetElementHandler(parser, sync_start, sync_end);
+  XML_SetCharacterDataHandler(parser, sync_chars);
   XML_Parse(parser, buf.data, (int)buf.size, 1);
   XML_ParserFree(parser);
   free(buf.data);
@@ -666,6 +700,87 @@ bool player_get_sync_info(BlusoundPlayer *p, KVPair *out, int *count, int max) {
     (*count)++;
   }
   return true;
+}
+
+static void strip_port_suffix(char *ip) {
+  char *colon = strchr(ip, ':');
+  if (colon)
+    *colon = '\0';
+}
+
+bool player_get_group_info(BlusoundPlayer *p, GroupInfo *out) {
+  memset(out, 0, sizeof(GroupInfo));
+  HttpBuffer buf = {0};
+  if (!player_request(p, "/SyncStatus", NULL, &buf))
+    return false;
+  SyncInfo info = {0};
+  XML_Parser parser = XML_ParserCreate(NULL);
+  XML_SetUserData(parser, &info);
+  XML_SetElementHandler(parser, sync_start, sync_end);
+  XML_SetCharacterDataHandler(parser, sync_chars);
+  XML_Parse(parser, buf.data, (int)buf.size, 1);
+  XML_ParserFree(parser);
+  free(buf.data);
+  safe_strcpy(out->master_ip, info.master_ip, sizeof(out->master_ip));
+  strip_port_suffix(out->master_ip);
+  out->slave_count = int_min(info.slave_count, GROUP_MAX_SLAVES);
+  for (int i = 0; i < out->slave_count; i++) {
+    safe_strcpy(out->slave_ips[i], info.slave_ips[i],
+                sizeof(out->slave_ips[0]));
+    safe_strcpy(out->slave_names[i], info.slave_names[i],
+                sizeof(out->slave_names[0]));
+  }
+  LOG_INFO(player_logger, "GroupInfo: master='%s' slaves=%d group='%s'",
+           out->master_ip, out->slave_count, info.group);
+  return true;
+}
+
+bool player_add_slave(BlusoundPlayer *p, const char *slave_ip) {
+  char params[STR_MEDIUM];
+  snprintf(params, sizeof(params), "slave=%s&port=%d", slave_ip,
+           BLUOS_API_PORT);
+  HttpBuffer buf = {0};
+  bool ok = player_request(p, "/AddSlave", params, &buf);
+  LOG_INFO(player_logger, "AddSlave %s: %s — %s", slave_ip,
+           ok ? "ok" : "failed", buf.data ? buf.data : "(no response)");
+  free(buf.data);
+  return ok;
+}
+
+bool player_remove_slave(BlusoundPlayer *p, const char *slave_ip) {
+  char params[STR_MEDIUM];
+  snprintf(params, sizeof(params), "slave=%s&port=%d", slave_ip,
+           BLUOS_API_PORT);
+  HttpBuffer buf = {0};
+  bool ok = player_request(p, "/RemoveSlave", params, &buf);
+  LOG_INFO(player_logger, "RemoveSlave %s: %s — %s", slave_ip,
+           ok ? "ok" : "failed", buf.data ? buf.data : "(no response)");
+  free(buf.data);
+  return ok;
+}
+
+static bool command_to_host(const char *host, const char *path,
+                            const char *params) {
+  char url[STR_URL * 2];
+  if (params && params[0])
+    snprintf(url, sizeof(url), "http://%s:%d%s?%s", host, BLUOS_API_PORT, path,
+             params);
+  else
+    snprintf(url, sizeof(url), "http://%s:%d%s", host, BLUOS_API_PORT, path);
+  HttpBuffer buf = {0};
+  bool ok = http_get(url, HTTP_TIMEOUT_PLAYER, &buf);
+  free(buf.data);
+  return ok;
+}
+
+bool player_leave_group(BlusoundPlayer *p) {
+  GroupInfo group;
+  if (!player_get_group_info(p, &group) || !group.master_ip[0])
+    return false;
+  char params[STR_MEDIUM];
+  snprintf(params, sizeof(params), "slave=%s&port=%d", p->host_name,
+           BLUOS_API_PORT);
+  return command_to_host(group.master_ip, "/RemoveSlave", params);
 }
 
 bool player_get_diagnostics(BlusoundPlayer *p, KVPair *out, int *count,

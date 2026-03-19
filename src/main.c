@@ -42,6 +42,7 @@ void ui_display_search_results(WINDOW *win, AppState *app);
 static void check_metadata_update(AppState *app);
 static void update_player_status(AppState *app);
 static void source_clear_sort_filter(AppState *app);
+static void update_discovery_players(DiscoveryState *discovery, AppState *app);
 
 static Logger *main_logger = NULL;
 
@@ -376,6 +377,8 @@ static bool try_stored_player(AppState *app) {
   BlusoundPlayer *player = player_create(host, name ? name : host);
   PlayerStatus status;
   if (player_get_status(player, &status)) {
+    player_fetch_sync_name(player);
+    player_init_sources(player);
     app->active_player = player;
     app->player_status = status;
     app->has_status = true;
@@ -428,7 +431,7 @@ static void handle_go_to_track(WINDOW *win, AppState *app) {
   }
 }
 
-static void handle_volume_key(int key, AppState *app) {
+static void handle_volume_key(int key, WINDOW *win, AppState *app) {
   PlayerStatus *ps = &app->player_status;
   BlusoundPlayer *p = app->active_player;
   int nv;
@@ -440,6 +443,8 @@ static void handle_volume_key(int key, AppState *app) {
     ps->volume = nv;
     ui_highlight(app, "volume");
   }
+  if (app->group_info.slave_count > 0)
+    ui_show_volume_overlay(win, app, &app->group_info);
 }
 
 static void handle_playback_keys(int key, WINDOW *win, AppState *app) {
@@ -447,7 +452,7 @@ static void handle_playback_keys(int key, WINDOW *win, AppState *app) {
   BlusoundPlayer *p = app->active_player;
 
   if ((key == KEY_UP || key == KEY_DOWN) && p) {
-    handle_volume_key(key, app);
+    handle_volume_key(key, win, app);
   } else if (key == ' ' && p) {
     if (player_toggle_play_pause(p)) {
       ui_highlight(app, "state");
@@ -636,9 +641,34 @@ static void handle_info_keys(int key, WINDOW *win, AppState *app) {
   }
 }
 
-static bool handle_player_control(int key, WINDOW *win, AppState *app) {
+static bool handle_player_control(int key, WINDOW *win, AppState *app,
+                                  DiscoveryState **discovery) {
   if (key == 'b')
     return false;
+  if (key == 'X') {
+    if (!*discovery)
+      *discovery = discover_start();
+    for (int i = 0; i < app->players_count; i++) {
+      if (app->players[i] == app->active_player) {
+        app->selected_index = i;
+        break;
+      }
+    }
+    return false;
+  }
+  if (key == 'G') {
+    if (!*discovery)
+      *discovery = discover_start();
+    if (app->players_count <= 1) {
+      werase(win);
+      mvwaddstr(win, 3, 2, DISCOVERY_HINT);
+      wrefresh(win);
+      usleep(DISCOVERY_SCAN_DELAY_US);
+      update_discovery_players(*discovery, app);
+    }
+    ui_show_group_manager(win, app);
+    return true;
+  }
   if (key == KEY_UP || key == KEY_DOWN || key == ' ' || key == KEY_RIGHT ||
       key == KEY_LEFT || key == 'm' || key == 'r' || key == 'x' || key == 'g') {
     handle_playback_keys(key, win, app);
@@ -976,8 +1006,7 @@ static bool handle_search(int key, WINDOW *win, AppState *app) {
 
 /* ── Main View Drawing ──────────────────────────────────────────────────── */
 
-static void draw_current_view(WINDOW *win, AppState *app, bool player_mode,
-                              bool discovery_started) {
+static void draw_current_view(WINDOW *win, AppState *app, bool player_mode) {
   const char *view;
   if (!player_mode)
     view = "Player Selection";
@@ -1024,6 +1053,11 @@ static void tick_progress(AppState *app) {
     app->last_update_time = now;
     app->last_progress_time = now;
   }
+  if (app->active_player &&
+      now - app->last_group_update_time >= GROUP_POLL_INTERVAL) {
+    player_get_group_info(app->active_player, &app->group_info);
+    app->last_group_update_time = now;
+  }
 }
 
 /* ── Signal Handler ─────────────────────────────────────────────────────── */
@@ -1050,6 +1084,30 @@ static WINDOW *init_curses(void) {
   return stdscr_ptr;
 }
 
+static void reset_for_player_switch(AppState *app) {
+  pthread_mutex_lock(&app->data_lock);
+  free(app->wiki_text);
+  app->wiki_text = NULL;
+  free(app->lyrics_text);
+  app->lyrics_text = NULL;
+  free(app->cover_art_raw);
+  app->cover_art_raw = NULL;
+  app->cover_art_raw_size = 0;
+  app->cover_art_valid = false;
+  pthread_mutex_unlock(&app->data_lock);
+  app->wiki_track_key[0] = '\0';
+  app->lyrics_track_key[0] = '\0';
+  app->cover_art_key[0] = '\0';
+  app->mb_has_info = false;
+  app->mb_loading = false;
+  app->wiki_loading = false;
+  app->lyrics_loading = false;
+  app->lyrics_scroll = 0;
+  app->is_radio = false;
+  app->radio_title2[0] = '\0';
+  app->radio_title3[0] = '\0';
+}
+
 static void handle_player_selection_input(int key, AppState *app,
                                           bool *player_mode) {
   if (app->selector_shortcuts_open) {
@@ -1062,9 +1120,15 @@ static void handle_player_selection_input(int key, AppState *app,
   } else if (key == KEY_DOWN && app->selected_index < app->players_count - 1) {
     app->selected_index++;
   } else if (key == 10 && app->players_count > 0) {
-    app->active_player = app->players[app->selected_index];
+    BlusoundPlayer *new_player = app->players[app->selected_index];
+    if (new_player != app->active_player)
+      reset_for_player_switch(app);
+    app->active_player = new_player;
     PlayerStatus status;
     if (player_get_status(app->active_player, &status)) {
+      player_fetch_sync_name(app->active_player);
+      if (!app->active_player->sources)
+        player_init_sources(app->active_player);
       app->player_status = status;
       app->has_status = true;
       app->playlist =
@@ -1074,20 +1138,36 @@ static void handle_player_selection_input(int key, AppState *app,
       *player_mode = true;
       update_player_status(app);
     }
+  } else if ((key == 'b' || key == 27) && app->active_player) {
+    *player_mode = true;
   }
 }
 
 static void update_discovery_players(DiscoveryState *discovery, AppState *app) {
   BlusoundPlayer *disc_players[16];
-  int n = discover_get_players(discovery, disc_players, 16);
-  if (n != app->players_count) {
+  int n = 0;
+  if (discovery)
+    n = discover_get_players(discovery, disc_players, 16);
+  if (app->active_player) {
+    bool found = false;
+    for (int i = 0; i < n; i++) {
+      if (strcmp(disc_players[i]->host_name, app->active_player->host_name) ==
+          0) {
+        found = true;
+        break;
+      }
+    }
+    if (!found && n < 16)
+      disc_players[n++] = app->active_player;
+  }
+  if (n > 0) {
     BlusoundPlayer **tmp = realloc(app->players, n * sizeof(BlusoundPlayer *));
     if (!tmp)
       return;
     app->players = tmp;
     memcpy(app->players, disc_players, n * sizeof(BlusoundPlayer *));
-    app->players_count = n;
   }
+  app->players_count = n;
 }
 
 static void handle_resize(WINDOW *win) {
@@ -1102,7 +1182,7 @@ static void handle_resize(WINDOW *win) {
 }
 
 static void dispatch_input(int key, WINDOW *win, AppState *app,
-                           bool *player_mode) {
+                           bool *player_mode, DiscoveryState **discovery) {
   if (!*player_mode) {
     handle_player_selection_input(key, app, player_mode);
   } else if (app->shortcuts_open) {
@@ -1113,7 +1193,7 @@ static void dispatch_input(int key, WINDOW *win, AppState *app,
   } else if (app->source_selection_mode) {
     app->source_selection_mode = handle_source_selection(key, win, app);
   } else {
-    *player_mode = handle_player_control(key, win, app);
+    *player_mode = handle_player_control(key, win, app, discovery);
   }
 }
 
@@ -1162,10 +1242,10 @@ int main(void) {
     handle_resize(stdscr_ptr);
     werase(stdscr_ptr);
 
-    if (discovery && !player_mode)
+    if (!player_mode)
       update_discovery_players(discovery, &app);
 
-    draw_current_view(stdscr_ptr, &app, player_mode, discovery != NULL);
+    draw_current_view(stdscr_ptr, &app, player_mode);
     wrefresh(stdscr_ptr);
     wtimeout(stdscr_ptr, CURSES_POLL_MS);
     int key = wgetch(stdscr_ptr);
@@ -1176,7 +1256,7 @@ int main(void) {
       continue;
     }
 
-    dispatch_input(key, stdscr_ptr, &app, &player_mode);
+    dispatch_input(key, stdscr_ptr, &app, &player_mode, &discovery);
     tick_progress(&app);
   }
 

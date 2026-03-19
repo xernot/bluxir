@@ -2,13 +2,22 @@
 
 A BluOS terminal controller for Blusound network music streamers, written in C.
 
-Features: player discovery, playback control, source browsing, search, favorites, playlists, metadata (MusicBrainz/OpenAI/LRCLIB), cover art rendering, lyrics, health check, and a full curses TUI.
+Features: player discovery, multiroom grouping, playback control, source browsing, search, favorites, playlists, metadata (MusicBrainz/OpenAI/LRCLIB), cover art rendering, lyrics, health check, and a full curses TUI.
 
 Originally based on [blucli](https://github.com/irrelative/blucli) by @irrelative. This project has since diverged significantly.
+
+## What's New in v3.1 — Multiroom Support
+
+- **Player switching** (`X`) — discover all Blusound players on the network via mDNS and switch between them
+- **Group management** (`G`) — add/remove players to a synchronized playback group
+- **Per-player volume** — when grouped, volume controls open an overlay to adjust each player independently
+- **Group display** — header shows active group members: `Livingroom 40ST (&office)`
+- **Lightweight discovery** — players are discovered instantly; sources only load when a player is activated
 
 ## Features
 
 - Automatic mDNS discovery of Blusound players via Avahi
+- Multiroom: player switching, group management, per-player volume control
 - Interactive player selection and control
 - Volume, mute, play/pause, skip, repeat, shuffle
 - Split-screen curses UI with player info, playlist, and metadata
@@ -97,7 +106,7 @@ Without an OpenAI API key, bluxir falls back to MusicBrainz for album metadata.
 
 | Key | Action |
 |-----|--------|
-| UP/DOWN | Adjust volume |
+| UP/DOWN | Adjust volume (opens group overlay when grouped) |
 | SPACE | Play/Pause |
 | RIGHT/LEFT | Skip/Previous track |
 | g | Go to track number |
@@ -105,6 +114,21 @@ Without an OpenAI API key, bluxir falls back to MusicBrainz for album metadata.
 | r | Cycle repeat (off/queue/track) |
 | x | Toggle shuffle |
 | +/- | Add/Remove album from favourites |
+
+### Multiroom
+
+| Key | Action |
+|-----|--------|
+| X | Switch player (discover and select) |
+| G | Group manager (add/remove players) |
+
+When grouped, the volume overlay appears on UP/DOWN:
+
+| Key | Action |
+|-----|--------|
+| LEFT/RIGHT | Select player |
+| UP/DOWN | Adjust volume for selected player |
+| q/ESC | Close overlay |
 
 ### Navigation
 
@@ -157,9 +181,9 @@ bluxir/
     player.c / player.h   BluOS HTTP API client (libcurl + expat)
     metadata.c / metadata.h  MusicBrainz, OpenAI, LRCLIB, Wikipedia
     cache.c / cache.h     Thread-safe LRU cache (hash table + doubly-linked list)
-    ui.c / ui.h           Header, footer, modals, input prompts, health check
+    ui.c / ui.h           Header, footer, modals, input prompts, health check, group/volume overlays
     ui_player.c           Player control view (left/right panels)
-    ui_browse.c           Source selection and browsing
+    ui_browse.c           Source selection, browsing, player selection
     ui_search.c           Search 3-phase state machine
     cover_art.c / cover_art.h  stb_image decode + 256-color half-block render
     discover.c / discover.h    Avahi mDNS discovery
@@ -176,7 +200,6 @@ bluxir/
 - No Spotify support (BluOS limitation)
 - Radio stations cannot be stored as favorites
 - MusicBrainz metadata can be inaccurate; OpenAI metadata may contain errors
-- No multi-room support
 
 ## License
 

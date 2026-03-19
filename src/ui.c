@@ -163,10 +163,20 @@ void ui_draw_header(WINDOW *win, AppState *app, const char *view) {
 
   /* Header text */
   char header[STR_MEDIUM];
-  if (app->active_player)
-    snprintf(header, sizeof(header), "%s - %s", view, app->active_player->name);
-  else
+  if (app->active_player) {
+    int n = snprintf(header, sizeof(header), "%s - %s", view,
+                     app->active_player->name);
+    if (app->group_info.slave_count > 0 && n > 0 && n < (int)sizeof(header)) {
+      n += snprintf(header + n, sizeof(header) - n, " (&");
+      for (int i = 0;
+           i < app->group_info.slave_count && n < (int)sizeof(header); i++)
+        n += snprintf(header + n, sizeof(header) - n, "%s%s", i > 0 ? ", " : "",
+                      app->group_info.slave_names[i]);
+      snprintf(header + n, sizeof(header) - n, ")");
+    }
+  } else {
     safe_strcpy(header, view, sizeof(header));
+  }
   int header_len = int_min((int)strlen(header), width - 4);
   mvwaddnstr(win, 1, 2, header, header_len);
   wattron(win, A_BOLD);
@@ -584,6 +594,258 @@ void ui_show_health_check(WINDOW *win, AppState *app) {
   }
 
   health_draw_overlay(win, entries, entry_count, update_available);
+}
+
+/* ── Group Manager ──────────────────────────────────────────────────────── */
+
+static bool is_player_grouped(const char *ip, GroupInfo *group) {
+  for (int i = 0; i < group->slave_count; i++) {
+    if (strcmp(group->slave_ips[i], ip) == 0)
+      return true;
+  }
+  return false;
+}
+
+static void group_draw_header(WINDOW *popup, AppState *app, GroupInfo *group,
+                              int modal_w) {
+  wattron(popup, A_BOLD);
+  mvwaddnstr(popup, 1, 2, GROUP_MANAGER_TITLE, modal_w - 4);
+  wattroff(popup, A_BOLD);
+  mvwhline(popup, 2, 1, ACS_HLINE, modal_w - 2);
+  mvwaddch(popup, 2, 0, ACS_LTEE);
+  mvwaddch(popup, 2, modal_w - 1, ACS_RTEE);
+  char line[STR_MEDIUM];
+  if (group->master_ip[0])
+    snprintf(line, sizeof(line), "Grouped with: %s", group->master_ip);
+  else
+    snprintf(line, sizeof(line), "Master: %s (%s)", app->active_player->name,
+             app->active_player->host_name);
+  mvwaddnstr(popup, 3, 2, line, modal_w - 4);
+}
+
+static void group_draw_players(WINDOW *popup, BlusoundPlayer **others,
+                               int count, GroupInfo *group, int selected,
+                               int modal_w) {
+  if (count == 0) {
+    mvwaddnstr(popup, 5, 2, GROUP_NO_PLAYERS_MSG, modal_w - 4);
+    wattron(popup, A_DIM);
+    mvwaddnstr(popup, 6, 2, GROUP_DISCOVER_HINT, modal_w - 4);
+    wattroff(popup, A_DIM);
+    return;
+  }
+  for (int i = 0; i < count; i++) {
+    bool grouped = is_player_grouped(others[i]->host_name, group);
+    char line[STR_LONG];
+    snprintf(line, sizeof(line), " %s %s (%s)", grouped ? "[G]" : "[ ]",
+             others[i]->name, others[i]->host_name);
+    if (i == selected)
+      wattron(popup, COLOR_PAIR(2));
+    mvwaddnstr(popup, 5 + i, 2, line, modal_w - 4);
+    if (i == selected)
+      wattroff(popup, COLOR_PAIR(2));
+  }
+}
+
+static void group_handle_toggle(AppState *app, BlusoundPlayer *player,
+                                GroupInfo *group) {
+  if (is_player_grouped(player->host_name, group))
+    player_remove_slave(app->active_player, player->host_name);
+  else
+    player_add_slave(app->active_player, player->host_name);
+  player_get_group_info(app->active_player, group);
+}
+
+static int group_handle_input(int key, AppState *app, BlusoundPlayer **others,
+                              int other_count, GroupInfo *group, bool *is_slave,
+                              int selected) {
+  if (key == 'q' || key == 27)
+    return -1;
+  if (*is_slave && key == 10) {
+    player_leave_group(app->active_player);
+    player_get_group_info(app->active_player, group);
+    *is_slave = (group->master_ip[0] != '\0');
+  } else if (!*is_slave && other_count > 0) {
+    if (key == KEY_UP && selected > 0)
+      selected--;
+    else if (key == KEY_DOWN && selected < other_count - 1)
+      selected++;
+    else if (key == 10)
+      group_handle_toggle(app, others[selected], group);
+  }
+  return selected;
+}
+
+void ui_show_group_manager(WINDOW *win, AppState *app) {
+  if (!app->active_player)
+    return;
+  GroupInfo group;
+  if (!player_get_group_info(app->active_player, &group)) {
+    ui_set_message(app, "Failed to get group info");
+    return;
+  }
+  BlusoundPlayer *others[16];
+  int other_count = 0;
+  for (int i = 0; i < app->players_count && other_count < 16; i++) {
+    if (strcmp(app->players[i]->host_name, app->active_player->host_name) != 0)
+      others[other_count++] = app->players[i];
+  }
+  bool is_slave = (group.master_ip[0] != '\0');
+  int height, width;
+  getmaxyx(win, height, width);
+  int modal_h = int_min(height - 2, int_max(other_count + 9, 10));
+  int modal_w = int_min(width - 4, GROUP_MODAL_WIDTH);
+  int sy = int_max(0, (height - modal_h) / 2);
+  int sx = int_max(0, (width - modal_w) / 2);
+  int selected = 0;
+  WINDOW *popup = newwin(modal_h, modal_w, sy, sx);
+  while (1) {
+    werase(popup);
+    box(popup, 0, 0);
+    group_draw_header(popup, app, &group, modal_w);
+    if (is_slave)
+      mvwaddnstr(popup, 5, 2, GROUP_SLAVE_MSG, modal_w - 4);
+    else
+      group_draw_players(popup, others, other_count, &group, selected, modal_w);
+    const char *hint = is_slave ? GROUP_SLAVE_HINT : GROUP_MANAGER_HINT;
+    wattron(popup, A_DIM);
+    mvwaddstr(popup, modal_h - 2, int_max(1, modal_w - (int)strlen(hint) - 2),
+              hint);
+    wattroff(popup, A_DIM);
+    wrefresh(popup);
+    wtimeout(win, INPUT_BLOCKING);
+    int key = wgetch(win);
+    selected = group_handle_input(key, app, others, other_count, &group,
+                                  &is_slave, selected);
+    if (selected < 0)
+      break;
+  }
+  app->group_info = group;
+  wtimeout(win, CURSES_POLL_MS);
+  delwin(popup);
+  touchwin(win);
+  wrefresh(win);
+}
+
+/* ── Volume Overlay (group mode) ───────────────────────────────────────── */
+
+static BlusoundPlayer *find_player_by_ip(AppState *app, const char *ip) {
+  for (int i = 0; i < app->players_count; i++) {
+    if (strcmp(app->players[i]->host_name, ip) == 0)
+      return app->players[i];
+  }
+  return NULL;
+}
+
+static int vol_build_entries(AppState *app, GroupInfo *group,
+                             BlusoundPlayer **players, int *volumes) {
+  int count = 0;
+  players[count] = app->active_player;
+  volumes[count] = app->player_status.volume;
+  count++;
+  for (int i = 0; i < group->slave_count && count < 16; i++) {
+    BlusoundPlayer *p = find_player_by_ip(app, group->slave_ips[i]);
+    if (!p)
+      continue;
+    PlayerStatus st;
+    if (player_get_status(p, &st))
+      volumes[count] = st.volume;
+    else
+      volumes[count] = -1;
+    players[count] = p;
+    count++;
+  }
+  return count;
+}
+
+static void vol_draw_entry(WINDOW *popup, BlusoundPlayer *player, int volume,
+                           bool selected, int row, int name_w, int modal_w) {
+  char name_buf[STR_MEDIUM];
+  snprintf(name_buf, sizeof(name_buf), "%-*.*s", name_w, name_w, player->name);
+  int green = COLOR_PAIR(3);
+  if (selected)
+    wattron(popup, green | A_BOLD);
+  mvwaddnstr(popup, row, 2, name_buf, modal_w - 4);
+  if (selected)
+    wattroff(popup, A_BOLD);
+  if (volume >= 0) {
+    char bar[VOLUME_BAR_WIDTH + 4];
+    create_volume_bar(volume, VOLUME_BAR_WIDTH, bar, sizeof(bar));
+    char vol_text[32];
+    snprintf(vol_text, sizeof(vol_text), "  %s %3d%%", bar, volume);
+    waddstr(popup, vol_text);
+  }
+  if (selected)
+    wattroff(popup, green);
+}
+
+static int vol_max_name_width(BlusoundPlayer **players, int count) {
+  int max_w = 0;
+  for (int i = 0; i < count; i++) {
+    int w = (int)strlen(players[i]->name);
+    if (w > max_w)
+      max_w = w;
+  }
+  return max_w;
+}
+
+static void vol_draw_entries(WINDOW *popup, BlusoundPlayer **players,
+                             int *volumes, int count, int selected, int name_w,
+                             int modal_w) {
+  for (int i = 0; i < count; i++)
+    vol_draw_entry(popup, players[i], volumes[i], i == selected, 2 + i, name_w,
+                   modal_w);
+}
+
+void ui_show_volume_overlay(WINDOW *win, AppState *app, GroupInfo *group) {
+  BlusoundPlayer *players[16];
+  int volumes[16];
+  int count = vol_build_entries(app, group, players, volumes);
+  if (count < 2)
+    return;
+  int name_w = vol_max_name_width(players, count);
+  int content_w = name_w + VOLUME_BAR_WIDTH + 12;
+  int height, width;
+  getmaxyx(win, height, width);
+  int modal_w = int_min(width - 4, int_max(content_w + 6, 30));
+  int modal_h = count + 3;
+  int sy = int_max(0, (height - modal_h) / 2);
+  int sx = int_max(0, (width - modal_w) / 2);
+  int selected = 0;
+  WINDOW *popup = newwin(modal_h, modal_w, sy, sx);
+  while (1) {
+    werase(popup);
+    box(popup, 0, 0);
+    int green = COLOR_PAIR(3);
+    wattron(popup, green | A_BOLD);
+    mvwaddnstr(popup, 0, 2, " Volume ", modal_w - 4);
+    wattroff(popup, green | A_BOLD);
+    mvwhline(popup, 1, 1, ACS_HLINE, modal_w - 2);
+    mvwaddch(popup, 1, 0, ACS_LTEE);
+    mvwaddch(popup, 1, modal_w - 1, ACS_RTEE);
+    vol_draw_entries(popup, players, volumes, count, selected, name_w, modal_w);
+    wrefresh(popup);
+    wtimeout(win, INPUT_BLOCKING);
+    int key = wgetch(win);
+    if (key == 'q' || key == 27)
+      break;
+    if (key == KEY_LEFT && selected > 0)
+      selected--;
+    else if (key == KEY_RIGHT && selected < count - 1)
+      selected++;
+    else if ((key == KEY_UP || key == KEY_DOWN) && volumes[selected] >= 0) {
+      int delta = (key == KEY_UP) ? VOLUME_INCREMENT : -VOLUME_INCREMENT;
+      int nv = int_max(0, int_min(100, volumes[selected] + delta));
+      if (player_set_volume(players[selected], nv)) {
+        volumes[selected] = nv;
+        if (players[selected] == app->active_player)
+          app->player_status.volume = nv;
+      }
+    }
+  }
+  wtimeout(win, CURSES_POLL_MS);
+  delwin(popup);
+  touchwin(win);
+  wrefresh(win);
 }
 
 /* ── Pretty Print ───────────────────────────────────────────────────────── */

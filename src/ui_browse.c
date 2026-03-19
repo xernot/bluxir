@@ -108,5 +108,8 @@ void ui_display_player_selection(WINDOW *win, AppState *app) {
   int height, width;
   getmaxyx(win, height, width);
   (void)width;
-  mvwaddstr(win, height - 1, 2, "Press '?' to show keyboard shortcuts");
+  if (app->active_player)
+    mvwaddstr(win, height - 1, 2, "ENTER: switch  b/ESC: back  '?': shortcuts");
+  else
+    mvwaddstr(win, height - 1, 2, "Press '?' to show keyboard shortcuts");
 }

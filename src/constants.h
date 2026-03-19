@@ -86,6 +86,20 @@
 /* Interval for local progress counter increment (seconds) */
 #define PROGRESS_INCREMENT_INTERVAL 1
 
+/* ── Group Management ──────────────────────────────────────────────────── */
+
+/* Maximum number of slaves tracked in a group */
+#define GROUP_MAX_SLAVES 16
+
+/* Width of the group manager modal (characters) */
+#define GROUP_MODAL_WIDTH 60
+
+/* Interval between group info polls (seconds) */
+#define GROUP_POLL_INTERVAL 15
+
+/* Delay for initial mDNS scan before showing group manager (microseconds) */
+#define DISCOVERY_SCAN_DELAY_US 2000000
+
 /* ── Source Initialization ──────────────────────────────────────────────── */
 
 /* Maximum number of retries when fetching initial source list */
@@ -222,11 +236,11 @@ static const char *WIKIPEDIA_LANGUAGES[WIKIPEDIA_LANG_COUNT] = {"en", "de"};
 
 /* Footer help text shown on the main player screen */
 #define FOOTER_HELP                                                            \
-  "(s) search  (f) fav  (l) playlists  (w) save  (c) cover  (t) lyrics  "      \
-  "(+/-) fav  (i) source  (h) health  (?) help  (q) quit"
+  "(s) search  (f) fav  (w) save  (+/-) fav  (r) repeat  (x) shuffle  "        \
+  "(G) group  (X) switch"
 
 /* Version string shown in the footer */
-#define VERSION_STRING "bluxir v3.0"
+#define VERSION_STRING "bluxir v3.1"
 
 /* Attribution line shown in help/about modals */
 #define ABOUT_ATTRIBUTION "(c) written by xir - under GPL"
@@ -282,6 +296,27 @@ static const char *WIKIPEDIA_LANGUAGES[WIKIPEDIA_LANG_COUNT] = {"en", "de"};
 /* Exact status text when no firmware update is available */
 #define HEALTH_NO_UPDATE "no update available"
 
+/* Group manager overlay title */
+#define GROUP_MANAGER_TITLE "Group Manager"
+
+/* Group manager hint text */
+#define GROUP_MANAGER_HINT "UP/DOWN: select  ENTER: toggle  q: close"
+
+/* Group manager hint when active player is a slave */
+#define GROUP_SLAVE_HINT "ENTER: leave group  q: close"
+
+/* Width of the volume bar in the group manager (characters) */
+#define GROUP_VOLUME_BAR_WIDTH 8
+
+/* Group manager message when active player is a slave */
+#define GROUP_SLAVE_MSG "Press ENTER to leave the group."
+
+/* Group manager message when no other players found */
+#define GROUP_NO_PLAYERS_MSG "No other players discovered."
+
+/* Group manager hint to discover players first */
+#define GROUP_DISCOVER_HINT "Press X to scan for players first."
+
 /* Queue action dialog prompt */
 #define QUEUE_ACTION_PROMPT                                                    \
   "(1) Play now  (2) Add next  (3) Add last  (ESC) Cancel"
@@ -336,20 +371,22 @@ static const KeyBinding HELP_LEFT_KEYS[HELP_LEFT_COUNT] = {
     {"ESC", "Cancel"},
 };
 
-#define HELP_RIGHT_COUNT 12
+#define HELP_RIGHT_COUNT 14
 static const KeyBinding HELP_RIGHT_KEYS[HELP_RIGHT_COUNT] = {
     {"i", "Select input"},        {"s", "Search"},
     {"f", "Qobuz favorites"},     {"l", "Load playlist"},
     {"w", "Save playlist"},       {"c", "Toggle cover art"},
     {"t", "Toggle lyrics"},       {"PgUp/PgDn", "Scroll lyrics"},
     {"h", "Health check"},        {"p", "Pretty print"},
+    {"X", "Switch player"},       {"G", "Group players"},
     {"b", "Back to player list"}, {"q", "Quit"},
 };
 
-#define SELECTOR_SHORTCUTS_COUNT 3
+#define SELECTOR_SHORTCUTS_COUNT 4
 static const KeyBinding SELECTOR_SHORTCUTS[SELECTOR_SHORTCUTS_COUNT] = {
     {"UP/DOWN", "Select player"},
     {"ENTER", "Activate player"},
+    {"b/ESC", "Back to player"},
     {"q", "Quit"},
 };
 

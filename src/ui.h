@@ -16,8 +16,8 @@ void ui_draw_header(WINDOW *win, AppState *app, const char *view);
 void ui_draw_footer(WINDOW *win, AppState *app, int height, int width);
 
 /* Draw a generic modal dialog with key-description entries */
-void ui_draw_modal(WINDOW *win, const char *title,
-                   const KeyBinding *entries, int count);
+void ui_draw_modal(WINDOW *win, const char *title, const KeyBinding *entries,
+                   int count);
 
 /* Draw the help shortcuts modal (two columns) */
 void ui_draw_shortcuts(WINDOW *win, AppState *app);
@@ -46,7 +46,14 @@ void ui_show_health_check(WINDOW *win, AppState *app);
 /* Show pretty print popup (blocking) */
 void ui_show_pretty_print(WINDOW *win, AppState *app);
 
-/* Show the queue action dialog. Returns "play_now", "add_next", "add_last", or NULL. */
+/* Show group manager overlay (blocking) */
+void ui_show_group_manager(WINDOW *win, AppState *app);
+
+/* Show volume overlay for grouped players (blocking) */
+void ui_show_volume_overlay(WINDOW *win, AppState *app, GroupInfo *group);
+
+/* Show the queue action dialog. Returns "play_now", "add_next", "add_last", or
+ * NULL. */
 const char *ui_show_queue_dialog(WINDOW *win);
 
 #endif /* UI_H */

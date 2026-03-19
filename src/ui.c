@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 /* ── Message & Highlight ────────────────────────────────────────────────── */
 
@@ -652,6 +653,7 @@ static void group_handle_toggle(AppState *app, BlusoundPlayer *player,
     player_remove_slave(app->active_player, player->host_name);
   else
     player_add_slave(app->active_player, player->host_name);
+  usleep(500000);
   player_get_group_info(app->active_player, group);
 }
 

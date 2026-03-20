@@ -296,6 +296,9 @@ static const char *WIKIPEDIA_LANGUAGES[WIKIPEDIA_LANG_COUNT] = {"en", "de"};
 /* Exact status text when no firmware update is available */
 #define HEALTH_NO_UPDATE "no update available"
 
+/* Volume overlay label for the combined group row */
+#define GROUP_VOLUME_LABEL "Group"
+
 /* Group manager overlay title */
 #define GROUP_MANAGER_TITLE "Group Manager"
 

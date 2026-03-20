@@ -781,7 +781,7 @@ static void vol_draw_entry(WINDOW *popup, BlusoundPlayer *player, int volume,
 }
 
 static int vol_max_name_width(BlusoundPlayer **players, int count) {
-  int max_w = 0;
+  int max_w = (int)strlen(GROUP_VOLUME_LABEL);
   for (int i = 0; i < count; i++) {
     int w = (int)strlen(players[i]->name);
     if (w > max_w)
@@ -790,12 +790,45 @@ static int vol_max_name_width(BlusoundPlayer **players, int count) {
   return max_w;
 }
 
+static int vol_group_average(int *volumes, int count) {
+  int sum = 0, n = 0;
+  for (int i = 0; i < count; i++) {
+    if (volumes[i] >= 0) {
+      sum += volumes[i];
+      n++;
+    }
+  }
+  return n > 0 ? sum / n : 0;
+}
+
+static void vol_draw_group_row(WINDOW *popup, int avg_vol, bool selected,
+                               int name_w, int modal_w) {
+  char name_buf[STR_MEDIUM];
+  snprintf(name_buf, sizeof(name_buf), "%-*.*s", name_w, name_w,
+           GROUP_VOLUME_LABEL);
+  int green = COLOR_PAIR(3);
+  if (selected)
+    wattron(popup, green | A_BOLD);
+  mvwaddnstr(popup, 2, 2, name_buf, modal_w - 4);
+  if (selected)
+    wattroff(popup, A_BOLD);
+  char bar[VOLUME_BAR_WIDTH + 4];
+  create_volume_bar(avg_vol, VOLUME_BAR_WIDTH, bar, sizeof(bar));
+  char vol_text[32];
+  snprintf(vol_text, sizeof(vol_text), "  %s %3d%%", bar, avg_vol);
+  waddstr(popup, vol_text);
+  if (selected)
+    wattroff(popup, green);
+}
+
 static void vol_draw_entries(WINDOW *popup, BlusoundPlayer **players,
                              int *volumes, int count, int selected, int name_w,
                              int modal_w) {
+  vol_draw_group_row(popup, vol_group_average(volumes, count), selected == 0,
+                     name_w, modal_w);
   for (int i = 0; i < count; i++)
-    vol_draw_entry(popup, players[i], volumes[i], i == selected, 2 + i, name_w,
-                   modal_w);
+    vol_draw_entry(popup, players[i], volumes[i], (i + 1) == selected, 3 + i,
+                   name_w, modal_w);
 }
 
 void ui_show_volume_overlay(WINDOW *win, AppState *app, GroupInfo *group) {
@@ -809,7 +842,8 @@ void ui_show_volume_overlay(WINDOW *win, AppState *app, GroupInfo *group) {
   int height, width;
   getmaxyx(win, height, width);
   int modal_w = int_min(width - 4, int_max(content_w + 6, 30));
-  int modal_h = count + 3;
+  int total_rows = count + 1;
+  int modal_h = total_rows + 3;
   int sy = int_max(0, (height - modal_h) / 2);
   int sx = int_max(0, (width - modal_w) / 2);
   int selected = 0;
@@ -832,15 +866,31 @@ void ui_show_volume_overlay(WINDOW *win, AppState *app, GroupInfo *group) {
       break;
     if (key == KEY_LEFT && selected > 0)
       selected--;
-    else if (key == KEY_RIGHT && selected < count - 1)
+    else if (key == KEY_RIGHT && selected < total_rows - 1)
       selected++;
-    else if ((key == KEY_UP || key == KEY_DOWN) && volumes[selected] >= 0) {
+    else if (key == KEY_UP || key == KEY_DOWN) {
       int delta = (key == KEY_UP) ? VOLUME_INCREMENT : -VOLUME_INCREMENT;
-      int nv = int_max(0, int_min(100, volumes[selected] + delta));
-      if (player_set_volume(players[selected], nv)) {
-        volumes[selected] = nv;
-        if (players[selected] == app->active_player)
-          app->player_status.volume = nv;
+      if (selected == 0) {
+        for (int i = 0; i < count; i++) {
+          if (volumes[i] < 0)
+            continue;
+          int nv = int_max(0, int_min(100, volumes[i] + delta));
+          if (player_set_volume(players[i], nv)) {
+            volumes[i] = nv;
+            if (players[i] == app->active_player)
+              app->player_status.volume = nv;
+          }
+        }
+      } else {
+        int pi = selected - 1;
+        if (volumes[pi] >= 0) {
+          int nv = int_max(0, int_min(100, volumes[pi] + delta));
+          if (player_set_volume(players[pi], nv)) {
+            volumes[pi] = nv;
+            if (players[pi] == app->active_player)
+              app->player_status.volume = nv;
+          }
+        }
       }
     }
   }

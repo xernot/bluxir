@@ -597,13 +597,13 @@ static void handle_navigation_keys(int key, WINDOW *win, AppState *app) {
     app->selected_source_index[0] = 0;
     app->current_sources = app->active_player->sources;
     app->current_sources_count = app->active_player->sources_count;
-  } else if (key == 's') {
+  } else if (key == '/') {
     ensure_sources(app);
     handle_search_sources(app);
   } else if (key == 'f') {
     ensure_sources(app);
     handle_favorites(app);
-  } else if (key == 'w') {
+  } else if (key == 's') {
     wmove(win, 0, 0); /* position for input */
     char name[STR_MEDIUM] = "";
     mvwaddstr(win, LINES - 2, 2, "");
@@ -724,7 +724,7 @@ static bool handle_player_control(int key, WINDOW *win, AppState *app,
   if (key == KEY_UP || key == KEY_DOWN || key == ' ' || key == KEY_RIGHT ||
       key == KEY_LEFT || key == 'm' || key == 'r' || key == 'x' || key == 'g') {
     handle_playback_keys(key, win, app);
-  } else if (key == 'i' || key == 's' || key == 'f' || key == 'w' ||
+  } else if (key == 'i' || key == '/' || key == 'f' || key == 's' ||
              key == 'l') {
     handle_navigation_keys(key, win, app);
   } else if (key == 'c' || key == 't' || key == KEY_PPAGE || key == KEY_NPAGE ||

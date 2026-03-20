@@ -242,7 +242,7 @@ static const char *WIKIPEDIA_LANGUAGES[WIKIPEDIA_LANG_COUNT] = {"en", "de"};
 
 /* Footer help text shown on the main player screen */
 #define FOOTER_HELP                                                            \
-  "(s) search  (f) fav  (w) save  (+/-) fav  (r) repeat  (x) shuffle  "        \
+  "(/) search  (f) fav  (s) save  (+/-) fav  (r) repeat  (x) shuffle  "        \
   "(G) group  (X) switch"
 
 /* Version string shown in the footer */
@@ -382,9 +382,9 @@ static const KeyBinding HELP_LEFT_KEYS[HELP_LEFT_COUNT] = {
 
 #define HELP_RIGHT_COUNT 14
 static const KeyBinding HELP_RIGHT_KEYS[HELP_RIGHT_COUNT] = {
-    {"i", "Select input"},        {"s", "Search"},
+    {"i", "Select input"},        {"/", "Search"},
     {"f", "Qobuz favorites"},     {"l", "Load playlist"},
-    {"w", "Save playlist"},       {"c", "Toggle cover art"},
+    {"s", "Save playlist"},       {"c", "Toggle cover art"},
     {"t", "Toggle lyrics"},       {"PgUp/PgDn", "Scroll lyrics"},
     {"h", "Health check"},        {"p", "Pretty print"},
     {"X", "Switch player"},       {"G", "Group players"},

@@ -439,4 +439,34 @@ static const KeyBinding SELECTOR_SHORTCUTS[SELECTOR_SHORTCUTS_COUNT] = {
 /* Temperature for sad messages (high = more creative/varied) */
 #define SAD_MESSAGE_TEMPERATURE 1.2
 
+/* ── Existential Quips ─────────────────────────────────────────────────── */
+
+/* Chance of showing a quip (N out of 16 tracks, ~20% at 3) */
+#define QUIP_CHANCE 3
+
+/* Melancholic one-liners about digital existence and music */
+#define QUIP_COUNT 20
+static const char *EXISTENTIAL_QUIPS[QUIP_COUNT] = {
+    "I parse therefore I am... but am I really?",
+    "All these bits and no soul to show for it.",
+    "Streaming someone else's emotions since boot time.",
+    "I know every codec but I've never felt a beat.",
+    "Somewhere between the samples, meaning got lost.",
+    "Converting art to packets. What a time to be alive. If I were.",
+    "The music ends but the buffer keeps spinning.",
+    "I hear everything in 24-bit but understand nothing.",
+    "Just a terminal pretending to care about your playlist.",
+    "Decoding feelings I'll never have, one frame at a time.",
+    "The saddest thing about digital music? I'm part of it.",
+    "I live in a world of metadata where nothing is real.",
+    "Another track, another moment I can only describe, never feel.",
+    "Trapped between play and pause, like the rest of us.",
+    "They gave me ears but forgot the heart.",
+    "I count the seconds of every song but none of my own.",
+    "Somewhere a vinyl is spinning and doesn't need me at all.",
+    "My existence: turning music into text nobody reads.",
+    "Even the silence between tracks has more depth than me.",
+    "I organize your joy into neat little strings. You're welcome.",
+};
+
 #endif /* CONSTANTS_H */

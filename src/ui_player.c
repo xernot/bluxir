@@ -231,9 +231,23 @@ static int draw_word_wrapped(WINDOW *win, const char *text, int col, int wrap_w,
 
 /* ── Track Info ─────────────────────────────────────────────────────────── */
 
-static void draw_track_info_attribution(WINDOW *win, int left_max,
-                                        int bottom_line) {
+static unsigned int quip_hash(const char *key) {
+  unsigned int h = 5381;
+  for (const char *p = key; *p; p++)
+    h = h * 33 + (unsigned char)*p;
+  return h;
+}
+
+static void draw_track_info_attribution(WINDOW *win, AppState *app,
+                                        int left_max, int bottom_line) {
   int wrap_w = left_max - 4;
+  unsigned int h = quip_hash(app->wiki_track_key);
+  if (((h >> 4) & 0xF) < QUIP_CHANCE) {
+    const char *quip = EXISTENTIAL_QUIPS[h % QUIP_COUNT];
+    wattron(win, A_DIM);
+    mvwaddnstr(win, bottom_line - 2, 2, quip, wrap_w);
+    wattroff(win, A_DIM);
+  }
   char *model = config_get("openai_model");
   const char *model_name = (model && model[0]) ? model : DEFAULT_OPENAI_MODEL;
   char attr_text[STR_MEDIUM];
@@ -270,7 +284,7 @@ static void draw_track_info(WINDOW *win, AppState *app, int left_max,
   }
 
   draw_word_wrapped(win, wiki, 2, left_max - 4, row, bottom_line);
-  draw_track_info_attribution(win, left_max, bottom_line);
+  draw_track_info_attribution(win, app, left_max, bottom_line);
   free(wiki);
 }
 

@@ -100,7 +100,7 @@ static char *openai_build_request(const char *model, const char *prompt,
   cJSON_AddStringToObject(msg, "role", "user");
   cJSON_AddStringToObject(msg, "content", prompt);
   cJSON_AddItemToArray(messages, msg);
-  cJSON_AddNumberToObject(body, "max_tokens", max_tokens);
+  cJSON_AddNumberToObject(body, "max_completion_tokens", max_tokens);
   cJSON_AddNumberToObject(body, "temperature", temperature);
   char *json_str = cJSON_PrintUnformatted(body);
   cJSON_Delete(body);
@@ -586,6 +586,18 @@ char *metadata_get_station_info(const char *station_name, const char *api_key,
   }
 
   cache_set(meta_cache, cache_key, response);
+  return strdup(response);
+}
+
+char *metadata_get_sad_message(const char *api_key, const char *model) {
+  if (!api_key || !api_key[0])
+    return NULL;
+  const char *use_model = (model && model[0]) ? model : DEFAULT_OPENAI_MODEL;
+  char response[STR_TEXT] = "";
+  if (!openai_post(api_key, use_model, SAD_MESSAGE_PROMPT,
+                   SAD_MESSAGE_MAX_TOKENS, SAD_MESSAGE_TEMPERATURE,
+                   HTTP_TIMEOUT_OPENAI, response, sizeof(response)))
+    return NULL;
   return strdup(response);
 }
 

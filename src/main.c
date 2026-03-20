@@ -134,11 +134,18 @@ static void *fetch_combined_thread(void *arg) {
                         sys_prompt, model ? model : DEFAULT_OPENAI_MODEL,
                         &info);
 
+  char *text = NULL;
+  if (info.has_track_info)
+    text = strdup(info.track_info);
+  else
+    text =
+        metadata_get_sad_message(api_key, model ? model : DEFAULT_OPENAI_MODEL);
+
   pthread_mutex_lock(&app->data_lock);
   app->mb_info = info;
   app->mb_has_info = true;
   free(app->wiki_text);
-  app->wiki_text = info.has_track_info ? strdup(info.track_info) : NULL;
+  app->wiki_text = text;
   app->mb_loading = false;
   app->wiki_loading = false;
   pthread_mutex_unlock(&app->data_lock);
@@ -158,11 +165,14 @@ static void *fetch_station_thread(void *arg) {
   char *model = config_get("openai_model");
   char *text = metadata_get_station_info(mta->title, api_key,
                                          model ? model : DEFAULT_OPENAI_MODEL);
+  if (!text)
+    text =
+        metadata_get_sad_message(api_key, model ? model : DEFAULT_OPENAI_MODEL);
 
   pthread_mutex_lock(&app->data_lock);
   app->mb_has_info = false;
   free(app->wiki_text);
-  app->wiki_text = text ? text : strdup("No further information available.");
+  app->wiki_text = text;
   app->mb_loading = false;
   app->wiki_loading = false;
   pthread_mutex_unlock(&app->data_lock);

@@ -28,6 +28,10 @@ bool metadata_get_combined(const char *title, const char *artist,
 char *metadata_get_station_info(const char *station_name, const char *api_key,
                                 const char *model);
 
+/* Get a sad/depressed message when no track info is available.
+   Caller must free() result. Returns NULL on failure. Not cached. */
+char *metadata_get_sad_message(const char *api_key, const char *model);
+
 /* Get lyrics from LRCLIB. Caller must free() result. Returns NULL if not found.
  */
 char *metadata_get_lyrics(const char *title, const char *artist);

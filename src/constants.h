@@ -132,7 +132,7 @@
 /* ── AI Parameters ──────────────────────────────────────────────────────── */
 
 /* Default OpenAI model when none is configured */
-#define DEFAULT_OPENAI_MODEL "gpt-4o-mini"
+#define DEFAULT_OPENAI_MODEL "gpt-5.4"
 
 /* Max tokens for single track info responses */
 #define TRACK_INFO_MAX_TOKENS 200
@@ -424,5 +424,19 @@ static const KeyBinding SELECTOR_SHORTCUTS[SELECTOR_SHORTCUTS_COUNT] = {
   "set \"track_info\" to \"-\" rather than guessing. Never invent musician "   \
   "names, studios, or details.\n\n"                                            \
   "Respond ONLY with the JSON object, no markdown, no explanation."
+
+/* Sad message prompt — used when no track info is available */
+#define SAD_MESSAGE_PROMPT                                                     \
+  "You are a music-loving soul who just found out you know nothing about a "   \
+  "song someone asked about. Write a single short paragraph (2-3 sentences) "  \
+  "expressing your sadness and disappointment about this gap in your "         \
+  "knowledge. Be dramatic, melancholic, and slightly poetic. Each response "   \
+  "should be unique and different. Do not mention being an AI."
+
+/* Max tokens for sad message responses */
+#define SAD_MESSAGE_MAX_TOKENS 100
+
+/* Temperature for sad messages (high = more creative/varied) */
+#define SAD_MESSAGE_TEMPERATURE 1.2
 
 #endif /* CONSTANTS_H */

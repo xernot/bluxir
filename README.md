@@ -1,4 +1,4 @@
-# bluxir
+# bluxir v3.1
 
 A BluOS terminal controller for Blusound network music streamers, written in C.
 

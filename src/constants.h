@@ -243,7 +243,7 @@ static const char *WIKIPEDIA_LANGUAGES[WIKIPEDIA_LANG_COUNT] = {"en", "de"};
 /* Footer help text shown on the main player screen */
 #define FOOTER_HELP                                                            \
   "(/) search  (f) fav  (s) save  (+/-) fav  (r) repeat  (x) shuffle  "        \
-  "(G) group  (X) switch"
+  "(G) group  (S) switch"
 
 /* Version string shown in the footer */
 #define VERSION_STRING "bluxir v3.1"
@@ -387,7 +387,7 @@ static const KeyBinding HELP_RIGHT_KEYS[HELP_RIGHT_COUNT] = {
     {"s", "Save playlist"},       {"c", "Toggle cover art"},
     {"t", "Toggle lyrics"},       {"PgUp/PgDn", "Scroll lyrics"},
     {"h", "Health check"},        {"p", "Pretty print"},
-    {"X", "Switch player"},       {"G", "Group players"},
+    {"S", "Switch player"},       {"G", "Group players"},
     {"b", "Back to player list"}, {"q", "Quit"},
 };
 

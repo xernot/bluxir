@@ -703,7 +703,7 @@ static bool handle_player_control(int key, WINDOW *win, AppState *app,
                                   DiscoveryState **discovery) {
   if (key == 'b')
     return false;
-  if (key == 'X') {
+  if (key == 'S') {
     if (!*discovery)
       *discovery = discover_start();
     for (int i = 0; i < app->players_count; i++) {

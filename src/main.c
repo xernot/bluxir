@@ -84,6 +84,9 @@ static void update_player_status(AppState *app) {
   app->player_status = status;
   app->has_status = true;
 
+  if (strcmp(status.state, "connecting") == 0)
+    return;
+
   if (strcmp(status.state, "stream") == 0) {
     app->is_radio = true;
     free(app->playlist);
@@ -1037,8 +1040,10 @@ static void draw_current_view(WINDOW *win, AppState *app, bool player_mode) {
 
 static void tick_progress(AppState *app) {
   double now = now_sec();
-  if (app->has_status && (strcmp(app->player_status.state, "stream") == 0 ||
-                          strcmp(app->player_status.state, "play") == 0)) {
+  if (app->has_status &&
+      (strcmp(app->player_status.state, "stream") == 0 ||
+       strcmp(app->player_status.state, "play") == 0 ||
+       strcmp(app->player_status.state, "connecting") == 0)) {
     if (now - app->last_progress_time >= PROGRESS_INCREMENT_INTERVAL) {
       app->player_status.secs++;
       if (app->player_status.totlen > 0)

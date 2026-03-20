@@ -674,6 +674,30 @@ bool player_get_status(BlusoundPlayer *p, PlayerStatus *out) {
   return true;
 }
 
+bool player_get_status_poll(BlusoundPlayer *p, const char *etag,
+                            PlayerStatus *out) {
+  char params[STR_MEDIUM];
+  snprintf(params, sizeof(params), "etag=%s&timeout=%d", etag,
+           STATUS_LONG_POLL_TIMEOUT);
+  char url[STR_URL * 2];
+  snprintf(url, sizeof(url), "%s/Status?%s", p->base_url, params);
+  HttpBuffer buf = {0};
+  if (!http_get(url, STATUS_LONG_POLL_TIMEOUT + 2, &buf))
+    return false;
+
+  memset(out, 0, sizeof(PlayerStatus));
+  StatusParseCtx ctx = {0};
+  ctx.status = out;
+  XML_Parser parser = XML_ParserCreate(NULL);
+  XML_SetUserData(parser, &ctx);
+  XML_SetElementHandler(parser, status_start, status_end);
+  XML_SetCharacterDataHandler(parser, status_chars);
+  XML_Parse(parser, buf.data, (int)buf.size, 1);
+  XML_ParserFree(parser);
+  free(buf.data);
+  return true;
+}
+
 bool player_get_sync_info(BlusoundPlayer *p, KVPair *out, int *count, int max) {
   HttpBuffer buf = {0};
   if (!player_request(p, "/SyncStatus", NULL, &buf))

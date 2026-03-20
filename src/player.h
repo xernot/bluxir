@@ -31,6 +31,10 @@ void player_destroy(BlusoundPlayer *p);
 /* Fetch current player status. Returns true on success. */
 bool player_get_status(BlusoundPlayer *p, PlayerStatus *out);
 
+/* Long-poll for status changes. Blocks until etag changes or timeout. */
+bool player_get_status_poll(BlusoundPlayer *p, const char *etag,
+                            PlayerStatus *out);
+
 /* Get player identity info from SyncStatus API */
 bool player_get_sync_info(BlusoundPlayer *p, KVPair *out, int *count, int max);
 

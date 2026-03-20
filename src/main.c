@@ -112,6 +112,42 @@ static void update_player_status(AppState *app) {
   check_metadata_update(app);
 }
 
+/* ── Status Long-Poll Thread ───────────────────────────────────────────── */
+
+static void *status_poll_thread(void *arg) {
+  AppState *app = arg;
+  char etag[STR_SHORT] = "";
+  while (app->active_player) {
+    PlayerStatus status;
+    bool ok;
+    if (etag[0])
+      ok = player_get_status_poll(app->active_player, etag, &status);
+    else
+      ok = player_get_status(app->active_player, &status);
+    if (!ok) {
+      sleep(1);
+      continue;
+    }
+    if (strcmp(status.etag, etag) == 0)
+      continue;
+    safe_strcpy(etag, status.etag, sizeof(etag));
+    pthread_mutex_lock(&app->data_lock);
+    app->player_status = status;
+    app->has_status = true;
+    pthread_mutex_unlock(&app->data_lock);
+  }
+  return NULL;
+}
+
+static void launch_status_poll(AppState *app) {
+  pthread_t tid;
+  pthread_attr_t attr;
+  pthread_attr_init(&attr);
+  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+  pthread_create(&tid, &attr, status_poll_thread, app);
+  pthread_attr_destroy(&attr);
+}
+
 /* ── Metadata Thread Launchers ──────────────────────────────────────────── */
 
 typedef struct {
@@ -406,6 +442,7 @@ static bool try_stored_player(AppState *app) {
     app->players[0] = player;
     app->players_count = 1;
     app->players_capacity = 1;
+    launch_status_poll(app);
     free(host);
     free(name);
     return true;
@@ -1153,6 +1190,7 @@ static void handle_player_selection_input(int key, AppState *app,
       config_set("player_host", app->active_player->host_name);
       config_set("player_name", app->active_player->name);
       *player_mode = true;
+      launch_status_poll(app);
       update_player_status(app);
     }
   } else if ((key == 'b' || key == 27) && app->active_player) {

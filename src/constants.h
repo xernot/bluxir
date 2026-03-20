@@ -83,8 +83,11 @@
 /* Delay between retries when initializing sources (seconds) */
 #define SOURCE_INIT_RETRY_DELAY 1
 
-/* Interval between player status polls in the main loop (seconds) */
-#define STATUS_POLL_INTERVAL 3
+/* Interval between player status polls as fallback (seconds) */
+#define STATUS_POLL_INTERVAL 10
+
+/* BluOS long poll timeout for /Status?etag= (seconds) */
+#define STATUS_LONG_POLL_TIMEOUT 30
 
 /* Interval for local progress counter increment (seconds) */
 #define PROGRESS_INCREMENT_INTERVAL 1

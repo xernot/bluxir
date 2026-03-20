@@ -73,6 +73,16 @@ static bool player_request(BlusoundPlayer *p, const char *path,
   return http_get(url, HTTP_TIMEOUT_PLAYER, out);
 }
 
+static bool player_request_fast(BlusoundPlayer *p, const char *path,
+                                const char *params, HttpBuffer *out) {
+  char url[STR_URL * 2];
+  if (params && params[0])
+    snprintf(url, sizeof(url), "%s%s?%s", p->base_url, path, params);
+  else
+    snprintf(url, sizeof(url), "%s%s", p->base_url, path);
+  return http_get(url, HTTP_TIMEOUT_FAST, out);
+}
+
 /* ── XML parsing helpers ────────────────────────────────────────────────── */
 
 typedef struct {
@@ -816,9 +826,26 @@ bool player_set_volume(BlusoundPlayer *p, int volume) {
   char params[64];
   snprintf(params, sizeof(params), "level=%d", volume);
   HttpBuffer buf = {0};
-  bool ok = player_request(p, "/Volume", params, &buf);
+  bool ok = player_request_fast(p, "/Volume", params, &buf);
   free(buf.data);
   return ok;
+}
+
+int player_get_volume(BlusoundPlayer *p) {
+  HttpBuffer buf = {0};
+  if (!player_request_fast(p, "/Volume", NULL, &buf) || !buf.data) {
+    free(buf.data);
+    return -1;
+  }
+  int vol = -1;
+  const char *tag = strstr(buf.data, "<volume ");
+  if (tag) {
+    const char *end = strchr(tag, '>');
+    if (end)
+      vol = atoi(end + 1);
+  }
+  free(buf.data);
+  return vol;
 }
 
 bool player_toggle_mute(BlusoundPlayer *p, bool current_mute) {

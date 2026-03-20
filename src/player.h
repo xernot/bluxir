@@ -44,6 +44,10 @@ bool player_get_upgrade_status(BlusoundPlayer *p, char *out, size_t out_size);
 /* Get web interface URL */
 void player_get_web_url(BlusoundPlayer *p, char *out, size_t out_size);
 
+/* Get current volume (0-100) with fast 1-second timeout. Returns -1 on failure.
+ */
+int player_get_volume(BlusoundPlayer *p);
+
 /* Set volume (0-100) */
 bool player_set_volume(BlusoundPlayer *p, int volume);
 

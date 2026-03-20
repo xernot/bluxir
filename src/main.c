@@ -390,8 +390,6 @@ static bool try_stored_player(AppState *app) {
   BlusoundPlayer *player = player_create(host, name ? name : host);
   PlayerStatus status;
   if (player_get_status(player, &status)) {
-    player_fetch_sync_name(player);
-    player_init_sources(player);
     app->active_player = player;
     app->player_status = status;
     app->has_status = true;
@@ -547,16 +545,26 @@ static void handle_favorites(AppState *app) {
   }
 }
 
+static void ensure_sources(AppState *app) {
+  if (!app->active_player->sources) {
+    player_fetch_sync_name(app->active_player);
+    player_init_sources(app->active_player);
+  }
+}
+
 static void handle_navigation_keys(int key, WINDOW *win, AppState *app) {
   if (key == 'i') {
+    ensure_sources(app);
     app->source_selection_mode = true;
     app->source_depth = 0;
     app->selected_source_index[0] = 0;
     app->current_sources = app->active_player->sources;
     app->current_sources_count = app->active_player->sources_count;
   } else if (key == 's') {
+    ensure_sources(app);
     handle_search_sources(app);
   } else if (key == 'f') {
+    ensure_sources(app);
     handle_favorites(app);
   } else if (key == 'w') {
     wmove(win, 0, 0); /* position for input */
@@ -672,13 +680,7 @@ static bool handle_player_control(int key, WINDOW *win, AppState *app,
   if (key == 'G') {
     if (!*discovery)
       *discovery = discover_start();
-    if (app->players_count <= 1) {
-      werase(win);
-      mvwaddstr(win, 3, 2, DISCOVERY_HINT);
-      wrefresh(win);
-      usleep(DISCOVERY_SCAN_DELAY_US);
-      update_discovery_players(*discovery, app);
-    }
+    update_discovery_players(*discovery, app);
     ui_show_group_manager(win, app);
     return true;
   }

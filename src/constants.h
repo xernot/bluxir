@@ -56,6 +56,9 @@
 /* HTTP timeout for player API requests (seconds) */
 #define HTTP_TIMEOUT_PLAYER 5L
 
+/* HTTP timeout for fast player commands like volume (seconds) */
+#define HTTP_TIMEOUT_FAST 1L
+
 /* HTTP timeout for MusicBrainz API requests (seconds) */
 #define HTTP_TIMEOUT_MUSICBRAINZ 5L
 

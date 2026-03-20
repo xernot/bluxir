@@ -680,11 +680,7 @@ static int group_handle_input(int key, AppState *app, BlusoundPlayer **others,
 void ui_show_group_manager(WINDOW *win, AppState *app) {
   if (!app->active_player)
     return;
-  GroupInfo group;
-  if (!player_get_group_info(app->active_player, &group)) {
-    ui_set_message(app, "Failed to get group info");
-    return;
-  }
+  GroupInfo group = app->group_info;
   BlusoundPlayer *others[16];
   int other_count = 0;
   for (int i = 0; i < app->players_count && other_count < 16; i++) {
@@ -748,11 +744,7 @@ static int vol_build_entries(AppState *app, GroupInfo *group,
     BlusoundPlayer *p = find_player_by_ip(app, group->slave_ips[i]);
     if (!p)
       continue;
-    PlayerStatus st;
-    if (player_get_status(p, &st))
-      volumes[count] = st.volume;
-    else
-      volumes[count] = -1;
+    volumes[count] = player_get_volume(p);
     players[count] = p;
     count++;
   }

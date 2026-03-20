@@ -850,10 +850,13 @@ void ui_show_volume_overlay(WINDOW *win, AppState *app, GroupInfo *group) {
     mvwhline(popup, 1, 1, ACS_HLINE, modal_w - 2);
     mvwaddch(popup, 1, 0, ACS_LTEE);
     mvwaddch(popup, 1, modal_w - 1, ACS_RTEE);
+    volumes[0] = app->player_status.volume;
     vol_draw_entries(popup, players, volumes, count, selected, name_w, modal_w);
     wrefresh(popup);
-    wtimeout(win, INPUT_BLOCKING);
+    wtimeout(win, CURSES_POLL_MS);
     int key = wgetch(win);
+    if (key == -1)
+      continue;
     if (key == 'q' || key == 27)
       break;
     if (key == KEY_LEFT && selected > 0)

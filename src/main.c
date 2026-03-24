@@ -430,6 +430,7 @@ static bool try_stored_player(AppState *app) {
     app->player_status = status;
     app->has_status = true;
     app->playlist = player_get_playlist(player, &app->playlist_count);
+    app->playlist_scroll = status.song;
     check_metadata_update(app);
     /* Store in players list */
     app->players = malloc(sizeof(BlusoundPlayer *));
@@ -475,6 +476,19 @@ static void handle_go_to_track(WINDOW *win, AppState *app) {
   int num = atoi(input);
   if (num >= 1 && num <= app->playlist_count) {
     if (player_play_queue_track(app->active_player, num - 1))
+      update_player_status(app);
+  }
+}
+
+static void handle_playlist_scroll(int key, AppState *app) {
+  if (app->playlist_count == 0)
+    return;
+  if (key == 'j' && app->playlist_scroll < app->playlist_count - 1)
+    app->playlist_scroll++;
+  else if (key == 'k' && app->playlist_scroll > 0)
+    app->playlist_scroll--;
+  else if (key == 10) {
+    if (player_play_queue_track(app->active_player, app->playlist_scroll))
       update_player_status(app);
   }
 }
@@ -721,8 +735,13 @@ static bool handle_player_control(int key, WINDOW *win, AppState *app,
     ui_show_group_manager(win, app);
     return true;
   }
-  if (key == KEY_UP || key == KEY_DOWN || key == ' ' || key == KEY_RIGHT ||
-      key == KEY_LEFT || key == 'm' || key == 'r' || key == 'x' || key == 'g') {
+  bool playlist_visible =
+      !app->is_radio && !app->show_lyrics && app->has_status;
+  if (playlist_visible && (key == 'j' || key == 'k' || key == 10)) {
+    handle_playlist_scroll(key, app);
+  } else if (key == KEY_UP || key == KEY_DOWN || key == ' ' ||
+             key == KEY_RIGHT || key == KEY_LEFT || key == 'm' || key == 'r' ||
+             key == 'x' || key == 'g') {
     handle_playback_keys(key, win, app);
   } else if (key == 'i' || key == '/' || key == 'f' || key == 's' ||
              key == 'l') {
@@ -1187,6 +1206,7 @@ static void handle_player_selection_input(int key, AppState *app,
       app->has_status = true;
       app->playlist =
           player_get_playlist(app->active_player, &app->playlist_count);
+      app->playlist_scroll = status.song;
       config_set("player_host", app->active_player->host_name);
       config_set("player_name", app->active_player->name);
       *player_mode = true;

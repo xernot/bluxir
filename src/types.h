@@ -193,6 +193,7 @@ typedef struct {
   PlaylistEntry *playlist;
   int playlist_count;
   int playlist_capacity;
+  int playlist_scroll; /* scroll offset for j/k navigation */
 
   /* Search */
   char search_phase[STR_SHORT]; /* "source_select", "input", "results" */

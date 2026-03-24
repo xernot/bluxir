@@ -380,15 +380,23 @@ static const KeyBinding HELP_LEFT_KEYS[HELP_LEFT_COUNT] = {
     {"ESC", "Cancel"},
 };
 
-#define HELP_RIGHT_COUNT 14
+#define HELP_RIGHT_COUNT 15
 static const KeyBinding HELP_RIGHT_KEYS[HELP_RIGHT_COUNT] = {
-    {"i", "Select input"},        {"/", "Search"},
-    {"f", "Qobuz favorites"},     {"l", "Load playlist"},
-    {"s", "Save playlist"},       {"c", "Toggle cover art"},
-    {"t", "Toggle lyrics"},       {"PgUp/PgDn", "Scroll lyrics"},
-    {"h", "Health check"},        {"p", "Pretty print"},
-    {"S", "Switch player"},       {"G", "Group players"},
-    {"b", "Back to player list"}, {"q", "Quit"},
+    {"j/k", "Scroll playlist"},
+    {"i", "Select input"},
+    {"/", "Search"},
+    {"f", "Qobuz favorites"},
+    {"l", "Load playlist"},
+    {"s", "Save playlist"},
+    {"c", "Toggle cover art"},
+    {"t", "Toggle lyrics"},
+    {"PgUp/PgDn", "Scroll lyrics"},
+    {"h", "Health check"},
+    {"p", "Pretty print"},
+    {"S", "Switch player"},
+    {"G", "Group players"},
+    {"b", "Back to player list"},
+    {"q", "Quit"},
 };
 
 #define SELECTOR_SHORTCUTS_COUNT 4

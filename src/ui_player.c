@@ -459,6 +459,42 @@ static void draw_lyrics_panel(WINDOW *win, AppState *app, int right_start,
   lyrics_free_wrapped(wrapped, wrap_count);
 }
 
+static int playlist_calc_start(AppState *app, int max_rows) {
+  int center = app->playlist_scroll;
+  int start_idx = 0;
+  if (center > max_rows / 2)
+    start_idx = center - max_rows / 2;
+  if (start_idx + max_rows > app->playlist_count)
+    start_idx = int_max(0, app->playlist_count - max_rows);
+  return start_idx;
+}
+
+static void draw_playlist_entry(WINDOW *win, AppState *app, int i, int row,
+                                int right_start, int right_w) {
+  char text[STR_LONG];
+  snprintf(text, sizeof(text), "%3d. %s - %s", i + 1, app->playlist[i].title,
+           app->playlist[i].artist);
+  int max_w = int_min(right_w, (int)sizeof(text));
+  bool is_current = (i == app->player_status.song);
+  bool is_selected = (i == app->playlist_scroll);
+
+  if (is_selected && is_current)
+    wattron(win, COLOR_PAIR(2) | A_BOLD);
+  else if (is_current)
+    wattron(win, COLOR_PAIR(2));
+  else if (is_selected)
+    wattron(win, A_REVERSE);
+
+  mvwaddnstr(win, row, right_start, text, max_w);
+
+  if (is_selected && is_current)
+    wattroff(win, COLOR_PAIR(2) | A_BOLD);
+  else if (is_current)
+    wattroff(win, COLOR_PAIR(2));
+  else if (is_selected)
+    wattroff(win, A_REVERSE);
+}
+
 static void draw_playlist_panel(WINDOW *win, AppState *app, int right_start,
                                 int right_w, int bottom_line) {
   wattron(win, A_BOLD);
@@ -470,30 +506,15 @@ static void draw_playlist_panel(WINDOW *win, AppState *app, int right_start,
     return;
   }
 
-  int current_song = app->player_status.song;
   int max_rows = bottom_line - 4;
-  int start_idx = 0;
-  if (current_song > max_rows / 2)
-    start_idx = current_song - max_rows / 2;
-  if (start_idx + max_rows > app->playlist_count)
-    start_idx = int_max(0, app->playlist_count - max_rows);
+  int start_idx = playlist_calc_start(app, max_rows);
 
   for (int i = start_idx;
        i < int_min(start_idx + max_rows, app->playlist_count); i++) {
     int row = 4 + (i - start_idx);
     if (row >= bottom_line)
       break;
-    char text[STR_LONG];
-    snprintf(text, sizeof(text), "%3d. %s - %s", i + 1, app->playlist[i].title,
-             app->playlist[i].artist);
-    int max_w = int_min(right_w, (int)sizeof(text));
-    if (i == current_song) {
-      wattron(win, COLOR_PAIR(2));
-      mvwaddnstr(win, row, right_start, text, max_w);
-      wattroff(win, COLOR_PAIR(2));
-    } else {
-      mvwaddnstr(win, row, right_start, text, max_w);
-    }
+    draw_playlist_entry(win, app, i, row, right_start, right_w);
   }
 }
 

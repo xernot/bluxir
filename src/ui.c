@@ -548,7 +548,7 @@ static void health_render_entries(WINDOW *popup, KVPair *entries,
     wattroff(popup, attr);
   }
 
-  const char *hint = "Press 'q' to close";
+  const char *hint = "Press 'b' to close";
   int hint_x = int_max(1, modal_w - (int)strlen(hint) - 2);
   wattron(popup, A_DIM);
   mvwaddstr(popup, modal_h - 2, hint_x, hint);
@@ -572,7 +572,7 @@ static void health_draw_overlay(WINDOW *win, KVPair *entries, int entry_count,
   wtimeout(win, INPUT_BLOCKING);
   while (1) {
     int key = wgetch(win);
-    if (key == 'q')
+    if (key == 'b')
       break;
   }
   wtimeout(win, CURSES_POLL_MS);
@@ -660,7 +660,7 @@ static void group_handle_toggle(AppState *app, BlusoundPlayer *player,
 static int group_handle_input(int key, AppState *app, BlusoundPlayer **others,
                               int other_count, GroupInfo *group, bool *is_slave,
                               int selected) {
-  if (key == 'q' || key == 27)
+  if (key == 'b' || key == 27)
     return -1;
   if (*is_slave && key == 10) {
     player_leave_group(app->active_player);
@@ -857,7 +857,7 @@ void ui_show_volume_overlay(WINDOW *win, AppState *app, GroupInfo *group) {
     int key = wgetch(win);
     if (key == -1)
       continue;
-    if (key == 'q' || key == 27)
+    if (key == 'b' || key == 27)
       break;
     if (key == KEY_LEFT && selected > 0)
       selected--;
@@ -990,7 +990,7 @@ static void pretty_print_show_popup(WINDOW *win, char *pretty, int line_count,
     prefresh(pad, pad_pos, 0, py + 1, px + 1, py + popup_h - 2,
              px + popup_w - 2);
     int key = wgetch(win);
-    if (key == 'q')
+    if (key == 'b')
       break;
     if (key == KEY_DOWN && pad_pos < line_count - content_h)
       pad_pos++;

@@ -243,7 +243,7 @@ static const char *WIKIPEDIA_LANGUAGES[WIKIPEDIA_LANG_COUNT] = {"en", "de"};
 /* Footer help text shown on the main player screen */
 #define FOOTER_HELP                                                            \
   "(/) search  (f) fav  (s) save  (+/-) fav  (r) repeat  (x) shuffle  "        \
-  "(G) group  (S) switch"
+  "(G) group  (S) switch  (?) help"
 
 /* Version string shown in the footer */
 #define VERSION_STRING "bluxir v3.1"
@@ -286,7 +286,7 @@ static const char *WIKIPEDIA_LANGUAGES[WIKIPEDIA_LANG_COUNT] = {"en", "de"};
 #define TERMINAL_TITLE "\033]0;bluxir\007"
 
 /* Pretty print popup title bar text */
-#define PRETTY_PRINT_TITLE " Player State (UP/DOWN scroll, 'q' to close) "
+#define PRETTY_PRINT_TITLE " Player State (UP/DOWN scroll, 'b' to close) "
 
 /* Health check overlay title (base and status-ok variant) */
 #define HEALTH_CHECK_TITLE "Player Health Check"
@@ -309,10 +309,10 @@ static const char *WIKIPEDIA_LANGUAGES[WIKIPEDIA_LANG_COUNT] = {"en", "de"};
 #define GROUP_MANAGER_TITLE "Group Manager"
 
 /* Group manager hint text */
-#define GROUP_MANAGER_HINT "UP/DOWN: select  ENTER: toggle  q: close"
+#define GROUP_MANAGER_HINT "UP/DOWN: select  ENTER: toggle  b: close"
 
 /* Group manager hint when active player is a slave */
-#define GROUP_SLAVE_HINT "ENTER: leave group  q: close"
+#define GROUP_SLAVE_HINT "ENTER: leave group  b: close"
 
 /* Width of the volume bar in the group manager (characters) */
 #define GROUP_VOLUME_BAR_WIDTH 8

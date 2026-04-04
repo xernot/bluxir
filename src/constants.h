@@ -246,7 +246,7 @@ static const char *WIKIPEDIA_LANGUAGES[WIKIPEDIA_LANG_COUNT] = {"en", "de"};
   "(G) group  (S) switch  (?) help"
 
 /* Version string shown in the footer */
-#define VERSION_STRING "bluxir v3.1"
+#define VERSION_STRING "bluxir v3.2"
 
 /* Attribution line shown in help/about modals */
 #define ABOUT_ATTRIBUTION "(c) written by xir - under GPL"

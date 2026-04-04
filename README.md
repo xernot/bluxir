@@ -1,4 +1,4 @@
-# bluxir v3.1
+# bluxir v3.2
 
 A BluOS terminal controller for Blusound network music streamers, written in C.
 
@@ -6,7 +6,7 @@ Features: player discovery, multiroom grouping, playback control, source browsin
 
 Originally based on [blucli](https://github.com/irrelative/blucli) by @irrelative. This project has since diverged significantly.
 
-## What's New in v3.1 — Multiroom Support
+## What's New in v3.2
 
 - **Player switching** (`X`) — discover all Blusound players on the network via mDNS and switch between them
 - **Group management** (`G`) — add/remove players to a synchronized playback group

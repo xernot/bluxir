@@ -548,7 +548,7 @@ static void health_render_entries(WINDOW *popup, KVPair *entries,
     wattroff(popup, attr);
   }
 
-  const char *hint = "Press 'b' to close";
+  const char *hint = "Press 'b' to go back";
   int hint_x = int_max(1, modal_w - (int)strlen(hint) - 2);
   wattron(popup, A_DIM);
   mvwaddstr(popup, modal_h - 2, hint_x, hint);
